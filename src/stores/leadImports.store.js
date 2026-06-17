@@ -64,6 +64,7 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
       return data
     } catch (e) {
       errors.value = e
+      console.log('errors from the upload ', e)
       throw e
     } finally {
       loading.upload = false

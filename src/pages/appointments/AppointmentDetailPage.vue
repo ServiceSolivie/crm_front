@@ -130,9 +130,9 @@ async function handleDelete() {
               <Clock class="w-4 h-4" />
               <span>{{ formatDateTime(store.current.scheduled_at) }}</span>
             </div>
-            <div v-if="store.current.assigned_agent" class="flex items-center gap-1.5 mt-1.5">
-              <AppAvatar :name="store.current.assigned_agent.name" size="xs" />
-              <span class="text-sm text-gray-600">{{ store.current.assigned_agent.name }}</span>
+            <div v-if="store.current.agent" class="flex items-center gap-1.5 mt-1.5">
+              <AppAvatar :name="store.current.agent.name" size="xs" />
+              <span class="text-sm text-gray-600">{{ store.current.agent.name }}</span>
             </div>
           </div>
         </div>

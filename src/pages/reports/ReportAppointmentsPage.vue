@@ -7,6 +7,7 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
 import AppInput from '@/components/base/AppInput.vue'
+import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import { formatDateTime } from '@/utils/formatters'
 
@@ -93,10 +94,14 @@ onMounted(() => store.fetchAppointments())
           <AppointmentStatusBadge :status="value" />
         </template>
         <template #cell-assigned_to="{ row }">
-          <span class="text-sm text-gray-700">{{ row.assigned_agent?.name ?? '—' }}</span>
+          <div v-if="row.agent" class="flex items-center gap-1.5">
+            <AppAvatar :name="row.agent.name" size="xs" />
+            <span class="text-sm text-gray-700">{{ row.agent.name }}</span>
+          </div>
+          <span v-else class="text-gray-400 text-sm">—</span>
         </template>
-        <template #cell-insurance_type="{ value }">
-          <span class="text-xs text-gray-600">{{ value?.replace(/_/g, ' ') ?? '—' }}</span>
+        <template #cell-insurance_type="{ row }">
+          <span class="text-xs text-gray-600">{{ row.lead ? row.lead.insurance_type : '—' }}</span>
         </template>
       </AppTable>
       <div class="border-t border-gray-100 px-4">

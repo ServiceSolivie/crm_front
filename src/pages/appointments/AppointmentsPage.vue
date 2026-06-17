@@ -213,9 +213,9 @@ async function handleStatusChange(row, status) {
         </template>
 
         <template #cell-assigned_to="{ row }">
-          <div v-if="row.assigned_agent" class="flex items-center gap-1.5">
-            <AppAvatar :name="row.assigned_agent.name" size="xs" />
-            <span class="text-sm text-gray-700">{{ row.assigned_agent.name }}</span>
+          <div v-if="row.agent" class="flex items-center gap-1.5">
+            <AppAvatar :name="row.agent.name" size="xs" />
+            <span class="text-sm text-gray-700">{{ row.agent.name }}</span>
           </div>
           <span v-else class="text-gray-400 text-sm">—</span>
         </template>

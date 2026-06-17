@@ -44,7 +44,7 @@ onMounted(async () => {
     if (apt) {
       form.scheduled_at = apt.scheduled_at ? apt.scheduled_at.slice(0, 16) : ''
       form.status = apt.status ?? ''
-      form.agent_id = apt.assigned_agent?.id ?? ''
+      form.agent_id = apt.agent?.id ?? ''
       form.notes = apt.notes ?? ''
     }
     if (!isAgent.value) {

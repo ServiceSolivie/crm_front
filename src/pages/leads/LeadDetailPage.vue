@@ -310,9 +310,9 @@ async function handleDelete() {
                   </span>
                   <AppointmentStatusBadge :status="apt.status" dot />
                 </div>
-                <div v-if="apt.assigned_agent" class="flex items-center gap-1.5 mt-1">
-                  <AppAvatar :name="apt.assigned_agent.name" size="xs" />
-                  <span class="text-xs text-gray-500">{{ apt.assigned_agent.name }}</span>
+                <div v-if="apt.agent" class="flex items-center gap-1.5 mt-1">
+                  <AppAvatar :name="apt.agent.name" size="xs" />
+                  <span class="text-xs text-gray-500">{{ apt.agent.name }}</span>
                 </div>
                 <p v-if="apt.notes" class="text-xs text-gray-400 mt-1 line-clamp-2">{{ apt.notes }}</p>
               </div>

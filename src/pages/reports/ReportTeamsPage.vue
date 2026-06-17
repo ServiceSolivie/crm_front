@@ -94,21 +94,21 @@ onMounted(() => store.fetchTeams())
           </div>
           <div class="flex items-center gap-6 shrink-0">
             <div class="text-center">
-              <p class="text-lg font-bold text-gray-900">{{ formatNumber(team.leads_count ?? 0) }}</p>
+              <p class="text-lg font-bold text-gray-900">{{ formatNumber(team.leads.total ?? 0) }}</p>
               <p class="text-xs text-gray-400">Leads</p>
             </div>
             <div class="text-center">
-              <p class="text-lg font-bold text-success">{{ formatNumber(team.won_count ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Won</p>
+              <p class="text-lg font-bold text-success">{{ formatNumber(team.leads.validated ?? 0) }}</p>
+              <p class="text-xs text-gray-400">Validated</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-primary">
-                {{ team.conversion_rate != null ? formatPercent(team.conversion_rate) : '—' }}
+                {{ team.leads.conversion_rate != null ? formatPercent(team.leads.conversion_rate) : '—' }}
               </p>
               <p class="text-xs text-gray-400">Conversion</p>
             </div>
             <div class="text-center">
-              <p class="text-lg font-bold text-info">{{ formatNumber(team.appointments_count ?? 0) }}</p>
+              <p class="text-lg font-bold text-info">{{ formatNumber(team.appointments.total ?? 0) }}</p>
               <p class="text-xs text-gray-400">Appts</p>
             </div>
           </div>

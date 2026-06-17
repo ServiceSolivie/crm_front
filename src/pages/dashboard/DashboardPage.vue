@@ -67,7 +67,8 @@ const STATUS_COLORS = {
 }
 
 const leadsByStatusSegments = computed(() => {
-  const raw = dash.statistics?.leads_by_status
+  const raw = dash.statistics?.leads.by_status
+  console.log('the dash statistiques', dash.statistics);
   if (!raw) return []
   return Object.entries(raw)
     .map(([key, value]) => ({
@@ -100,7 +101,8 @@ const aptByStatusSegments = computed(() => {
 
 /* ── Insurance type horizontal bars ───────────────────────── */
 const insuranceRows = computed(() => {
-  const raw = dash.statistics?.leads_by_insurance_type
+  const raw = dash.statistics?.leads?.by_insurance_type
+  console.log('the raw data of insurance type ', dash.statistics?.leads);
   if (!raw) return []
   const entries = Object.entries(raw).map(([key, value]) => ({
     key,

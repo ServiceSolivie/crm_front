@@ -324,10 +324,10 @@ onMounted(async () => {
                   <span class="font-medium">{{ formatDateTime(selectedApt.scheduled_at) }}</span>
                 </div>
 
-                <div v-if="selectedApt.assigned_agent" class="flex items-center gap-2.5">
+                <div v-if="selectedApt.agent" class="flex items-center gap-2.5">
                   <User class="w-4 h-4 text-gray-400 shrink-0" />
-                  <AppAvatar :name="selectedApt.assigned_agent.name" size="xs" />
-                  <span class="text-gray-700">{{ selectedApt.assigned_agent.name }}</span>
+                  <AppAvatar :name="selectedApt.agent.name" size="xs" />
+                  <span class="text-gray-700">{{ selectedApt.agent.name }}</span>
                 </div>
                 <div v-else class="flex items-center gap-2.5 text-gray-400">
                   <User class="w-4 h-4 shrink-0" />

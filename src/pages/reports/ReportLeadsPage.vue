@@ -8,6 +8,7 @@ import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import { formatDate, formatNumber } from '@/utils/formatters'
 
@@ -40,7 +41,11 @@ const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page
 onMounted(() => store.fetchLeads())
 
 function exportCsv() {
-  store.exportCsv(store.leadsData, CSV_COLUMNS, 'leads-report.csv')
+  const rows = store.leadsData.map((row) => ({
+    ...row,
+    name: [row.first_name, row.last_name].filter(Boolean).join(' '),
+  }))
+  store.exportCsv(rows, CSV_COLUMNS, 'leads-report.csv')
 }
 </script>
 
@@ -91,6 +96,12 @@ function exportCsv() {
         empty-title="No lead data"
         empty-description="Adjust the date range to load report data."
       >
+        <template #cell-name="{ row }">
+          <span class="text-sm font-medium text-gray-900">
+            {{ [row.first_name, row.last_name].filter(Boolean).join(' ') || '—' }}
+          </span>
+        </template>
+
         <template #cell-status="{ value }">
           <LeadStatusBadge :status="value" />
         </template>
@@ -100,11 +111,15 @@ function exportCsv() {
         </template>
 
         <template #cell-source="{ row }">
-          <span class="text-sm text-gray-600">{{ row.source?.name ?? '—' }}</span>
+          <span class="text-sm text-gray-600">{{ row.lead_source?.name ?? '—' }}</span>
         </template>
 
         <template #cell-assigned_to="{ row }">
-          <span class="text-sm text-gray-700">{{ row.assigned_to?.name ?? '—' }}</span>
+          <div v-if="row.assigned_agent" class="flex items-center gap-1.5">
+            <AppAvatar :name="row.assigned_agent.name" size="xs" />
+            <span class="text-sm text-gray-700">{{ row.assigned_agent.name }}</span>
+          </div>
+          <span v-else class="text-gray-400 text-sm">—</span>
         </template>
 
         <template #cell-created_at="{ value }">

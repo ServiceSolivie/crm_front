@@ -93,21 +93,21 @@ onMounted(() => store.fetchAgents())
           </div>
           <div class="flex items-center gap-6 shrink-0">
             <div class="text-center">
-              <p class="text-lg font-bold text-gray-900">{{ formatNumber(agent.leads_count ?? 0) }}</p>
+              <p class="text-lg font-bold text-gray-900">{{ formatNumber(agent.leads.total ?? 0) }}</p>
               <p class="text-xs text-gray-400">Leads</p>
             </div>
             <div class="text-center">
-              <p class="text-lg font-bold text-success">{{ formatNumber(agent.won_count ?? 0) }}</p>
+              <p class="text-lg font-bold text-success">{{ formatNumber(agent.leads.validated ?? 0) }}</p>
               <p class="text-xs text-gray-400">Won</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-primary">
-                {{ agent.conversion_rate != null ? formatPercent(agent.conversion_rate) : '—' }}
+                {{ agent.leads.conversion_rate != null ? formatPercent(agent.leads.conversion_rate) : '—' }}
               </p>
               <p class="text-xs text-gray-400">Conv.</p>
             </div>
             <div class="text-center">
-              <p class="text-lg font-bold text-info">{{ formatNumber(agent.appointments_count ?? 0) }}</p>
+              <p class="text-lg font-bold text-info">{{ formatNumber(agent.appointments.total ?? 0) }}</p>
               <p class="text-xs text-gray-400">Appts</p>
             </div>
           </div>
