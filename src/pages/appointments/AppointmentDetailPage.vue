@@ -12,8 +12,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import AppointmentRescheduleModal from '@/components/modules/appointments/AppointmentRescheduleModal.vue'
 import AppointmentRemindersPanel from '@/components/modules/appointments/AppointmentRemindersPanel.vue'
-import { APPOINTMENT_STATUS } from '@/utils/enums'
-import { formatDateTime, formatDate } from '@/utils/formatters'
+import { formatDateTime } from '@/utils/formatters'
 
 const route = useRoute()
 const router = useRouter()

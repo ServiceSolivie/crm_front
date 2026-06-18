@@ -96,15 +96,15 @@ async function handleDelete(row) {
         <p class="text-xs text-gray-500 mt-0.5">Total</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-info">{{ store.stats.scheduled ?? 0 }}</p>
+        <p class="text-2xl font-bold text-info">{{ store.stats.by_status.PLANIFIE ?? 0 }}</p>
         <p class="text-xs text-gray-500 mt-0.5">Scheduled</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-success">{{ store.stats.completed ?? 0 }}</p>
+        <p class="text-2xl font-bold text-success">{{ store.stats.by_status.REALISE ?? 0 }}</p>
         <p class="text-xs text-gray-500 mt-0.5">Completed</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-danger">{{ store.stats.cancelled ?? 0 }}</p>
+        <p class="text-2xl font-bold text-danger">{{ store.stats.by_status.ANNULE ?? 0 }}</p>
         <p class="text-xs text-gray-500 mt-0.5">Cancelled</p>
       </AppCard>
     </div>
