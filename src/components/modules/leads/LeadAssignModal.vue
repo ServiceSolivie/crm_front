@@ -33,7 +33,7 @@ async function loadAgents() {
   loadingAgents.value = true
   try {
     const { data } = await usersApi.list({ role: 'agent', per_page: 100 })
-    agents.value = data
+    agents.value = data.filter((u) => u.roles.includes('agent') )
   } finally {
     loadingAgents.value = false
   }

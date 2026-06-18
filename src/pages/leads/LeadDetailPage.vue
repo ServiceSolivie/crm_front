@@ -183,6 +183,7 @@ async function handleDelete() {
         <!-- Actions -->
         <div class="flex items-center gap-2 shrink-0">
           <AppButton
+            v-if="!auth.hasRole('agent')"
             variant="ghost"
             size="sm"
             @click="showAssignModal = true"

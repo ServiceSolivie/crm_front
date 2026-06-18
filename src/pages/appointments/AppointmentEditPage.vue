@@ -32,6 +32,7 @@ const form = reactive({
 })
 const errors = ref({})
 const agentOptions = ref([{ value: '', label: 'Unassigned' }])
+const original = reactive({ scheduled_at: '', status: '' })
 
 onMounted(async () => {
   try {
@@ -46,6 +47,8 @@ onMounted(async () => {
       form.status = apt.status ?? ''
       form.agent_id = apt.agent?.id ?? ''
       form.notes = apt.notes ?? ''
+      original.scheduled_at = form.scheduled_at
+      original.status = form.status
     }
     if (!isAgent.value) {
       agentOptions.value = [
@@ -68,9 +71,17 @@ function validate() {
 async function submit() {
   if (!validate()) return
   try {
-    const payload = { ...form }
+    const payload = { agent_id: form.agent_id, notes: form.notes }
     if (!payload.agent_id) delete payload.agent_id
     await store.update(id, payload)
+
+    if (form.scheduled_at !== original.scheduled_at) {
+      await store.reschedule(id, form.scheduled_at)
+    }
+    if (form.status !== original.status) {
+      await store.updateStatus(id, form.status)
+    }
+
     toast.showSuccess('Appointment updated')
     router.push({ name: 'appointments.detail', params: { id } })
   } catch (e) {

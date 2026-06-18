@@ -10,6 +10,7 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value)
 
   function can(permission) {
+    console.log('permission passed ', permission)
     return user.value?.permissions?.includes(permission) ?? false
   }
 

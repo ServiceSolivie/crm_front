@@ -63,14 +63,6 @@ async function handleDelete(row) {
   }
 }
 
-async function handleStatusChange(row, status) {
-  try {
-    await store.updateStatus(row.id, status)
-    toast.showSuccess(t('appointments.statusUpdated'))
-  } catch (e) {
-    toast.showError(e?.message ?? 'Failed to update status')
-  }
-}
 </script>
 
 <template>
@@ -199,17 +191,7 @@ async function handleStatusChange(row, status) {
         </template>
 
         <template #cell-status="{ row }">
-          <div @click.stop>
-            <select
-              :value="row.status"
-              class="text-xs rounded-lg border border-gray-200 bg-transparent px-2 py-1 focus:outline-none focus:border-primary"
-              @change="handleStatusChange(row, $event.target.value)"
-            >
-              <option v-for="s in APPOINTMENT_STATUS_OPTIONS" :key="s.value" :value="s.value">
-                {{ s.label }}
-              </option>
-            </select>
-          </div>
+          <AppointmentStatusBadge :status="row.status" dot />
         </template>
 
         <template #cell-assigned_to="{ row }">
