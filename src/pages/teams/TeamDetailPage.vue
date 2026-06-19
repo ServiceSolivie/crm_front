@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, UserPlus, Trash2, Users, TrendingUp } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { ArrowLeft, UserPlus, Trash2, Users } from 'lucide-vue-next'
 import { useTeamsStore } from '@/stores/teams.store'
 import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -15,6 +16,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const store = useTeamsStore()
 const usersStore = useUsersStore()
 const ui = useUiStore()
@@ -39,22 +41,22 @@ async function onAddMember() {
   if (!selectedUserId.value) return
   try {
     await store.addMember(id, selectedUserId.value)
-    toast.showSuccess('Member added')
+    toast.showSuccess(t('teams.memberAdded'))
     showAddMember.value = false
     selectedUserId.value = ''
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to add member')
+    toast.showError(e?.message ?? t('teams.addMemberFailed'))
   }
 }
 
 async function onRemoveMember(member) {
-  const ok = await ui.confirm('Remove Member', `Remove ${member.name} from this team?`)
+  const ok = await ui.confirm(t('teams.removeMemberTitle'), t('teams.removeMemberConfirm', { name: member.name }))
   if (!ok) return
   try {
     await store.removeMember(id, member.id)
-    toast.showSuccess('Member removed')
+    toast.showSuccess(t('teams.memberRemoved'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to remove member')
+    toast.showError(e?.message ?? t('teams.removeMemberFailed'))
   }
 }
 </script>
@@ -64,7 +66,7 @@ async function onRemoveMember(member) {
     <div class="flex items-center gap-3">
       <AppButton variant="ghost" size="sm" @click="router.back()">
         <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        Back
+        {{ t('common.back') }}
       </AppButton>
     </div>
 
@@ -88,7 +90,7 @@ async function onRemoveMember(member) {
             <p v-if="store.current.description" class="text-sm text-gray-500 mt-0.5">
               {{ store.current.description }}
             </p>
-            <p class="text-sm text-gray-400 mt-1">{{ store.members.length }} members</p>
+            <p class="text-sm text-gray-400 mt-1">{{ store.members.length }} {{ t('teams.members') }}</p>
           </div>
         </div>
       </div>
@@ -97,32 +99,32 @@ async function onRemoveMember(member) {
     <!-- Stats row -->
     <div v-if="store.stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-gray-900">{{ store.stats.leads_count ?? 0 }}</p>
-        <p class="text-xs text-gray-500">Total Leads</p>
+        <p class="text-2xl font-bold text-gray-900">{{ store.stats.leads.total  ?? 0 }}</p>
+        <p class="text-xs text-gray-500">{{ t('dashboard.totalLeads') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-success">{{ store.stats.won_count ?? 0 }}</p>
-        <p class="text-xs text-gray-500">Won</p>
+        <p class="text-2xl font-bold text-success">{{ store.stats.leads.by_status.VALIDE ?? 0 }}</p>
+        <p class="text-xs text-gray-500">{{ t('teams.won') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
         <p class="text-2xl font-bold text-primary">
-          {{ store.stats.conversion_rate ? `${store.stats.conversion_rate.toFixed(1)}%` : '—' }}
+          {{ store.stats.leads.conversion_rate ? `${store.stats.leads.conversion_rate.toFixed(1)}%` : '—' }}
         </p>
-        <p class="text-xs text-gray-500">Conversion</p>
+        <p class="text-xs text-gray-500">{{ t('teams.conversion') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-info">{{ store.stats.appointments_count ?? 0 }}</p>
-        <p class="text-xs text-gray-500">Appointments</p>
+        <p class="text-2xl font-bold text-info">{{ store.stats.appointments.total ?? 0 }}</p>
+        <p class="text-xs text-gray-500">{{ t('dashboard.appointments') }}</p>
       </AppCard>
     </div>
 
     <!-- Members card -->
     <AppCard padding="none">
       <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-        <h2 class="font-medium text-gray-900">Members</h2>
+        <h2 class="font-medium text-gray-900">{{ t('teams.membersTitle') }}</h2>
         <AppButton size="sm" @click="showAddMember = true">
           <template #icon><UserPlus class="w-4 h-4" /></template>
-          Add Member
+          {{ t('teams.addMember') }}
         </AppButton>
       </div>
 
@@ -138,7 +140,7 @@ async function onRemoveMember(member) {
 
       <div v-else-if="store.members.length === 0" class="text-center py-12">
         <Users class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-        <p class="text-sm text-gray-400">No members yet. Add the first member.</p>
+        <p class="text-sm text-gray-400">{{ t('teams.noMembers') }}</p>
       </div>
 
       <div v-else class="divide-y divide-gray-100">
@@ -166,21 +168,21 @@ async function onRemoveMember(member) {
     </AppCard>
 
     <!-- Add Member Modal -->
-    <AppModal :open="showAddMember" title="Add Member" size="sm" @close="showAddMember = false">
+    <AppModal :open="showAddMember" :title="t('teams.addMember')" size="sm" @close="showAddMember = false">
       <AppSelect
         v-model="selectedUserId"
-        label="Select User"
+        :label="t('teams.selectUser')"
         :options="agentOptions"
-        placeholder="Choose user…"
+        :placeholder="t('teams.chooseUser')"
       />
       <template #footer>
-        <AppButton variant="ghost" @click="showAddMember = false">Cancel</AppButton>
+        <AppButton variant="ghost" @click="showAddMember = false">{{ t('common.cancel') }}</AppButton>
         <AppButton
           :disabled="!selectedUserId"
           :loading="store.loading.members"
           @click="onAddMember"
         >
-          Add
+          {{ t('teams.add') }}
         </AppButton>
       </template>
     </AppModal>

@@ -180,7 +180,20 @@
     "updateSuccess": "Équipe mise à jour",
     "noTeams": "Aucune équipe. Créez votre première équipe.",
     "addMember": "Ajouter un membre",
-    "removeMember": "Retirer"
+    "removeMember": "Retirer",
+    "membersTitle": "Membres",
+    "won": "Gagnés",
+    "conversion": "Conversion",
+    "noMembers": "Aucun membre. Ajoutez le premier membre.",
+    "selectUser": "Sélectionner un utilisateur",
+    "chooseUser": "Choisir un utilisateur…",
+    "add": "Ajouter",
+    "memberAdded": "Membre ajouté",
+    "memberRemoved": "Membre retiré",
+    "addMemberFailed": "Échec de l'ajout du membre",
+    "removeMemberFailed": "Échec du retrait du membre",
+    "removeMemberTitle": "Retirer le membre",
+    "removeMemberConfirm": "Retirer {name} de cette équipe ?"
   },
   "users": {
     "title": "Utilisateurs",
@@ -212,7 +225,9 @@
     "allRoles": "Tous les rôles",
     "allStatuses": "Tous les statuts",
     "roleAndTeam": "Rôle & Équipe",
-    "accountDetails": "Détails du compte"
+    "accountDetails": "Détails du compte",
+    "statusUpdateFailed": "Échec de la mise à jour du statut",
+    "deleteFailed": "Échec de la suppression de l'utilisateur"
   },
   "leadSources": {
     "title": "Sources de leads",

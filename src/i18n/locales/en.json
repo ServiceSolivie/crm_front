@@ -180,7 +180,20 @@
     "updateSuccess": "Team updated",
     "noTeams": "No teams yet. Create your first team.",
     "addMember": "Add Member",
-    "removeMember": "Remove"
+    "removeMember": "Remove",
+    "membersTitle": "Members",
+    "won": "Won",
+    "conversion": "Conversion",
+    "noMembers": "No members yet. Add the first member.",
+    "selectUser": "Select User",
+    "chooseUser": "Choose user…",
+    "add": "Add",
+    "memberAdded": "Member added",
+    "memberRemoved": "Member removed",
+    "addMemberFailed": "Failed to add member",
+    "removeMemberFailed": "Failed to remove member",
+    "removeMemberTitle": "Remove Member",
+    "removeMemberConfirm": "Remove {name} from this team?"
   },
   "users": {
     "title": "Users",
@@ -212,7 +225,9 @@
     "allRoles": "All Roles",
     "allStatuses": "All Statuses",
     "roleAndTeam": "Role & Team",
-    "accountDetails": "Account Details"
+    "accountDetails": "Account Details",
+    "statusUpdateFailed": "Failed to update status",
+    "deleteFailed": "Failed to delete user"
   },
   "leadSources": {
     "title": "Lead Sources",

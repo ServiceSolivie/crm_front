@@ -41,7 +41,7 @@ const displayItems = computed(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between px-1 mt-4 flex-wrap gap-3">
+  <div class="flex items-center justify-between px-1 mt-4 pb-3 flex-wrap gap-3">
     <!-- Count summary -->
     <p class="text-sm text-gray-500">
       <template v-if="total > 0">

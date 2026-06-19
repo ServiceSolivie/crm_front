@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ArrowLeft, Edit2, Trash2, Mail, Shield, Users } from 'lucide-vue-next'
 import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -16,6 +17,7 @@ import { formatDate } from '@/utils/formatters'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const store = useUsersStore()
 const ui = useUiStore()
 const toast = useToast()
@@ -33,21 +35,21 @@ onMounted(async () => {
 async function toggleActive() {
   try {
     await store.toggleStatus(id, !store.current.is_active)
-    toast.showSuccess(store.current.is_active ? 'User activated' : 'User deactivated')
+    toast.showSuccess(store.current.is_active ? t('users.activateSuccess') : t('users.deactivateSuccess'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to update status')
+    toast.showError(e?.message ?? t('users.statusUpdateFailed'))
   }
 }
 
 async function handleDelete() {
-  const ok = await ui.confirm('Delete User', `Delete "${store.current?.name}"? This cannot be undone.`)
+  const ok = await ui.confirm(t('users.deleteTitle'), t('users.deleteConfirm'))
   if (!ok) return
   try {
     await store.remove(id)
-    toast.showSuccess('User deleted')
+    toast.showSuccess(t('users.deleteSuccess'))
     router.replace({ name: 'users' })
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to delete user')
+    toast.showError(e?.message ?? t('users.deleteFailed'))
   }
 }
 </script>
@@ -57,7 +59,7 @@ async function handleDelete() {
     <div class="flex items-center gap-3">
       <AppButton variant="ghost" size="sm" @click="router.back()">
         <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        Back
+        {{ t('common.back') }}
       </AppButton>
     </div>
 
@@ -81,7 +83,7 @@ async function handleDelete() {
               <h1 class="text-xl font-semibold text-gray-900">{{ store.current.name }}</h1>
               <AppBadge
                 :variant="!store.current.is_active ? 'neutral' : 'success'"
-                :label="store.current.is_active ? 'Active' : 'Inactive'"
+                :label="store.current.is_active ? t('common.active') : t('common.inactive')"
                 dot
               />
             </div>
@@ -109,7 +111,7 @@ async function handleDelete() {
             @click="router.push({ name: 'users.edit', params: { id } })"
           >
             <template #icon><Edit2 class="w-4 h-4" /></template>
-            Edit
+            {{ t('common.edit') }}
           </AppButton>
           <AppButton
             variant="ghost"
@@ -125,9 +127,9 @@ async function handleDelete() {
       <!-- Toggle active -->
       <div class="mt-5 pt-5 border-t border-gray-100 flex items-center justify-between">
         <div>
-          <p class="text-sm font-medium text-gray-700">Account Status</p>
+          <p class="text-sm font-medium text-gray-700">{{ t('users.accountStatus') }}</p>
           <p class="text-xs text-gray-400 mt-0.5">
-            {{ store.current.is_active ? 'This user can log in and use the CRM.' : 'This user is deactivated and cannot log in.' }}
+            {{ store.current.is_active ? t('users.activeDesc') : t('users.inactiveDesc') }}
           </p>
         </div>
         <AppToggle
@@ -140,11 +142,11 @@ async function handleDelete() {
       <!-- Meta info -->
       <div class="mt-4 grid grid-cols-2 gap-4">
         <div>
-          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Member Since</p>
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('users.memberSince') }}</p>
           <p class="text-sm text-gray-900">{{ formatDate(store.current.created_at) }}</p>
         </div>
         <div>
-          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Last Updated</p>
+          <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('users.lastUpdated') }}</p>
           <p class="text-sm text-gray-900">{{ formatDate(store.current.updated_at) }}</p>
         </div>
       </div>
