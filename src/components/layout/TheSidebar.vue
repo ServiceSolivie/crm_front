@@ -16,7 +16,6 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  FileText,
   UserCheck,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
@@ -139,10 +138,6 @@ async function handleLogout() {
             ]"
             @click="closeMobile"
           >
-            <span
-              v-if="isActive(item.to)"
-              class="absolute left-3 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
-            />
             <component :is="item.icon" class="w-4 h-4 shrink-0" />
             <span>{{ item.label }}</span>
           </RouterLink>
