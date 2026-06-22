@@ -8,6 +8,8 @@ export const useReportsStore = defineStore('reports', () => {
   const teamsData = ref([])
   const agentsData = ref([])
   const conversionData = ref([])
+  const revenueData = ref([])
+  const revenueSummary = ref(null)
 
   const meta = ref({ total: 0, per_page: 25, current_page: 1, last_page: 1 })
 
@@ -15,6 +17,7 @@ export const useReportsStore = defineStore('reports', () => {
     from: '',
     to: '',
     group_by: 'source',
+    payment_status: null,
     page: 1,
     per_page: 25,
   })
@@ -25,11 +28,12 @@ export const useReportsStore = defineStore('reports', () => {
     teams: false,
     agents: false,
     conversion: false,
+    revenue: false,
   })
 
   const errors = ref(null)
 
-  const activeFiltersCount = computed(() => [filters.from, filters.to].filter(Boolean).length)
+  const activeFiltersCount = computed(() => [filters.from, filters.to, filters.payment_status].filter(Boolean).length)
 
   async function fetchLeads() {
     loading.leads = true
@@ -101,6 +105,24 @@ export const useReportsStore = defineStore('reports', () => {
     }
   }
 
+  async function fetchRevenue() {
+    loading.revenue = true
+    errors.value = null
+    try {
+      const [listRes, summaryRes] = await Promise.all([
+        reportsApi.revenue(_buildParams()),
+        reportsApi.revenueSummary(_buildParams()),
+      ])
+      revenueData.value = listRes.data
+      revenueSummary.value = summaryRes.data ?? summaryRes
+      if (listRes.meta) meta.value = listRes.meta
+    } catch (e) {
+      errors.value = e
+    } finally {
+      loading.revenue = false
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -111,6 +133,7 @@ export const useReportsStore = defineStore('reports', () => {
       from: '',
       to: '',
       group_by: 'source',
+      payment_status: null,
       page: 1,
       per_page: 25,
     })
@@ -150,6 +173,8 @@ export const useReportsStore = defineStore('reports', () => {
     teamsData,
     agentsData,
     conversionData,
+    revenueData,
+    revenueSummary,
     meta,
     filters,
     loading,
@@ -160,6 +185,7 @@ export const useReportsStore = defineStore('reports', () => {
     fetchTeams,
     fetchAgents,
     fetchConversion,
+    fetchRevenue,
     setFilter,
     resetFilters,
     exportCsv,

@@ -8,8 +8,8 @@ export const leadsApi = {
   remove: (id) => client.delete(`/leads/${id}`),
   assign: (id, assignedTo) =>
     client.post(`/leads/${id}/assign`, { assigned_to: assignedTo }).then((r) => r.data),
-  updateStatus: (id, status, comment) =>
-    client.patch(`/leads/${id}/status`, { status, comment }).then((r) => r.data),
+  updateStatus: (id, payload) =>
+    client.patch(`/leads/${id}/status`, payload).then((r) => r.data),
 
   notes: {
     list: (leadId, params) =>

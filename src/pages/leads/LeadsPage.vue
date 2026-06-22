@@ -8,6 +8,7 @@ import { useLeadSourcesStore } from '@/stores/leadSources.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
+import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
@@ -29,6 +30,8 @@ const { t } = useI18n()
 
 const showFilters = ref(false)
 const statusChangingId = ref(null)
+const showRevenuePrompt = ref(false)
+const pendingValidateLead = ref(null)
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('leads.name'), sortable: true },
@@ -60,13 +63,29 @@ function onSort({ key, dir }) {
   leadsStore.fetchList()
 }
 
-async function onStatusChange(lead, status) {
+function onStatusChange(lead, status) {
+  if (status === 'VALIDE' && lead.status !== 'VALIDE') {
+    pendingValidateLead.value = lead
+    showRevenuePrompt.value = true
+    return
+  }
+  doStatusChange(lead, { status })
+}
+
+async function onRevenueConfirm(expectedRevenue) {
+  const lead = pendingValidateLead.value
+  await doStatusChange(lead, { status: 'VALIDE', expected_revenue: expectedRevenue })
+  showRevenuePrompt.value = false
+  pendingValidateLead.value = null
+}
+
+async function doStatusChange(lead, payload) {
   statusChangingId.value = lead.id
   try {
-    await leadsStore.updateStatus(lead.id, status)
+    await leadsStore.updateStatus(lead.id, payload)
     toast.showSuccess(t('leads.statusUpdated'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to update status')
+    toast.showError(e?.message ?? 'Échec de la mise à jour du statut')
   } finally {
     statusChangingId.value = null
   }
@@ -147,19 +166,16 @@ const to = computed(() =>
           <AppSelect
             :model-value="leadsStore.filters.status"
             :options="statusOptions"
-            placeholder="All Statuses"
             @update:model-value="leadsStore.setFilter('status', $event)"
           />
           <AppSelect
             :model-value="leadsStore.filters.insurance_type"
             :options="insuranceOptions"
-            placeholder="All Types"
             @update:model-value="leadsStore.setFilter('insurance_type', $event)"
           />
           <AppSelect
             :model-value="leadsStore.filters.source_id"
             :options="sourceOptions"
-            placeholder="All Sources"
             @update:model-value="leadsStore.setFilter('source_id', $event)"
           />
           <div class="flex items-end">
@@ -274,5 +290,13 @@ const to = computed(() =>
         />
       </div>
     </AppCard>
+
+    <!-- Revenue prompt modal -->
+    <RevenuePromptModal
+      :open="showRevenuePrompt"
+      :loading="statusChangingId !== null"
+      @close="showRevenuePrompt = false; pendingValidateLead = null"
+      @confirm="onRevenueConfirm"
+    />
   </div>
 </template>

@@ -3,12 +3,13 @@ import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Users, UserPlus, TrendingUp, CalendarCheck, BarChart2,
-  UserCheck, Building2, AlertCircle,
+  UserCheck, Building2, AlertCircle, Banknote, CircleDollarSign, Receipt, CheckCircle2,
 } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
-import { LEAD_STATUS, INSURANCE_TYPE, APPOINTMENT_STATUS } from '@/utils/enums'
+import { LEAD_STATUS, INSURANCE_TYPE, APPOINTMENT_STATUS, PAYMENT_STATUS } from '@/utils/enums'
+import { formatCurrency } from '@/utils/formatters'
 
 import AppCard from '@/components/base/AppCard.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -32,6 +33,9 @@ const { t } = useI18n()
 const canViewGlobal = computed(() => auth.can('DASHBOARD_VIEW_GLOBAL'))
 const canViewTeam = computed(() => auth.can('DASHBOARD_VIEW_TEAM'))
 const showAggregations = computed(() => canViewGlobal.value || canViewTeam.value)
+const canViewRevenue = computed(() =>
+  auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
+)
 
 /* ── Date filter ───────────────────────────────────────────── */
 const filterModel = computed({
@@ -108,6 +112,42 @@ const insuranceRows = computed(() => {
     .sort((a, b) => b.value - a.value)
     .map((e) => ({ ...e, pct: (e.value / max) * 100 }))
 })
+
+/* ── Revenue data ─────────────────────────────────────────── */
+const revenueKpis = computed(() => dash.revenue?.kpis ?? null)
+
+const PAYMENT_STATUS_COLORS = {
+  NON_PAYE: '#EF4444',
+  PARTIELLEMENT_PAYE: '#F59E0B',
+  PAYE: '#10B981',
+}
+
+const paymentStatusSegments = computed(() => {
+  const raw = dash.revenue?.by_payment_status
+  if (!raw) return []
+  return Object.entries(raw)
+    .map(([key, value]) => ({
+      label: PAYMENT_STATUS[key]?.label ?? key,
+      value,
+      color: PAYMENT_STATUS_COLORS[key] ?? '#9CA3AF',
+    }))
+    .filter((s) => s.value > 0)
+    .sort((a, b) => b.value - a.value)
+})
+
+const PAYMENT_METHOD_COLORS = ['#6366f1', '#3B82F6', '#10B981', '#F59E0B', '#EF4444']
+
+const paymentMethodSegments = computed(() => {
+  const raw = dash.revenue?.by_payment_method
+  if (!raw) return []
+  return raw.map((item, idx) => ({
+    label: item.label,
+    value: item.total_amount,
+    color: PAYMENT_METHOD_COLORS[idx % PAYMENT_METHOD_COLORS.length],
+  }))
+})
+
+const monthlyRevenueData = computed(() => dash.revenue?.monthly_trend ?? [])
 
 /* ── Aggregation tables ────────────────────────────────────── */
 const teamRows = computed(() => dash.aggregations?.by_team ?? [])
@@ -220,6 +260,136 @@ onMounted(() => {
         accent="emerald"
       />
     </div>
+
+    <!-- ── Revenue KPIs ──────────────────────────────────────── -->
+    <template v-if="canViewRevenue">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <KpiCard
+          title="CA Attendu"
+          :value="revenueKpis?.total_expected"
+          format="currency"
+          :loading="dash.loading.revenue"
+          :icon="Banknote"
+          accent="indigo"
+        />
+        <KpiCard
+          title="CA Reçu"
+          :value="revenueKpis?.total_received"
+          format="currency"
+          :loading="dash.loading.revenue"
+          :icon="CircleDollarSign"
+          accent="emerald"
+        />
+        <KpiCard
+          title="CA Restant"
+          :value="revenueKpis?.total_remaining"
+          format="currency"
+          :loading="dash.loading.revenue"
+          :icon="Receipt"
+          accent="amber"
+        />
+        <KpiCard
+          title="Entièrement payés"
+          :value="revenueKpis?.fully_paid"
+          :sub-value="revenueKpis ? `${revenueKpis.validated_leads} validés` : null"
+          :loading="dash.loading.revenue"
+          :icon="CheckCircle2"
+          accent="emerald"
+        />
+      </div>
+
+      <!-- Monthly revenue trend (full width) -->
+      <!-- <AppCard padding="none">
+        <div class="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-gray-900">Tendance du chiffre d'affaires</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Évolution mensuelle</p>
+          </div>
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+            <TrendingUp class="w-3.5 h-3.5 text-success" />
+          </div>
+        </div>
+
+        <div class="px-2 pb-3">
+          <template v-if="dash.loading.revenue">
+            <div class="h-[220px] flex items-center justify-center">
+              <AppSpinner :size="24" class="text-primary" />
+            </div>
+          </template>
+          <template v-else-if="monthlyRevenueData.length">
+            <BarChart
+              :data="monthlyRevenueData"
+              key-x="month"
+              key-y="received"
+              color="#10B981"
+            />
+          </template>
+          <template v-else>
+            <div class="h-[220px] flex flex-col items-center justify-center gap-2 text-gray-400">
+              <BarChart2 class="w-8 h-8 opacity-40" />
+              <p class="text-sm">Aucune donnée pour cette période</p>
+            </div>
+          </template>
+        </div>
+      </AppCard> -->
+
+      <!-- Payment status + method donuts (side by side, full width row) -->
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <!-- Payment status donut -->
+        <AppCard>
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="font-semibold text-gray-900">Statut de paiement</h3>
+              <p class="text-xs text-gray-400 mt-0.5">Répartition des leads validés</p>
+            </div>
+          </div>
+          <template v-if="dash.loading.revenue">
+            <div class="flex gap-6">
+              <AppSkeleton width="144px" height="144px" rounded="rounded-full" />
+              <div class="flex flex-col gap-2.5 flex-1">
+                <AppSkeleton v-for="n in 3" :key="n" height="16px" :width="`${60 + n * 10}%`" />
+              </div>
+            </div>
+          </template>
+          <template v-else-if="paymentStatusSegments.length">
+            <DonutChart :segments="paymentStatusSegments" center-label="Leads" />
+          </template>
+          <template v-else>
+            <div class="flex items-center justify-center py-10 text-gray-400">
+              <AlertCircle class="w-5 h-5 mr-2 opacity-60" />
+              <span class="text-sm">Aucune donnée</span>
+            </div>
+          </template>
+        </AppCard>
+
+        <!-- Payment method donut -->
+        <AppCard>
+          <div class="flex items-center justify-between mb-5">
+            <div>
+              <h3 class="font-semibold text-gray-900">Méthodes de paiement</h3>
+              <p class="text-xs text-gray-400 mt-0.5">Par montant total</p>
+            </div>
+          </div>
+          <template v-if="dash.loading.revenue">
+            <div class="flex gap-6">
+              <AppSkeleton width="144px" height="144px" rounded="rounded-full" />
+              <div class="flex flex-col gap-2.5 flex-1">
+                <AppSkeleton v-for="n in 3" :key="n" height="16px" :width="`${60 + n * 10}%`" />
+              </div>
+            </div>
+          </template>
+          <template v-else-if="paymentMethodSegments.length">
+            <DonutChart :segments="paymentMethodSegments" center-label="Reçu" />
+          </template>
+          <template v-else>
+            <div class="flex items-center justify-center py-10 text-gray-400">
+              <AlertCircle class="w-5 h-5 mr-2 opacity-60" />
+              <span class="text-sm">Aucun paiement</span>
+            </div>
+          </template>
+        </AppCard>
+      </div>
+    </template>
 
     <!-- ── Row 2: Time-series charts ────────────────────────── -->
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">

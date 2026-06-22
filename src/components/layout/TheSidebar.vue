@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
   UserCheck,
+  Banknote,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -31,16 +32,29 @@ const { t } = useI18n()
 const canViewReports = computed(() =>
   auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM'),
 )
+const canViewRevenue = computed(() =>
+  auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
+)
+const showReportsSection = computed(() => canViewReports.value || canViewRevenue.value)
 
 const reportsOpen = ref(false)
 
-const reportSubItems = computed(() => [
-  { label: t('leads.title'), to: '/reports/leads', icon: Users },
-  { label: t('appointments.title'), to: '/reports/appointments', icon: CalendarDays },
-  { label: t('teams.title'), to: '/reports/teams', icon: UsersRound },
-  { label: t('reports.agents'), to: '/reports/agents', icon: UserCheck },
-  { label: t('reports.conversion'), to: '/reports/conversion', icon: TrendingUp },
-])
+const reportSubItems = computed(() => {
+  const items = []
+  if (canViewReports.value) {
+    items.push(
+      { label: t('leads.title'), to: '/reports/leads', icon: Users },
+      { label: t('appointments.title'), to: '/reports/appointments', icon: CalendarDays },
+      { label: t('teams.title'), to: '/reports/teams', icon: UsersRound },
+      { label: t('reports.agents'), to: '/reports/agents', icon: UserCheck },
+      { label: t('reports.conversion'), to: '/reports/conversion', icon: TrendingUp },
+    )
+  }
+  if (canViewRevenue.value) {
+    items.push({ label: 'Chiffre d\'affaires', to: '/reports/revenue', icon: Banknote })
+  }
+  return items
+})
 
 const navGroups = computed(() => [
   {
@@ -145,7 +159,7 @@ async function handleLogout() {
       </template>
 
       <!-- Reports section with sub-menu -->
-      <div v-if="canViewReports" class="pt-4">
+      <div v-if="showReportsSection" class="pt-4">
         <p class="px-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-sidebar-icon/60">
           {{ t('nav.reports') }}
         </p>

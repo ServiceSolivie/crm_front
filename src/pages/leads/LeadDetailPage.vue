@@ -18,6 +18,10 @@ import LeadAssignModal from '@/components/modules/leads/LeadAssignModal.vue'
 import LeadNotesFeed from '@/components/modules/leads/LeadNotesFeed.vue'
 import LeadTimeline from '@/components/modules/leads/LeadTimeline.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
+import RevenueCard from '@/components/modules/payments/RevenueCard.vue'
+import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
+import PaymentForm from '@/components/modules/payments/PaymentForm.vue'
+import PaymentList from '@/components/modules/payments/PaymentList.vue'
 import { INSURANCE_TYPE } from '@/utils/enums'
 import { formatDate, formatDateTime } from '@/utils/formatters'
 
@@ -36,6 +40,10 @@ const showAssignModal = ref(false)
 const statusChanging = ref(false)
 const noteSubmitting = ref(false)
 const aptActionId = ref(null)
+const showRevenuePrompt = ref(false)
+const pendingStatus = ref(null)
+const showPaymentForm = ref(false)
+const paymentFormRef = ref(null)
 
 const leadFullName = computed(() => {
   const c = leadsStore.current
@@ -43,12 +51,20 @@ const leadFullName = computed(() => {
   return [c.first_name, c.last_name].filter(Boolean).join(' ')
 })
 
-const TABS = computed(() => [
-  { key: 'notes',        label: t('leads.history.notes') },
-  { key: 'history',      label: t('leads.history.history') },
-  { key: 'appointments', label: t('nav.appointments') },
-  { key: 'info',         label: t('leads.history.details') },
-])
+const isValidated = computed(() => leadsStore.current?.status === 'VALIDE')
+
+const TABS = computed(() => {
+  const tabs = [
+    { key: 'notes',        label: t('leads.history.notes') },
+    { key: 'history',      label: t('leads.history.history') },
+    { key: 'appointments', label: t('nav.appointments') },
+  ]
+  if (isValidated.value) {
+    tabs.push({ key: 'payments', label: 'Paiements' })
+  }
+  tabs.push({ key: 'info', label: t('leads.history.details') })
+  return tabs
+})
 
 onMounted(async () => {
   try {
@@ -59,13 +75,29 @@ onMounted(async () => {
   }
 })
 
-async function onStatusChange(status) {
+function onStatusChange(status) {
+  if (status === 'VALIDE' && leadsStore.current?.status !== 'VALIDE') {
+    pendingStatus.value = status
+    showRevenuePrompt.value = true
+    return
+  }
+  doStatusChange({ status })
+}
+
+async function onRevenueConfirm(expectedRevenue) {
+  await doStatusChange({ status: pendingStatus.value, expected_revenue: expectedRevenue })
+  showRevenuePrompt.value = false
+  pendingStatus.value = null
+  onTabChange('payments')
+}
+
+async function doStatusChange(payload) {
   statusChanging.value = true
   try {
-    await leadsStore.updateStatus(id, status)
+    await leadsStore.updateStatus(id, payload)
     toast.showSuccess(t('leads.statusUpdated'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to update status')
+    toast.showError(e?.message ?? 'Échec de la mise à jour du statut')
   } finally {
     statusChanging.value = false
   }
@@ -103,6 +135,32 @@ async function onTabChange(tab) {
   }
   if (tab === 'appointments') {
     await leadsStore.fetchLeadAppointments(id)
+  }
+  if (tab === 'payments') {
+    await leadsStore.fetchPayments(id)
+  }
+}
+
+async function onPaymentSubmit(payload) {
+  try {
+    await leadsStore.addPayment(id, payload)
+    toast.showSuccess('Paiement enregistré avec succès')
+    showPaymentForm.value = false
+  } catch (e) {
+    if (e?.errors) {
+      paymentFormRef.value?.setServerErrors(e.errors)
+    } else {
+      toast.showError(e?.message ?? 'Échec de l\'enregistrement du paiement')
+    }
+  }
+}
+
+async function onPaymentDelete(payment) {
+  try {
+    await leadsStore.removePayment(id, payment.id)
+    toast.showSuccess('Paiement supprimé avec succès')
+  } catch (e) {
+    toast.showError(e?.message ?? 'Échec de la suppression du paiement')
   }
 }
 
@@ -221,6 +279,15 @@ async function handleDelete() {
         <span class="text-xs text-gray-400 ml-auto">{{ t('leads.createdAt') }} {{ formatDate(leadsStore.current.created_at) }}</span>
       </div>
     </AppCard>
+
+    <!-- Revenue card -->
+    <RevenueCard
+      v-if="leadsStore.current && isValidated"
+      :expected-revenue="leadsStore.current.expected_revenue"
+      :total-received="leadsStore.current.total_received"
+      :remaining-amount="leadsStore.current.remaining_amount"
+      :payment-status="leadsStore.current.payment_status"
+    />
 
     <!-- Tabs -->
     <AppCard v-if="leadsStore.current" padding="none">
@@ -342,6 +409,29 @@ async function handleDelete() {
           </div>
         </div>
 
+        <!-- Payments -->
+        <div v-else-if="activeTab === 'payments'">
+          <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-gray-500">
+              {{ leadsStore.payments.length }} paiement(s)
+            </p>
+            <AppButton
+              v-if="auth.can('PAYMENTS_CREATE') && leadsStore.current?.payment_status !== 'PAYE'"
+              size="sm"
+              @click="showPaymentForm = true"
+            >
+              <template #icon><Plus class="w-4 h-4" /></template>
+              Ajouter un paiement
+            </AppButton>
+          </div>
+
+          <PaymentList
+            :payments="leadsStore.payments"
+            :loading="leadsStore.loading.payments"
+            @delete="onPaymentDelete"
+          />
+        </div>
+
         <!-- Details -->
         <div v-else-if="activeTab === 'info'" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
           <div>
@@ -373,6 +463,24 @@ async function handleDelete() {
       :loading="leadsStore.loading.action"
       @close="showAssignModal = false"
       @assign="onAssign"
+    />
+
+    <!-- Revenue prompt modal (shown when transitioning to VALIDE) -->
+    <RevenuePromptModal
+      :open="showRevenuePrompt"
+      :loading="statusChanging"
+      @close="showRevenuePrompt = false; pendingStatus = null"
+      @confirm="onRevenueConfirm"
+    />
+
+    <!-- Payment form modal -->
+    <PaymentForm
+      ref="paymentFormRef"
+      :open="showPaymentForm"
+      :remaining-amount="leadsStore.current?.remaining_amount ?? 0"
+      :loading="leadsStore.loading.payments"
+      @close="showPaymentForm = false"
+      @submit="onPaymentSubmit"
     />
   </div>
 </template>

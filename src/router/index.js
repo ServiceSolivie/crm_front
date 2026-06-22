@@ -186,6 +186,12 @@ const router = createRouter({
       component: () => import('@/pages/reports/ReportConversionPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', permission: ['REPORTS_VIEW_ALL', 'REPORTS_VIEW_TEAM'], title: 'Conversion Report' },
     },
+    {
+      path: '/reports/revenue',
+      name: 'reports.revenue',
+      component: () => import('@/pages/reports/ReportRevenuePage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: ['REVENUE_VIEW_ALL', 'REVENUE_VIEW_TEAM', 'REVENUE_VIEW_PERSONAL'], title: 'Revenue Report' },
+    },
 
     /* Profile */
     {

@@ -1,6 +1,7 @@
 import { ref, reactive, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { leadsApi } from '@/api/leads'
+import { paymentsApi } from '@/api/payments'
 
 export const useLeadsStore = defineStore('leads', () => {
   const list = ref([])
@@ -9,6 +10,7 @@ export const useLeadsStore = defineStore('leads', () => {
   const statusHistory = ref([])
   const assignmentHistory = ref([])
   const leadAppointments = ref([])
+  const payments = ref([])
 
   const meta = ref({ total: 0, per_page: 15, current_page: 1, last_page: 1 })
 
@@ -33,6 +35,7 @@ export const useLeadsStore = defineStore('leads', () => {
     notes: false,
     history: false,
     appointments: false,
+    payments: false,
     action: false,
   })
 
@@ -136,10 +139,10 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
-  async function updateStatus(id, status, comment) {
+  async function updateStatus(id, payload) {
     loading.action = true
     try {
-      const { data } = await leadsApi.updateStatus(id, status, comment)
+      const { data } = await leadsApi.updateStatus(id, payload)
       if (current.value?.id === id) current.value = data
       const idx = list.value.findIndex((l) => l.id === id)
       if (idx !== -1) list.value[idx] = data
@@ -229,6 +232,47 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
+  async function fetchPayments(leadId) {
+    loading.payments = true
+    try {
+      const { data } = await paymentsApi.list(leadId)
+      payments.value = data
+    } catch (e) {
+      errors.value = e
+    } finally {
+      loading.payments = false
+    }
+  }
+
+  async function addPayment(leadId, payload) {
+    loading.payments = true
+    try {
+      const { data } = await paymentsApi.create(leadId, payload)
+      payments.value.unshift(data)
+      await fetchOne(leadId)
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.payments = false
+    }
+  }
+
+  async function removePayment(leadId, paymentId) {
+    loading.action = true
+    try {
+      await paymentsApi.remove(leadId, paymentId)
+      payments.value = payments.value.filter((p) => p.id !== paymentId)
+      await fetchOne(leadId)
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -266,6 +310,7 @@ export const useLeadsStore = defineStore('leads', () => {
     statusHistory,
     assignmentHistory,
     leadAppointments,
+    payments,
     meta,
     filters,
     loading,
@@ -284,6 +329,9 @@ export const useLeadsStore = defineStore('leads', () => {
     fetchAssignmentHistory,
     fetchLeadAppointments,
     createLeadAppointment,
+    fetchPayments,
+    addPayment,
+    removePayment,
     setFilter,
     resetFilters,
   }

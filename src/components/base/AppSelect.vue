@@ -1,8 +1,8 @@
 <script setup>
-import { useId } from 'vue'
+import { useId, computed } from 'vue'
 import { ChevronDown } from 'lucide-vue-next'
 
-defineProps({
+const props = defineProps({
   modelValue: { type: [String, Number, null], default: null },
   label: { type: String, default: '' },
   options: {
@@ -20,6 +20,7 @@ defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const id = useId()
+const hasEmptyOption = computed(() => props.options.some((opt) => opt.value === ''))
 </script>
 
 <template>
@@ -49,7 +50,7 @@ const id = useId()
         ]"
         @change="emit('update:modelValue', $event.target.value)"
       >
-        <option value="" disabled :selected="modelValue === null || modelValue === ''">
+        <option v-if="!hasEmptyOption" value="" disabled :selected="modelValue === null || modelValue === ''">
           {{ placeholder }}
         </option>
         <option

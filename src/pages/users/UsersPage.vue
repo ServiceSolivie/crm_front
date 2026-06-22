@@ -112,13 +112,11 @@ async function handleDelete(user) {
           <AppSelect
             :model-value="store.filters.role"
             :options="roleOptions"
-            placeholder="All Roles"
             @update:model-value="store.setFilter('role', $event)"
           />
           <AppSelect
             :model-value="store.filters.is_active"
             :options="statusOptions"
-            placeholder="All Statuses"
             @update:model-value="store.setFilter('is_active', $event)"
           />
           <div class="flex items-end">

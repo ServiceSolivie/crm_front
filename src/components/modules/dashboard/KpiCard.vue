@@ -31,6 +31,7 @@ const displayValue = computed(() => {
   if (isNaN(n)) return String(v)
   if (props.format === 'percent') return `${n.toFixed(1)}%`
   if (props.format === 'rate') return `${n.toFixed(1)}%`
+  if (props.format === 'currency') return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n)
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
   if (n >= 1_000) return n.toLocaleString('en-US')
   return String(v)

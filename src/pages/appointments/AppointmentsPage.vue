@@ -127,7 +127,6 @@ async function handleDelete(row) {
           <AppSelect
             :model-value="store.filters.status"
             :options="statusOptions"
-            placeholder="All Statuses"
             @update:model-value="store.setFilter('status', $event)"
           />
           <AppInput

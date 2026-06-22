@@ -32,6 +32,16 @@ export function formatDateTime(value) {
 }
 
 /**
+ * Format a monetary amount with currency symbol.
+ * @param {number|string|null} value
+ * @param {string} currency
+ */
+export function formatCurrency(value, currency = 'EUR') {
+  if (value === null || value === undefined) return '—'
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(value)
+}
+
+/**
  * Format a number with locale separators.
  */
 export function formatNumber(value) {

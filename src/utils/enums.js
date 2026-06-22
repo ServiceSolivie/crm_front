@@ -43,6 +43,19 @@ export const REMINDER_CHANNEL = {
   SMS: 'SMS',
 }
 
+export const PAYMENT_STATUS = {
+  NON_PAYE: { label: 'Non payé', color: 'danger' },
+  PARTIELLEMENT_PAYE: { label: 'Partiellement payé', color: 'warning' },
+  PAYE: { label: 'Payé', color: 'success' },
+}
+
+export const PAYMENT_METHOD = {
+  STRIPE: { label: 'Stripe' },
+  VIREMENT_BANCAIRE: { label: 'Virement bancaire' },
+  PAYMENT_LINK: { label: 'Lien de paiement' },
+  AUTRE: { label: 'Autre' },
+}
+
 /* Dropdown-ready arrays */
 export const LEAD_STATUS_OPTIONS = Object.entries(LEAD_STATUS).map(([value, { label }]) => ({
   value,
@@ -61,6 +74,16 @@ export const INSURANCE_TYPE_OPTIONS = Object.entries(INSURANCE_TYPE).map(([value
 export const ROLE_OPTIONS = Object.entries(ROLES).map(([value, label]) => ({ value, label }))
 
 export const REMINDER_CHANNEL_OPTIONS = Object.entries(REMINDER_CHANNEL).map(([value, label]) => ({
+  value,
+  label,
+}))
+
+export const PAYMENT_STATUS_OPTIONS = Object.entries(PAYMENT_STATUS).map(([value, { label }]) => ({
+  value,
+  label,
+}))
+
+export const PAYMENT_METHOD_OPTIONS = Object.entries(PAYMENT_METHOD).map(([value, { label }]) => ({
   value,
   label,
 }))
