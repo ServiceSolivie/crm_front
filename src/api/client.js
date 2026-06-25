@@ -34,10 +34,13 @@ client.interceptors.response.use(
     const message = data?.message ?? 'An unexpected error occurred.'
 
     if (status === 401) {
-      localStorage.removeItem('auth_token')
-      // Trigger a global event so the auth store can clear state
-      window.dispatchEvent(new CustomEvent('crm:unauthorized'))
-      return Promise.reject({ type: 'auth', message: 'Session expired. Please log in again.', errors: null })
+      const url = error.config?.url ?? ''
+      const isAuthRoute = /\/(login|logout|register)/.test(url)
+      if (!isAuthRoute) {
+        localStorage.removeItem('auth_token')
+        window.dispatchEvent(new CustomEvent('crm:unauthorized'))
+      }
+      return Promise.reject({ type: 'auth', message, errors: null })
     }
 
     if (status === 403) {
