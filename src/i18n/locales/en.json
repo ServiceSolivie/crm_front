@@ -271,7 +271,19 @@
     "roleAndTeam": "Role & Team",
     "accountDetails": "Account Details",
     "statusUpdateFailed": "Failed to update status",
-    "deleteFailed": "Failed to delete user"
+    "deleteFailed": "Failed to delete user",
+    "createDesc": "Create a new CRM user account.",
+    "createUser": "Create User",
+    "noTeam": "No Team",
+    "namePlaceholder": "Jane Doe",
+    "emailPlaceholder": "jane@company.com",
+    "nameRequired": "Name is required",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "roleRequired": "Role is required",
+    "createFailed": "Failed to create user"
   },
   "leadSources": {
     "title": "Lead Sources",

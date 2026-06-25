@@ -58,9 +58,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(email, password) {
     const response = await authApi.login({ email, password })
-    // Temporary debug — remove once auth is confirmed working
-    console.log('[CRM auth] login response:', JSON.stringify(response))
-
     const { authToken, userData } = _parseSessionResponse(response)
     if (!authToken) {
       throw { type: 'server', message: 'Login failed: server did not return a token. Check the console for the raw response.' }

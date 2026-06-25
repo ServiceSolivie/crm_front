@@ -271,7 +271,19 @@
     "roleAndTeam": "Rôle & Équipe",
     "accountDetails": "Détails du compte",
     "statusUpdateFailed": "Échec de la mise à jour du statut",
-    "deleteFailed": "Échec de la suppression de l'utilisateur"
+    "deleteFailed": "Échec de la suppression de l'utilisateur",
+    "createDesc": "Créer un nouveau compte utilisateur CRM.",
+    "createUser": "Créer l'utilisateur",
+    "noTeam": "Sans équipe",
+    "namePlaceholder": "Jean Dupont",
+    "emailPlaceholder": "jean@entreprise.com",
+    "nameRequired": "Le nom est obligatoire",
+    "emailRequired": "L'e-mail est obligatoire",
+    "passwordRequired": "Le mot de passe est obligatoire",
+    "passwordMin": "Le mot de passe doit comporter au moins 8 caractères",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "roleRequired": "Le rôle est obligatoire",
+    "createFailed": "Échec de la création de l'utilisateur"
   },
   "leadSources": {
     "title": "Sources de leads",

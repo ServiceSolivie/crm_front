@@ -1,6 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useUsersStore } from '@/stores/users.store'
 import { useTeamsStore } from '@/stores/teams.store'
@@ -15,6 +16,7 @@ const router = useRouter()
 const store = useUsersStore()
 const teamsStore = useTeamsStore()
 const toast = useToast()
+const { t } = useI18n()
 
 const form = reactive({
   name: '',
@@ -25,25 +27,25 @@ const form = reactive({
   team_id: '',
 })
 const errors = ref({})
-const teamOptions = ref([{ value: '', label: 'No Team' }])
+const teamOptions = ref([])
 
 onMounted(async () => {
   await teamsStore.fetchList()
   teamOptions.value = [
-    { value: '', label: 'No Team' },
-    ...teamsStore.list.map((t) => ({ value: t.id, label: t.name })),
+    { value: '', label: t('users.noTeam') },
+    ...teamsStore.list.map((team) => ({ value: team.id, label: team.name })),
   ]
 })
 
 function validate() {
   errors.value = {}
-  if (!form.name.trim()) errors.value.name = 'Name is required'
-  if (!form.email.trim()) errors.value.email = 'Email is required'
-  if (!form.password) errors.value.password = 'Password is required'
-  if (form.password && form.password.length < 8) errors.value.password = 'Password must be at least 8 characters'
+  if (!form.name.trim()) errors.value.name = t('users.nameRequired')
+  if (!form.email.trim()) errors.value.email = t('users.emailRequired')
+  if (!form.password) errors.value.password = t('users.passwordRequired')
+  if (form.password && form.password.length < 8) errors.value.password = t('users.passwordMin')
   if (form.password !== form.password_confirmation)
-    errors.value.password_confirmation = 'Passwords do not match'
-  if (!form.role) errors.value.role = 'Role is required'
+    errors.value.password_confirmation = t('users.passwordMismatch')
+  if (!form.role) errors.value.role = t('users.roleRequired')
   return Object.keys(errors.value).length === 0
 }
 
@@ -53,7 +55,7 @@ async function submit() {
     const payload = { ...form }
     if (!payload.team_id) delete payload.team_id
     const user = await store.create(payload)
-    toast.showSuccess('User created successfully')
+    toast.showSuccess(t('users.createSuccess'))
     router.push({ name: 'users.detail', params: { id: user.id } })
   } catch (e) {
     if (e?.errors) {
@@ -61,7 +63,7 @@ async function submit() {
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
     } else {
-      toast.showError(e?.message ?? 'Failed to create user')
+      toast.showError(e?.message ?? t('users.createFailed'))
     }
   }
 }
@@ -72,46 +74,46 @@ async function submit() {
     <div class="flex items-center gap-3">
       <AppButton variant="ghost" size="sm" @click="router.back()">
         <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        Back
+        {{ t('common.back') }}
       </AppButton>
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">New User</h1>
-        <p class="text-sm text-gray-500">Create a new CRM user account.</p>
+        <h1 class="text-xl font-semibold text-gray-900">{{ t('users.newUser') }}</h1>
+        <p class="text-sm text-gray-500">{{ t('users.createDesc') }}</p>
       </div>
     </div>
 
     <AppCard>
       <form class="space-y-5" @submit.prevent="submit">
         <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">Account Details</h2>
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">{{ t('users.accountDetails') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AppInput
               v-model="form.name"
-              label="Full Name"
-              placeholder="Jane Doe"
+              :label="t('users.name')"
+              :placeholder="t('users.namePlaceholder')"
               :error="errors.name"
               required
               class="sm:col-span-2"
             />
             <AppInput
               v-model="form.email"
-              label="Email"
+              :label="t('users.email')"
               type="email"
-              placeholder="jane@company.com"
+              :placeholder="t('users.emailPlaceholder')"
               :error="errors.email"
               required
               class="sm:col-span-2"
             />
             <AppInput
               v-model="form.password"
-              label="Password"
+              :label="t('users.password')"
               type="password"
               :error="errors.password"
               required
             />
             <AppInput
               v-model="form.password_confirmation"
-              label="Confirm Password"
+              :label="t('users.confirmPassword')"
               type="password"
               :error="errors.password_confirmation"
               required
@@ -122,26 +124,26 @@ async function submit() {
         <div class="border-t border-gray-100" />
 
         <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">Role & Team</h2>
+          <h2 class="text-sm font-semibold text-gray-700 mb-3">{{ t('users.roleAndTeam') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AppSelect
               v-model="form.role"
-              label="Role"
+              :label="t('users.role')"
               :options="ROLE_OPTIONS"
               :error="errors.role"
               required
             />
             <AppSelect
               v-model="form.team_id"
-              label="Team"
+              :label="t('users.team')"
               :options="teamOptions"
             />
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3">
-          <AppButton variant="ghost" type="button" @click="router.back()">Cancel</AppButton>
-          <AppButton type="submit" :loading="store.loading.form">Create User</AppButton>
+          <AppButton variant="ghost" type="button" @click="router.back()">{{ t('common.cancel') }}</AppButton>
+          <AppButton type="submit" :loading="store.loading.form">{{ t('users.createUser') }}</AppButton>
         </div>
       </form>
     </AppCard>
