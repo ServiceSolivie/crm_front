@@ -151,6 +151,7 @@ async function handleDelete(user) {
 
     <AppCard padding="none">
       <AppTable
+        class="cursor-pointer"
         :columns="COLUMNS"
         :rows="store.list"
         :loading="store.loading.list"
