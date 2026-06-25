@@ -21,7 +21,8 @@ const emit = defineEmits(['update:modelValue', 'clear'])
       :disabled="disabled"
       class="h-9 w-full pl-9 pr-8 rounded-lg border border-gray-200 bg-white text-sm text-gray-900
              placeholder:text-gray-400 focus:outline-none focus:border-primary focus-ring
-             disabled:opacity-50 transition-colors"
+             disabled:opacity-50 transition-colors
+             [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
       @input="emit('update:modelValue', $event.target.value)"
     />
 
