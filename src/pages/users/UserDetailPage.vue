@@ -12,7 +12,6 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppToggle from '@/components/base/AppToggle.vue'
-import { ROLES } from '@/utils/enums'
 import { formatDate } from '@/utils/formatters'
 
 const route = useRoute()
@@ -94,7 +93,7 @@ async function handleDelete() {
             <div class="flex items-center gap-2 mt-1.5">
               <AppBadge
                 :variant="store.current.roles?.[0] === 'super_admin' ? 'danger' : store.current.roles?.[0] === 'manager' ? 'warning' : 'info'"
-                :label="ROLES[store.current.roles?.[0]] ?? store.current.roles?.[0] ?? '—'"
+                :label="store.current.roles?.[0] ? t('roles.' + store.current.roles[0], store.current.roles[0]) : '—'"
               />
               <span v-if="store.current.team" class="flex items-center gap-1 text-xs text-gray-500">
                 <Users class="w-3.5 h-3.5" />

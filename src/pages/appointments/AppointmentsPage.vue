@@ -16,7 +16,8 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
-import { APPOINTMENT_STATUS_OPTIONS } from '@/utils/enums'
+import { APPOINTMENT_STATUS } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDateTime } from '@/utils/formatters'
 
 const router = useRouter()
@@ -37,7 +38,8 @@ const COLUMNS = computed(() => [
   { key: 'actions', label: '', align: 'right', width: '100px' },
 ])
 
-const statusOptions = computed(() => [{ value: '', label: t('appointments.allStatuses') }, ...APPOINTMENT_STATUS_OPTIONS])
+const aptStatusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
+const statusOptions = computed(() => [{ value: '', label: t('appointments.allStatuses') }, ...aptStatusOptions.value])
 
 const from = computed(() =>
   store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1,

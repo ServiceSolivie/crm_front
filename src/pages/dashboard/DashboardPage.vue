@@ -52,7 +52,7 @@ const filterModel = computed({
 })
 
 /* ── Team / Agent filters ──────────────────────────────────── */
-const showTeamAgentFilters = computed(() => canViewGlobal.value || canViewTeam.value)
+const showTeamAgentFilters = computed(() => canViewGlobal.value || (canViewTeam.value && !auth.hasRole('team_leader')))
 const showFilterPanel = ref(false)
 const fixedTeamId = computed(() => (!canViewGlobal.value && canViewTeam.value) ? auth.user?.team_id : null)
 const activeTeamAgentCount = computed(
@@ -87,7 +87,7 @@ const leadsByStatusSegments = computed(() => {
   if (!raw) return []
   return Object.entries(raw)
     .map(([key, value]) => ({
-      label: LEAD_STATUS[key]?.label ?? key,
+      label: t('statuses.lead.' + key, key),
       value,
       color: STATUS_COLORS[key] ?? '#9CA3AF',
     }))
@@ -107,7 +107,7 @@ const aptByStatusSegments = computed(() => {
   if (!raw) return []
   return Object.entries(raw)
     .map(([key, value]) => ({
-      label: APPOINTMENT_STATUS[key]?.label ?? key,
+      label: t('statuses.appointment.' + key, key),
       value,
       color: APT_STATUS_COLORS[key] ?? '#9CA3AF',
     }))
@@ -121,7 +121,7 @@ const insuranceRows = computed(() => {
   if (!raw) return []
   const entries = Object.entries(raw).map(([key, value]) => ({
     key,
-    label: INSURANCE_TYPE[key]?.label ?? key,
+    label: t('insuranceTypes.' + key, key),
     value,
   }))
   const max = Math.max(...entries.map((e) => e.value), 1)
@@ -144,7 +144,7 @@ const paymentStatusSegments = computed(() => {
   if (!raw) return []
   return Object.entries(raw)
     .map(([key, value]) => ({
-      label: PAYMENT_STATUS[key]?.label ?? key,
+      label: t('statuses.payment.' + key, key),
       value,
       color: PAYMENT_STATUS_COLORS[key] ?? '#9CA3AF',
     }))

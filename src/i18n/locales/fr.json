@@ -8,6 +8,10 @@
     "teams": "Équipes",
     "users": "Utilisateurs",
     "leadSources": "Sources de leads",
+    "documentRequirements": "Config Documents",
+    "myAgents": "Mes Agents",
+    "followUps": "Suivi",
+    "team": "Équipe",
     "reports": "Rapports",
     "settings": "Paramètres",
     "logout": "Déconnexion",
@@ -154,6 +158,7 @@
     "history": {
       "notes": "Notes",
       "history": "Historique",
+      "dossier": "Dossier",
       "details": "Détails",
       "statusChange": "Statut modifié",
       "assigned": "Assigné à",
@@ -397,11 +402,122 @@
       "REALISE": "Réalisé",
       "ANNULE": "Annulé",
       "REPORTE": "Reporté"
+    },
+    "payment": {
+      "NON_PAYE": "Non payé",
+      "PARTIELLEMENT_PAYE": "Partiellement payé",
+      "PAYE": "Payé"
+    },
+    "import": {
+      "PENDING": "En attente",
+      "PROCESSING": "En cours",
+      "COMPLETED": "Terminé",
+      "FAILED": "Échoué"
     }
+  },
+  "insuranceTypes": {
+    "AUTO": "Assurance Auto",
+    "MOTO": "Assurance Moto",
+    "RC_PRO": "Responsabilité Civile Pro",
+    "MUTUELLE_SANTE": "Mutuelle Santé",
+    "EMPRUNTEUR": "Assurance Emprunteur",
+    "CREDIT_CONSOMMATION": "Crédit Consommation",
+    "RACHAT_CREDIT": "Rachat de Crédit",
+    "CREDIT_IMMOBILIER": "Crédit Immobilier",
+    "DECENNALE": "Décennale",
+    "TAXI_VTC": "Taxi / VTC",
+    "AUTRE": "Autre"
+  },
+  "clientTypes": {
+    "INDIVIDUAL": "Particulier",
+    "PROFESSIONAL": "Professionnel"
+  },
+  "paymentMethods": {
+    "STRIPE": "Stripe",
+    "VIREMENT_BANCAIRE": "Virement bancaire",
+    "PAYMENT_LINK": "Lien de paiement",
+    "AUTRE": "Autre"
   },
   "roles": {
     "super_admin": "Super Admin",
     "manager": "Manager",
+    "team_leader": "Chef d'équipe",
     "agent": "Agent"
+  },
+  "payments": {
+    "title": "Paiements"
+  },
+  "documents": {
+    "dossier": "Dossier",
+    "documents": "documents",
+    "noDocumentsRequired": "Aucun document requis pour ce type d'assurance.",
+    "uploaded": "Téléversé",
+    "missing": "Manquant",
+    "upload": "Téléverser",
+    "replace": "Remplacer",
+    "download": "Télécharger",
+    "delete": "Supprimer",
+    "remove": "Retirer",
+    "cancel": "Annuler",
+    "clientTypeRequired": "Type de client requis",
+    "clientTypeDescription": "Veuillez sélectionner le type de client pour afficher les documents requis pour ce dossier.",
+    "individual": "Particulier",
+    "professional": "Professionnel",
+    "uploadTitle": "Téléverser : {type}",
+    "dropzoneText": "Glissez-déposez un fichier ici ou",
+    "browse": "parcourir",
+    "dropzoneHint": "PDF, JPG, PNG, WEBP — max 10 Mo",
+    "errorUnsupportedFormat": "Format non supporté. Utilisez PDF, JPG, PNG ou WEBP.",
+    "errorFileTooBig": "Le fichier dépasse la taille maximale de 10 Mo.",
+    "clientTypeUpdated": "Type de client mis à jour",
+    "preview": "Aperçu",
+    "previewUnavailable": "L'aperçu n'est pas disponible pour ce type de fichier."
+  },
+  "documentRequirements": {
+    "title": "Exigences Documentaires",
+    "subtitle": "Gérer les types de documents et les exigences par produit d'assurance",
+    "documentTypes": "Types de Documents",
+    "requirementsMatrix": "Matrice des Exigences",
+    "newType": "Nouveau Type",
+    "editType": "Modifier le Type",
+    "typeName": "Nom de Code",
+    "typeNamePlaceholder": "ex. ATTESTATION_RC",
+    "typeLabel": "Libellé",
+    "typeLabelPlaceholder": "ex. Attestation RC",
+    "sortOrder": "Ordre d'affichage",
+    "activeToggle": "Actif",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "noTypes": "Aucun type de document. Ajoutez votre premier type.",
+    "noMatrix": "Aucune exigence configurée.",
+    "allClients": "Tous les clients",
+    "nameRequired": "Le nom de code est requis",
+    "labelRequired": "Le libellé est requis",
+    "typeCreated": "Type de document créé",
+    "typeUpdated": "Type de document mis à jour",
+    "typeDeleted": "Type de document supprimé",
+    "deleteTypeTitle": "Supprimer le Type de Document",
+    "deleteTypeConfirm": "Supprimer « {name} » ? Cette action est irréversible."
+  },
+  "teamLeader": {
+    "title": "Tableau de bord équipe",
+    "subtitle": "Suivez la performance de votre équipe",
+    "agentPerformance": "Performance des agents",
+    "activeLeads": "Leads actifs",
+    "validatedLeads": "Validés",
+    "conversionRate": "Conv. %",
+    "scheduledAppts": "Planifiés",
+    "completedAppts": "Réalisés",
+    "revenue": "CA",
+    "followUpAlerts": "Alertes de suivi",
+    "overdue": "En retard",
+    "warning": "Attention",
+    "dueToday": "À traiter aujourd'hui",
+    "onTrack": "En ordre",
+    "viewAllFollowUps": "Voir tous les suivis",
+    "noAlerts": "Aucun suivi en attente",
+    "pendingFollowUps": "Suivis en attente",
+    "hoursIdle": "{hours}h d'inactivité",
+    "noAgents": "Aucun agent dans votre équipe"
   }
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ArrowLeft } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
@@ -11,7 +11,8 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
-import { INSURANCE_TYPE_OPTIONS } from '@/utils/enums'
+import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const router = useRouter()
 const leadsStore = useLeadsStore()
@@ -19,12 +20,16 @@ const sourcesStore = useLeadSourcesStore()
 const usersStore = useUsersStore()
 const toast = useToast()
 
+const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+const clientTypeOptions = useEnumOptions(CLIENT_TYPE, 'clientTypes')
+
 const form = reactive({
   first_name: '',
   last_name: '',
   email: '',
   phone: '',
   insurance_type: '',
+  client_type: '',
   source_id: '',
   assigned_to: '',
   notes: '',
@@ -34,6 +39,20 @@ const errors = ref({})
 
 const agentOptions = ref([{ value: '', label: 'Unassigned' }])
 const sourceOptions = ref([{ value: '', label: 'No Source' }])
+
+const showClientType = (type) => ['AUTO', 'MOTO'].includes(type)
+
+watch(
+  () => form.insurance_type,
+  (val) => {
+    if (showClientType(val) && !form.client_type) {
+      form.client_type = 'INDIVIDUAL'
+    }
+    if (!showClientType(val)) {
+      form.client_type = ''
+    }
+  },
+)
 
 onMounted(async () => {
   await Promise.all([sourcesStore.fetchList(), usersStore.fetchList({ role: 'agent', per_page: 100 })])
@@ -66,6 +85,7 @@ async function submit() {
       email: form.email || undefined,
       insurance_type: form.insurance_type,
     }
+    if (form.client_type) payload.client_type = form.client_type
     if (form.source_id) payload.source_id = form.source_id
     if (form.assigned_to) payload.assigned_to = form.assigned_to
     if (form.notes) payload.notes = form.notes
@@ -145,10 +165,17 @@ async function submit() {
             <AppSelect
               v-model="form.insurance_type"
               label="Insurance Type"
-              :options="INSURANCE_TYPE_OPTIONS"
+              :options="insuranceTypeOptions"
               placeholder="Select type…"
               :error="errors.insurance_type"
               required
+            />
+            <AppSelect
+              v-if="showClientType(form.insurance_type)"
+              v-model="form.client_type"
+              label="Type de client"
+              :options="clientTypeOptions"
+              :error="errors.client_type"
             />
             <AppSelect
               v-model="form.source_id"

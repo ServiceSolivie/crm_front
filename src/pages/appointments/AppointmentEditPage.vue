@@ -12,7 +12,8 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
-import { APPOINTMENT_STATUS_OPTIONS } from '@/utils/enums'
+import { APPOINTMENT_STATUS } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const route = useRoute()
 const router = useRouter()
@@ -31,6 +32,7 @@ const form = reactive({
   notes: '',
 })
 const errors = ref({})
+const appointmentStatusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
 const agentOptions = ref([{ value: '', label: 'Unassigned' }])
 const original = reactive({ scheduled_at: '', status: '' })
 
@@ -127,7 +129,7 @@ async function submit() {
           <AppSelect
             v-model="form.status"
             label="Status"
-            :options="APPOINTMENT_STATUS_OPTIONS"
+            :options="appointmentStatusOptions"
           />
           <div v-if="isAgent" class="sm:col-span-2 p-3 rounded-xl bg-gray-50 text-sm text-gray-600">
             Assigned to: <span class="font-medium text-gray-900">{{ auth.user?.name ?? 'You' }}</span>

@@ -10,13 +10,16 @@ import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
-import { ROLE_OPTIONS } from '@/utils/enums'
+import { ROLES } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const router = useRouter()
 const store = useUsersStore()
 const teamsStore = useTeamsStore()
 const toast = useToast()
 const { t } = useI18n()
+
+const roleOptions = useEnumOptions(ROLES, 'roles')
 
 const form = reactive({
   name: '',
@@ -129,7 +132,7 @@ async function submit() {
             <AppSelect
               v-model="form.role"
               :label="t('users.role')"
-              :options="ROLE_OPTIONS"
+              :options="roleOptions"
               :error="errors.role"
               required
             />

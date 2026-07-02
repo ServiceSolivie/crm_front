@@ -5,6 +5,8 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import { usersApi } from '@/api/users'
+import { teamLeaderApi } from '@/api/teamLeader'
+import { useAuthStore } from '@/stores/auth.store'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -14,6 +16,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'assign'])
 
+const auth = useAuthStore()
 const search = ref('')
 const agents = ref([])
 const loadingAgents = ref(false)
@@ -32,8 +35,13 @@ watch(
 async function loadAgents() {
   loadingAgents.value = true
   try {
-    const { data } = await usersApi.list({ role: 'agent', per_page: 100 })
-    agents.value = data.filter((u) => u.roles.includes('agent') )
+    if (auth.hasRole('team_leader')) {
+      const data = await teamLeaderApi.agents()
+      agents.value = data.map((a) => ({ id: a.id, name: a.name, email: a.email, roles: a.roles }))
+    } else {
+      const { data } = await usersApi.list({ role: 'agent', per_page: 100 })
+      agents.value = data.filter((u) => u.roles.includes('agent'))
+    }
   } finally {
     loadingAgents.value = false
   }
@@ -48,7 +56,10 @@ const filtered = computed(() => {
 })
 
 function confirm() {
-  if (selected.value !== null) emit('assign', selected.value)
+  if (selected.value !== null) {
+    const agent = agents.value.find((a) => a.id === selected.value)
+    emit('assign', selected.value, agent ?? null)
+  }
 }
 </script>
 

@@ -2,6 +2,7 @@ import { ref, reactive, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { leadsApi } from '@/api/leads'
 import { paymentsApi } from '@/api/payments'
+import { documentsApi } from '@/api/documents'
 
 export const useLeadsStore = defineStore('leads', () => {
   const list = ref([])
@@ -11,6 +12,7 @@ export const useLeadsStore = defineStore('leads', () => {
   const assignmentHistory = ref([])
   const leadAppointments = ref([])
   const payments = ref([])
+  const dossier = ref(null)
 
   const meta = ref({ total: 0, per_page: 15, current_page: 1, last_page: 1 })
 
@@ -36,6 +38,7 @@ export const useLeadsStore = defineStore('leads', () => {
     history: false,
     appointments: false,
     payments: false,
+    dossier: false,
     action: false,
   })
 
@@ -127,9 +130,10 @@ export const useLeadsStore = defineStore('leads', () => {
     loading.action = true
     try {
       const { data } = await leadsApi.assign(id, assignedTo)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((l) => l.id === id)
-      if (idx !== -1) list.value[idx] = data
+      const numId = Number(id)
+      if (current.value?.id === numId) current.value = { ...current.value, ...data }
+      const idx = list.value.findIndex((l) => l.id === numId)
+      if (idx !== -1) list.value.splice(idx, 1, { ...list.value[idx], ...data })
       return data
     } catch (e) {
       errors.value = e
@@ -273,6 +277,77 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
+  async function setClientType(leadId, clientType) {
+    loading.dossier = true
+    try {
+      const { data } = await documentsApi.setClientType(leadId, clientType)
+      current.value = data
+      const idx = list.value.findIndex((l) => l.id === leadId)
+      if (idx !== -1) list.value[idx] = data
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.dossier = false
+    }
+  }
+
+  async function fetchDossier(leadId) {
+    loading.dossier = true
+    try {
+      const { data } = await documentsApi.getDossier(leadId)
+      dossier.value = data
+    } catch (e) {
+      errors.value = e
+    } finally {
+      loading.dossier = false
+    }
+  }
+
+  async function uploadDocument(leadId, formData) {
+    loading.dossier = true
+    try {
+      await documentsApi.upload(leadId, formData)
+      await fetchDossier(leadId)
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.dossier = false
+    }
+  }
+
+  async function removeDocument(leadId, documentId) {
+    loading.action = true
+    try {
+      await documentsApi.remove(leadId, documentId)
+      await fetchDossier(leadId)
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
+  async function downloadDocument(leadId, documentId, filename) {
+    try {
+      const response = await documentsApi.download(leadId, documentId)
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+    } catch (e) {
+      errors.value = e
+      throw e
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -311,6 +386,7 @@ export const useLeadsStore = defineStore('leads', () => {
     assignmentHistory,
     leadAppointments,
     payments,
+    dossier,
     meta,
     filters,
     loading,
@@ -332,6 +408,11 @@ export const useLeadsStore = defineStore('leads', () => {
     fetchPayments,
     addPayment,
     removePayment,
+    setClientType,
+    fetchDossier,
+    uploadDocument,
+    removeDocument,
+    downloadDocument,
     setFilter,
     resetFilters,
   }

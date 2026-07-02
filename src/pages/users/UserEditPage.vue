@@ -10,13 +10,16 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
-import { ROLE_OPTIONS } from '@/utils/enums'
+import { ROLES } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const route = useRoute()
 const router = useRouter()
 const store = useUsersStore()
 const teamsStore = useTeamsStore()
 const toast = useToast()
+
+const roleOptions = useEnumOptions(ROLES, 'roles')
 
 const id = route.params.id
 const form = reactive({ name: '', email: '', role: '', team_id: '' })
@@ -108,7 +111,7 @@ async function submit() {
           <AppSelect
             v-model="form.role"
             label="Role"
-            :options="ROLE_OPTIONS"
+            :options="roleOptions"
             :error="errors.role"
             required
           />

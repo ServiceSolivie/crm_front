@@ -9,7 +9,6 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
-import { ROLES } from '@/utils/enums'
 import { formatDate } from '@/utils/formatters'
 
 const auth = useAuthStore()
@@ -34,7 +33,7 @@ const savingPassword = ref(false)
 
 const roleLabel = computed(() => {
   const r = auth.user?.roles?.[0] ?? auth.user?.role ?? ''
-  return ROLES[r] ?? r ?? '—'
+  return r ? t('roles.' + r, r) : '—'
 })
 
 function validateProfile() {

@@ -1,13 +1,15 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Trash2, CreditCard, Banknote } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppSpinner from '@/components/base/AppSpinner.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
-import { PAYMENT_METHOD } from '@/utils/enums'
 import { formatCurrency, formatDate } from '@/utils/formatters'
+
+const { t } = useI18n()
 
 defineProps({
   payments: { type: Array, default: () => [] },
@@ -24,7 +26,7 @@ function methodLabel(payment) {
   if (payment.payment_method === 'AUTRE' && payment.custom_payment_method) {
     return payment.custom_payment_method
   }
-  return PAYMENT_METHOD[payment.payment_method]?.label ?? payment.payment_method
+  return t('paymentMethods.' + payment.payment_method, payment.payment_method)
 }
 
 async function onDelete(payment) {

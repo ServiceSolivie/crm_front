@@ -17,7 +17,8 @@ import AppSearchInput from '@/components/base/AppSearchInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
-import { LEAD_STATUS_OPTIONS, INSURANCE_TYPE_OPTIONS } from '@/utils/enums'
+import { LEAD_STATUS, INSURANCE_TYPE } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDate } from '@/utils/formatters'
 
 const router = useRouter()
@@ -49,8 +50,10 @@ const sourceOptions = computed(() => [
   ...sourcesStore.list.map((s) => ({ value: s.id, label: s.name })),
 ])
 
-const statusOptions = computed(() => [{ value: '', label: t('leads.allStatuses') }, ...LEAD_STATUS_OPTIONS])
-const insuranceOptions = computed(() => [{ value: '', label: t('leads.allTypes') }, ...INSURANCE_TYPE_OPTIONS])
+const leadStatusOptions = useEnumOptions(LEAD_STATUS, 'statuses.lead')
+const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+const statusOptions = computed(() => [{ value: '', label: t('leads.allStatuses') }, ...leadStatusOptions.value])
+const insuranceOptions = computed(() => [{ value: '', label: t('leads.allTypes') }, ...insuranceTypeOptions.value])
 
 onMounted(() => {
   leadsStore.fetchList()

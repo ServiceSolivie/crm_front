@@ -2,7 +2,9 @@
 import { ref } from 'vue'
 import { ChevronDown, Check } from 'lucide-vue-next'
 import LeadStatusBadge from './LeadStatusBadge.vue'
-import { LEAD_STATUS_OPTIONS } from '@/utils/enums'
+import { LEAD_STATUS } from '@/utils/enums'
+
+const statusKeys = Object.keys(LEAD_STATUS)
 
 const props = defineProps({
   status: { type: String, required: true },
@@ -84,13 +86,13 @@ function select(value) {
           class="w-52 bg-white rounded-xl shadow-modal border border-gray-100 py-1"
         >
           <button
-            v-for="s in LEAD_STATUS_OPTIONS"
-            :key="s.value"
+            v-for="key in statusKeys"
+            :key="key"
             class="flex items-center justify-between w-full px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
-            @mousedown.prevent="select(s.value)"
+            @mousedown.prevent="select(key)"
           >
-            <LeadStatusBadge :status="s.value" />
-            <Check v-if="s.value === status" class="w-3.5 h-3.5 text-primary shrink-0" />
+            <LeadStatusBadge :status="key" />
+            <Check v-if="key === status" class="w-3.5 h-3.5 text-primary shrink-0" />
           </button>
         </div>
       </Transition>

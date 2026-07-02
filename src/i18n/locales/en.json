@@ -8,6 +8,10 @@
     "teams": "Teams",
     "users": "Users",
     "leadSources": "Lead Sources",
+    "documentRequirements": "Document Config",
+    "myAgents": "My Agents",
+    "followUps": "Follow-ups",
+    "team": "Team",
     "reports": "Reports",
     "settings": "Settings",
     "logout": "Logout",
@@ -154,6 +158,7 @@
     "history": {
       "notes": "Notes",
       "history": "History",
+      "dossier": "Documents",
       "details": "Details",
       "statusChange": "Status changed",
       "assigned": "Assigned to",
@@ -397,11 +402,122 @@
       "REALISE": "Completed",
       "ANNULE": "Cancelled",
       "REPORTE": "Rescheduled"
+    },
+    "payment": {
+      "NON_PAYE": "Unpaid",
+      "PARTIELLEMENT_PAYE": "Partially Paid",
+      "PAYE": "Paid"
+    },
+    "import": {
+      "PENDING": "Pending",
+      "PROCESSING": "Processing",
+      "COMPLETED": "Completed",
+      "FAILED": "Failed"
     }
+  },
+  "insuranceTypes": {
+    "AUTO": "Auto Insurance",
+    "MOTO": "Motorcycle Insurance",
+    "RC_PRO": "Professional Liability",
+    "MUTUELLE_SANTE": "Health Insurance",
+    "EMPRUNTEUR": "Borrower Insurance",
+    "CREDIT_CONSOMMATION": "Consumer Credit",
+    "RACHAT_CREDIT": "Debt Consolidation",
+    "CREDIT_IMMOBILIER": "Mortgage Credit",
+    "DECENNALE": "Décennale",
+    "TAXI_VTC": "Taxi / VTC",
+    "AUTRE": "Other"
+  },
+  "clientTypes": {
+    "INDIVIDUAL": "Individual",
+    "PROFESSIONAL": "Professional"
+  },
+  "paymentMethods": {
+    "STRIPE": "Stripe",
+    "VIREMENT_BANCAIRE": "Bank Transfer",
+    "PAYMENT_LINK": "Payment Link",
+    "AUTRE": "Other"
   },
   "roles": {
     "super_admin": "Super Admin",
     "manager": "Manager",
+    "team_leader": "Team Leader",
     "agent": "Agent"
+  },
+  "payments": {
+    "title": "Payments"
+  },
+  "documents": {
+    "dossier": "Documents",
+    "documents": "documents",
+    "noDocumentsRequired": "No documents required for this insurance type.",
+    "uploaded": "Uploaded",
+    "missing": "Missing",
+    "upload": "Upload",
+    "replace": "Replace",
+    "download": "Download",
+    "delete": "Delete",
+    "remove": "Remove",
+    "cancel": "Cancel",
+    "clientTypeRequired": "Client type required",
+    "clientTypeDescription": "Please select the client type to display the required documents for this dossier.",
+    "individual": "Individual",
+    "professional": "Professional",
+    "uploadTitle": "Upload: {type}",
+    "dropzoneText": "Drag and drop a file here or",
+    "browse": "browse",
+    "dropzoneHint": "PDF, JPG, PNG, WEBP — max 10 MB",
+    "errorUnsupportedFormat": "Unsupported format. Use PDF, JPG, PNG or WEBP.",
+    "errorFileTooBig": "File exceeds maximum size of 10 MB.",
+    "clientTypeUpdated": "Client type updated",
+    "preview": "Preview",
+    "previewUnavailable": "Preview is not available for this file type."
+  },
+  "documentRequirements": {
+    "title": "Document Requirements",
+    "subtitle": "Manage document types and requirements per insurance product",
+    "documentTypes": "Document Types",
+    "requirementsMatrix": "Requirements Matrix",
+    "newType": "New Type",
+    "editType": "Edit Type",
+    "typeName": "Code Name",
+    "typeNamePlaceholder": "e.g. ATTESTATION_RC",
+    "typeLabel": "Display Label",
+    "typeLabelPlaceholder": "e.g. Attestation RC",
+    "sortOrder": "Sort Order",
+    "activeToggle": "Active",
+    "active": "Active",
+    "inactive": "Inactive",
+    "noTypes": "No document types yet. Add your first type.",
+    "noMatrix": "No requirements configured yet.",
+    "allClients": "All clients",
+    "nameRequired": "Code name is required",
+    "labelRequired": "Label is required",
+    "typeCreated": "Document type created",
+    "typeUpdated": "Document type updated",
+    "typeDeleted": "Document type deleted",
+    "deleteTypeTitle": "Delete Document Type",
+    "deleteTypeConfirm": "Delete \"{name}\"? This cannot be undone."
+  },
+  "teamLeader": {
+    "title": "Team Dashboard",
+    "subtitle": "Monitor your team's performance",
+    "agentPerformance": "Agent Performance",
+    "activeLeads": "Active Leads",
+    "validatedLeads": "Validated",
+    "conversionRate": "Conv. %",
+    "scheduledAppts": "Scheduled",
+    "completedAppts": "Completed",
+    "revenue": "Revenue",
+    "followUpAlerts": "Follow-up Alerts",
+    "overdue": "Overdue",
+    "warning": "Warning",
+    "dueToday": "Due Today",
+    "onTrack": "On Track",
+    "viewAllFollowUps": "View All Follow-ups",
+    "noAlerts": "No pending follow-ups",
+    "pendingFollowUps": "Pending Follow-ups",
+    "hoursIdle": "{hours}h idle",
+    "noAgents": "No agents in your team"
   }
 }

@@ -13,7 +13,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useUsersStore } from '@/stores/users.store'
 import { appointmentsApi } from '@/api/appointments'
 import { useToast } from '@/composables/useToast'
-import { APPOINTMENT_STATUS, APPOINTMENT_STATUS_OPTIONS } from '@/utils/enums'
+import { APPOINTMENT_STATUS } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDateTime } from '@/utils/formatters'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -49,12 +50,10 @@ const agentOptions = computed(() => [
   ...usersStore.list.map((u) => ({ value: u.id, label: u.name })),
 ])
 
+const aptStatusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
 const statusOptions = computed(() => [
   { value: '', label: t('appointments.allStatuses') },
-  ...APPOINTMENT_STATUS_OPTIONS.map((o) => ({
-    ...o,
-    label: t('statuses.appointment.' + o.value, o.label),
-  })),
+  ...aptStatusOptions.value,
 ])
 
 const activeFilterCount = computed(() =>

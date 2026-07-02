@@ -133,12 +133,34 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', permission: 'USERS_UPDATE', title: 'Edit User' },
     },
 
+    /* Team Leader */
+    {
+      path: '/my-agents',
+      name: 'team-leader.agents',
+      component: () => import('@/pages/team-leader/MyAgentsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'team_leader', title: 'My Agents' },
+    },
+    {
+      path: '/follow-ups',
+      name: 'team-leader.follow-ups',
+      component: () => import('@/pages/team-leader/FollowUpsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'team_leader', title: 'Follow-ups' },
+    },
+
     /* Lead Sources */
     {
       path: '/lead-sources',
       name: 'lead-sources',
       component: () => import('@/pages/lead-sources/LeadSourcesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Sources' },
+    },
+
+    /* Document Requirements */
+    {
+      path: '/document-requirements',
+      name: 'document-requirements',
+      component: () => import('@/pages/document-requirements/DocumentRequirementsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Document Requirements' },
     },
 
     /* Lead Imports */

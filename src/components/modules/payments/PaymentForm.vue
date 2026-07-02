@@ -4,8 +4,11 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
-import { PAYMENT_METHOD_OPTIONS } from '@/utils/enums'
+import { PAYMENT_METHOD } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatCurrency } from '@/utils/formatters'
+
+const paymentMethodOptions = useEnumOptions(PAYMENT_METHOD, 'paymentMethods')
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -109,7 +112,7 @@ defineExpose({ setServerErrors })
       <AppSelect
         v-model="form.payment_method"
         label="Méthode de paiement"
-        :options="PAYMENT_METHOD_OPTIONS"
+        :options="paymentMethodOptions"
         placeholder="Sélectionner…"
         :error="errors.payment_method"
         required

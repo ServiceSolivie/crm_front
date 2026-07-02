@@ -80,7 +80,7 @@ onMounted(() => store.fetchList())
         <template #cell-status="{ value }">
           <AppBadge
             :variant="STATUS_VARIANT[value?.toUpperCase()] ?? 'neutral'"
-            :label="LEAD_IMPORT_STATUS[value?.toUpperCase()]?.label ?? value"
+            :label="t('statuses.import.' + (value?.toUpperCase() ?? ''), value)"
             dot
           />
         </template>

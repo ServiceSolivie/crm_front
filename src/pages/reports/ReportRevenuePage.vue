@@ -14,13 +14,15 @@ import AppPagination from '@/components/base/AppPagination.vue'
 import AppProgressBar from '@/components/base/AppProgressBar.vue'
 import KpiCard from '@/components/modules/dashboard/KpiCard.vue'
 import PaymentStatusBadge from '@/components/modules/payments/PaymentStatusBadge.vue'
-import { PAYMENT_STATUS_OPTIONS } from '@/utils/enums'
+import { PAYMENT_STATUS } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 
 const { t } = useI18n()
 const store = useReportsStore()
 const auth = useAuthStore()
 
+const paymentStatusOptions = useEnumOptions(PAYMENT_STATUS, 'statuses.payment')
 const canViewAll = computed(() => auth.can('REVENUE_VIEW_ALL'))
 const canViewTeam = computed(() => auth.can('REVENUE_VIEW_TEAM'))
 
@@ -162,7 +164,7 @@ onMounted(() => refresh())
           />
           <AppSelect
             :model-value="store.filters.payment_status ?? ''"
-            :options="[{ value: '', label: t('revenue.allStatuses') }, ...PAYMENT_STATUS_OPTIONS]"
+            :options="[{ value: '', label: t('revenue.allStatuses') }, ...paymentStatusOptions]"
             class="w-48"
             @update:model-value="(v) => onFilter('payment_status', v || null)"
           />

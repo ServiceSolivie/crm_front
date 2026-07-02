@@ -16,7 +16,8 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppToggle from '@/components/base/AppToggle.vue'
-import { ROLE_OPTIONS } from '@/utils/enums'
+import { ROLES } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDate } from '@/utils/formatters'
 
 const router = useRouter()
@@ -37,7 +38,8 @@ const COLUMNS = computed(() => [
   { key: 'actions', label: '', align: 'right', width: '120px' },
 ])
 
-const roleOptions = computed(() => [{ value: '', label: t('users.allRoles') }, ...ROLE_OPTIONS])
+const roleEnumOptions = useEnumOptions(ROLES, 'roles')
+const roleOptions = computed(() => [{ value: '', label: t('users.allRoles') }, ...roleEnumOptions.value])
 const statusOptions = computed(() => [
   { value: '', label: t('users.allStatuses') },
   { value: '1', label: t('common.active') },

@@ -11,7 +11,8 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
-import { INSURANCE_TYPE_OPTIONS } from '@/utils/enums'
+import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
+import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const route = useRoute()
 const router = useRouter()
@@ -20,6 +21,9 @@ const sourcesStore = useLeadSourcesStore()
 const usersStore = useUsersStore()
 const toast = useToast()
 
+const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+const clientTypeOptions = useEnumOptions(CLIENT_TYPE, 'clientTypes')
+
 const id = route.params.id
 const form = reactive({
   first_name: '',
@@ -27,6 +31,7 @@ const form = reactive({
   email: '',
   phone: '',
   insurance_type: '',
+  client_type: '',
   source_id: '',
   assigned_to: '',
 })
@@ -34,6 +39,8 @@ const errors = ref({})
 
 const agentOptions = ref([{ value: '', label: 'Unassigned' }])
 const sourceOptions = ref([{ value: '', label: 'No Source' }])
+
+const showClientType = (type) => ['AUTO', 'MOTO'].includes(type)
 
 const fullName = computed(() => {
   const lead = leadsStore.current
@@ -55,6 +62,7 @@ onMounted(async () => {
       form.email = lead.email ?? ''
       form.phone = lead.phone ?? ''
       form.insurance_type = lead.insurance_type ?? ''
+      form.client_type = lead.client_type ?? ''
       form.source_id = lead.lead_source?.id ?? ''
       form.assigned_to = lead.assigned_agent?.id ?? ''
     }
@@ -91,6 +99,7 @@ async function submit() {
       email: form.email || undefined,
       insurance_type: form.insurance_type,
     }
+    if (form.client_type) payload.client_type = form.client_type
     if (form.source_id) payload.source_id = form.source_id
     if (form.assigned_to) payload.assigned_to = form.assigned_to
     await leadsStore.update(id, payload)
@@ -168,9 +177,16 @@ async function submit() {
             <AppSelect
               v-model="form.insurance_type"
               label="Insurance Type"
-              :options="INSURANCE_TYPE_OPTIONS"
+              :options="insuranceTypeOptions"
               :error="errors.insurance_type"
               required
+            />
+            <AppSelect
+              v-if="showClientType(form.insurance_type)"
+              v-model="form.client_type"
+              label="Type de client"
+              :options="clientTypeOptions"
+              :error="errors.client_type"
             />
             <AppSelect
               v-model="form.source_id"
