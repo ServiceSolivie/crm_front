@@ -40,10 +40,10 @@ const pendingRappelLead = ref(null)
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('leads.name'), sortable: true },
-  { key: 'phone', label: t('leads.phone') },
-  { key: 'insurance_type', label: t('leads.insuranceType') },
-  { key: 'status', label: t('leads.status') },
-  { key: 'source', label: t('leads.source') },
+  { key: 'phone', label: t('leads.phone'),align: 'center' },
+  { key: 'insurance_type', label: t('leads.insuranceType'),align: 'center' },
+  { key: 'status', label: t('leads.status'),align: 'center' },
+  { key: 'source', label: t('leads.source'),align: 'center' },
   { key: 'assigned_to', label: t('leads.assignedTo') },
   { key: 'created_at', label: t('leads.createdAt'), sortable: true },
   { key: 'actions', label: '', align: 'right', width: '100px' },
@@ -64,8 +64,11 @@ onMounted(() => {
   sourcesStore.fetchList()
 })
 
+const SORT_KEY_MAP = { name: 'first_name' }
+const SORT_KEY_REVERSE = Object.fromEntries(Object.entries(SORT_KEY_MAP).map(([k, v]) => [v, k]))
+
 function onSort({ key, dir }) {
-  leadsStore.filters.sort_by = key
+  leadsStore.filters.sort_by = SORT_KEY_MAP[key] ?? key
   leadsStore.filters.sort_dir = dir
   leadsStore.fetchList()
 }
@@ -235,7 +238,7 @@ const to = computed(() =>
         :columns="COLUMNS"
         :rows="leadsStore.list"
         :loading="leadsStore.loading.list"
-        :sort-key="leadsStore.filters.sort_by"
+        :sort-key="SORT_KEY_REVERSE[leadsStore.filters.sort_by] ?? leadsStore.filters.sort_by"
         :sort-dir="leadsStore.filters.sort_dir"
         row-key="id"
         :empty-title="t('leads.noLeads')"
