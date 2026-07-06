@@ -163,6 +163,16 @@
       "statusChange": "Statut modifié",
       "assigned": "Assigné à",
       "noHistory": "Aucun historique"
+    },
+    "rappelModal": {
+      "title": "Planifier un rappel",
+      "description": "Planifiez un rendez-vous de rappel pour ce lead. Un rendez-vous sera créé automatiquement.",
+      "dateLabel": "Date et heure",
+      "dateRequired": "Veuillez sélectionner une date et une heure pour le rappel.",
+      "notesLabel": "Notes (optionnel)",
+      "notesPlaceholder": "Notes sur ce rappel…",
+      "confirm": "Planifier le rappel",
+      "success": "Rappel planifié avec succès"
     }
   },
   "appointments": {
@@ -391,11 +401,19 @@
   },
   "statuses": {
     "lead": {
-      "NRP": "Sans réponse",
-      "VALIDE": "Validé",
+      "NOUVEAU": "Nouveau",
+      "PAS_DE_REPONSE": "Pas de réponse",
+      "OCCUPE": "Occupé",
       "RAPPEL": "Rappel",
-      "RENDEZ_VOUS_ASSURE": "Rendez-vous",
-      "PAS_INTERESSEE": "Pas intéressé"
+      "INTERESSE": "Intéressé",
+      "DEVIS_EN_COURS": "Devis en cours",
+      "DEVIS_ENVOYE": "Devis envoyé",
+      "EN_ATTENTE_CLIENT": "En attente du client",
+      "VALIDE": "Validé",
+      "PERDU": "Perdu",
+      "PAS_INTERESSE": "Pas intéressé",
+      "MAUVAIS_NUMERO": "Mauvais numéro",
+      "LEAD_INVALIDE": "Lead invalide"
     },
     "appointment": {
       "PLANIFIE": "Planifié",

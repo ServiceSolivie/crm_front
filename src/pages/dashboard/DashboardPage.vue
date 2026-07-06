@@ -74,11 +74,19 @@ const teams = computed(() => dash.kpis?.teams ?? null)
 
 /* ── Donut: Leads by Status ────────────────────────────────── */
 const STATUS_COLORS = {
-  NRP: '#6B7280',
-  VALIDE: '#10B981',
+  NOUVEAU: '#3B82F6',
+  PAS_DE_REPONSE: '#6B7280',
+  OCCUPE: '#9CA3AF',
   RAPPEL: '#F59E0B',
-  RENDEZ_VOUS_ASSURE: '#3B82F6',
-  PAS_INTERESSEE: '#EF4444',
+  INTERESSE: '#8B5CF6',
+  DEVIS_EN_COURS: '#06B6D4',
+  DEVIS_ENVOYE: '#0EA5E9',
+  EN_ATTENTE_CLIENT: '#D97706',
+  VALIDE: '#10B981',
+  PERDU: '#EF4444',
+  PAS_INTERESSE: '#F87171',
+  MAUVAIS_NUMERO: '#DC2626',
+  LEAD_INVALIDE: '#B91C1C',
 }
 
 const leadsByStatusSegments = computed(() => {

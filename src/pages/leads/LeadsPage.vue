@@ -9,6 +9,7 @@ import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
 import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
+import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.vue'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
@@ -32,7 +33,10 @@ const { t } = useI18n()
 const showFilters = ref(false)
 const statusChangingId = ref(null)
 const showRevenuePrompt = ref(false)
+const showRappelModal = ref(false)
+const rappelLoading = ref(false)
 const pendingValidateLead = ref(null)
+const pendingRappelLead = ref(null)
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('leads.name'), sortable: true },
@@ -72,7 +76,34 @@ function onStatusChange(lead, status) {
     showRevenuePrompt.value = true
     return
   }
+  if (status === 'RAPPEL') {
+    pendingRappelLead.value = lead
+    showRappelModal.value = true
+    return
+  }
   doStatusChange(lead, { status })
+}
+
+async function onRappelConfirm({ scheduled_at, notes }) {
+  const lead = pendingRappelLead.value
+  rappelLoading.value = true
+  try {
+    await leadsStore.updateStatus(lead.id, { status: 'RAPPEL' })
+    const agentId = lead.assigned_agent?.id ?? lead.assigned_to ?? auth.user?.id
+    await leadsStore.createLeadAppointment(lead.id, {
+      agent_id: agentId,
+      scheduled_at,
+      notes,
+      status: 'PLANIFIE',
+    })
+    toast.showSuccess(t('leads.rappelModal.success'))
+    showRappelModal.value = false
+    pendingRappelLead.value = null
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to schedule callback')
+  } finally {
+    rappelLoading.value = false
+  }
 }
 
 async function onRevenueConfirm(expectedRevenue) {
@@ -301,6 +332,13 @@ const to = computed(() =>
       :loading="statusChangingId !== null"
       @close="showRevenuePrompt = false; pendingValidateLead = null"
       @confirm="onRevenueConfirm"
+    />
+
+    <RappelScheduleModal
+      :open="showRappelModal"
+      :loading="rappelLoading"
+      @close="showRappelModal = false; pendingRappelLead = null"
+      @confirm="onRappelConfirm"
     />
   </div>
 </template>

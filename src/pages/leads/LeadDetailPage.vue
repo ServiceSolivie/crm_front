@@ -20,6 +20,7 @@ import LeadTimeline from '@/components/modules/leads/LeadTimeline.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import RevenueCard from '@/components/modules/payments/RevenueCard.vue'
 import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
+import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.vue'
 import PaymentForm from '@/components/modules/payments/PaymentForm.vue'
 import PaymentList from '@/components/modules/payments/PaymentList.vue'
 import DossierTab from '@/components/modules/documents/DossierTab.vue'
@@ -43,6 +44,8 @@ const statusChanging = ref(false)
 const noteSubmitting = ref(false)
 const aptActionId = ref(null)
 const showRevenuePrompt = ref(false)
+const showRappelModal = ref(false)
+const rappelLoading = ref(false)
 const pendingStatus = ref(null)
 const showPaymentForm = ref(false)
 const paymentFormRef = ref(null)
@@ -88,7 +91,34 @@ function onStatusChange(status) {
     showRevenuePrompt.value = true
     return
   }
+  if (status === 'RAPPEL') {
+    pendingStatus.value = status
+    showRappelModal.value = true
+    return
+  }
   doStatusChange({ status })
+}
+
+async function onRappelConfirm({ scheduled_at, notes }) {
+  rappelLoading.value = true
+  try {
+    await leadsStore.updateStatus(id, { status: 'RAPPEL' })
+    const agentId = leadsStore.current?.assigned_agent?.id ?? leadsStore.current?.assigned_to ?? auth.user?.id
+    await leadsStore.createLeadAppointment(id, {
+      agent_id: agentId,
+      scheduled_at,
+      notes,
+      status: 'PLANIFIE',
+    })
+    toast.showSuccess(t('leads.rappelModal.success'))
+    showRappelModal.value = false
+    pendingStatus.value = null
+    onTabChange('appointments')
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to schedule callback')
+  } finally {
+    rappelLoading.value = false
+  }
 }
 
 async function onRevenueConfirm(expectedRevenue) {
@@ -569,6 +599,13 @@ async function handleDelete() {
       :loading="statusChanging"
       @close="showRevenuePrompt = false; pendingStatus = null"
       @confirm="onRevenueConfirm"
+    />
+
+    <RappelScheduleModal
+      :open="showRappelModal"
+      :loading="rappelLoading"
+      @close="showRappelModal = false; pendingStatus = null"
+      @confirm="onRappelConfirm"
     />
 
     <!-- Payment form modal -->

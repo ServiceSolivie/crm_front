@@ -163,6 +163,16 @@
       "statusChange": "Status changed",
       "assigned": "Assigned to",
       "noHistory": "No history yet"
+    },
+    "rappelModal": {
+      "title": "Schedule Callback",
+      "description": "Schedule a callback appointment for this lead. An appointment will be created automatically.",
+      "dateLabel": "Date & Time",
+      "dateRequired": "Please select a date and time for the callback.",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Notes about this callback…",
+      "confirm": "Schedule Callback",
+      "success": "Callback scheduled successfully"
     }
   },
   "appointments": {
@@ -391,11 +401,19 @@
   },
   "statuses": {
     "lead": {
-      "NRP": "No Reply",
-      "VALIDE": "Validated",
+      "NOUVEAU": "New",
+      "PAS_DE_REPONSE": "No Reply",
+      "OCCUPE": "Busy",
       "RAPPEL": "Callback",
-      "RENDEZ_VOUS_ASSURE": "Appointment",
-      "PAS_INTERESSEE": "Not Interested"
+      "INTERESSE": "Interested",
+      "DEVIS_EN_COURS": "Quote in Progress",
+      "DEVIS_ENVOYE": "Quote Sent",
+      "EN_ATTENTE_CLIENT": "Awaiting Client",
+      "VALIDE": "Validated",
+      "PERDU": "Lost",
+      "PAS_INTERESSE": "Not Interested",
+      "MAUVAIS_NUMERO": "Wrong Number",
+      "LEAD_INVALIDE": "Invalid Lead"
     },
     "appointment": {
       "PLANIFIE": "Scheduled",

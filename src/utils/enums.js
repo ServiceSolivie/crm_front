@@ -1,9 +1,17 @@
 export const LEAD_STATUS = {
-  NRP: { color: 'neutral' },
-  VALIDE: { color: 'success' },
+  NOUVEAU: { color: 'info' },
+  PAS_DE_REPONSE: { color: 'neutral' },
+  OCCUPE: { color: 'neutral' },
   RAPPEL: { color: 'warning' },
-  RENDEZ_VOUS_ASSURE: { color: 'info' },
-  PAS_INTERESSEE: { color: 'danger' },
+  INTERESSE: { color: 'info' },
+  DEVIS_EN_COURS: { color: 'info' },
+  DEVIS_ENVOYE: { color: 'info' },
+  EN_ATTENTE_CLIENT: { color: 'warning' },
+  VALIDE: { color: 'success' },
+  PERDU: { color: 'danger' },
+  PAS_INTERESSE: { color: 'danger' },
+  MAUVAIS_NUMERO: { color: 'danger' },
+  LEAD_INVALIDE: { color: 'danger' },
 }
 
 export const APPOINTMENT_STATUS = {
