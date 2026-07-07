@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { Download, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -11,15 +12,16 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import { formatDateTime } from '@/utils/formatters'
 
+const { t } = useI18n()
 const store = useReportsStore()
 
-const COLUMNS = [
-  { key: 'lead', label: 'Lead' },
-  { key: 'scheduled_at', label: 'Scheduled At' },
-  { key: 'status', label: 'Status' },
-  { key: 'assigned_to', label: 'Agent' },
-  { key: 'insurance_type', label: 'Type' },
-]
+const COLUMNS = computed(() => [
+  { key: 'lead', label: t('reports.colLead') },
+  { key: 'scheduled_at', label: t('reports.colScheduledAt') },
+  { key: 'status', label: t('reports.colStatus') },
+  { key: 'assigned_to', label: t('reports.colAgent') },
+  { key: 'insurance_type', label: t('reports.colType') },
+])
 
 const CSV_COLUMNS = [
   { key: 'scheduled_at', label: 'Scheduled At' },
@@ -43,12 +45,12 @@ onMounted(() => store.fetchAppointments())
       <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
       <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-2xl font-bold text-white">Appointments Report</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} records</p>
+          <h1 class="text-2xl font-bold text-white">{{ t('reports.appointments') }}</h1>
+          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('reports.records') }}</p>
         </div>
         <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="store.exportCsv(store.appointmentsData, CSV_COLUMNS, 'appointments-report.csv')">
           <template #icon><Download class="w-4 h-4" /></template>
-          Export CSV
+          {{ t('reports.exportCsv') }}
         </AppButton>
       </div>
     </div>
@@ -57,7 +59,7 @@ onMounted(() => store.fetchAppointments())
     <AppCard padding="sm">
       <div class="flex items-center gap-2 flex-wrap justify-between">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-500">Date range:</span>
+          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
           <AppInput
             :model-value="store.filters.from"
             type="date"
@@ -79,7 +81,7 @@ onMounted(() => store.fetchAppointments())
           @click="store.resetFilters(); store.fetchAppointments()"
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
-          Clear
+          {{ t('common.clear') }}
         </AppButton>
       </div>
     </AppCard>
@@ -90,8 +92,8 @@ onMounted(() => store.fetchAppointments())
         :rows="store.appointmentsData"
         :loading="store.loading.appointments"
         row-key="id"
-        empty-title="No appointment data"
-        empty-description="Adjust the date range to load report data."
+        :empty-title="t('reports.noAppointmentData')"
+        :empty-description="t('reports.adjustDate')"
       >
         <template #cell-lead="{ row }">
           <span class="text-sm font-medium text-gray-900">

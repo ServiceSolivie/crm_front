@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { Download, TrendingUp, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -10,14 +11,15 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppProgressBar from '@/components/base/AppProgressBar.vue'
 import { formatPercent, formatNumber } from '@/utils/formatters'
 
+const { t } = useI18n()
 const store = useReportsStore()
 
-const GROUP_BY_OPTIONS = [
-  { value: 'source', label: 'By Source' },
-  { value: 'team', label: 'By Team' },
-  { value: 'agent', label: 'By Agent' },
-  { value: 'insurance_type', label: 'By Insurance Type' },
-]
+const GROUP_BY_OPTIONS = computed(() => [
+  { value: 'source', label: t('reports.bySource') },
+  { value: 'team', label: t('reports.byTeam') },
+  { value: 'agent', label: t('reports.byAgent') },
+  { value: 'insurance_type', label: t('reports.byInsuranceType') },
+])
 
 const CSV_COLUMNS = [
   { key: 'name', label: 'Name' },
@@ -42,12 +44,12 @@ function changeGroupBy(val) {
       <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
       <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-2xl font-bold text-white">Conversion Report</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">Win rate breakdown</p>
+          <h1 class="text-2xl font-bold text-white">{{ t('reports.conversion') }}</h1>
+          <p class="text-sm text-indigo-200 mt-0.5">{{ t('reports.winRate') }}</p>
         </div>
         <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="store.exportCsv(store.conversionData, CSV_COLUMNS, 'conversion-report.csv')">
           <template #icon><Download class="w-4 h-4" /></template>
-          Export
+          {{ t('reports.export') }}
         </AppButton>
       </div>
     </div>
@@ -63,7 +65,7 @@ function changeGroupBy(val) {
             @update:model-value="changeGroupBy"
           />
           <span class="text-gray-300">|</span>
-          <span class="text-sm text-gray-500">Date range:</span>
+          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
           <AppInput
             :model-value="store.filters.from"
             type="date"
@@ -85,7 +87,7 @@ function changeGroupBy(val) {
           @click="store.resetFilters(); store.fetchConversion()"
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
-          Clear
+          {{ t('common.clear') }}
         </AppButton>
       </div>
     </AppCard>
@@ -101,7 +103,7 @@ function changeGroupBy(val) {
 
     <AppCard v-else-if="store.conversionData.length === 0" class="text-center py-12">
       <TrendingUp class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-      <p class="text-sm text-gray-400">No conversion data for this period.</p>
+      <p class="text-sm text-gray-400">{{ t('reports.noConversionData') }}</p>
     </AppCard>
 
     <div v-else class="space-y-3">
@@ -116,8 +118,8 @@ function changeGroupBy(val) {
             <span class="font-medium text-gray-900 text-sm truncate">{{ item.name }}</span>
           </div>
           <div class="flex items-center gap-4 shrink-0 text-sm">
-            <span class="text-gray-400">{{ formatNumber(item.total ?? 0) }} leads</span>
-            <span class="text-success font-medium">{{ formatNumber(item.won ?? 0) }} won</span>
+            <span class="text-gray-400">{{ formatNumber(item.total ?? 0) }} {{ t('reports.leadsCol').toLowerCase() }}</span>
+            <span class="text-success font-medium">{{ formatNumber(item.won ?? 0) }} {{ t('reports.won').toLowerCase() }}</span>
             <span class="font-bold text-primary">{{ formatPercent(item.conversion_rate ?? 0) }}</span>
           </div>
         </div>
