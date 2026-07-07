@@ -169,6 +169,12 @@ async function onAddNote(note) {
   }
 }
 
+function isAptOverdue(apt) {
+  if (!apt.scheduled_at) return false
+  if (apt.status === 'REALISE' || apt.status === 'ANNULE') return false
+  return new Date(apt.scheduled_at) < new Date()
+}
+
 async function onTabChange(tab) {
   activeTab.value = tab
   if (tab === 'history' && leadsStore.statusHistory.length === 0) {
@@ -475,17 +481,23 @@ async function handleDelete() {
             <div
               v-for="apt in leadsStore.leadAppointments"
               :key="apt.id"
-              class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
+              :class="[
+                'flex items-start gap-3 p-4 rounded-xl border transition-colors',
+                isAptOverdue(apt) ? 'border-red-200 bg-red-50/60' : 'border-gray-100 hover:border-gray-200',
+              ]"
             >
-              <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
-                <Calendar class="w-4 h-4 text-primary" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center shrink-0', isAptOverdue(apt) ? 'bg-red-100' : 'bg-primary-light']">
+                <Calendar :class="['w-4 h-4', isAptOverdue(apt) ? 'text-red-500' : 'text-primary']" />
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                  <span :class="['text-sm font-medium whitespace-nowrap', isAptOverdue(apt) ? 'text-red-600' : 'text-gray-900']">
                     {{ formatDateTime(apt.scheduled_at) }}
                   </span>
                   <AppointmentStatusBadge :status="apt.status" dot />
+                  <span v-if="isAptOverdue(apt)" class="text-[10px] font-semibold uppercase text-red-500">
+                    {{ t('appointments.overdue') }}
+                  </span>
                 </div>
                 <div v-if="apt.agent" class="flex items-center gap-1.5 mt-1">
                   <AppAvatar :name="apt.agent.name" size="xs" />

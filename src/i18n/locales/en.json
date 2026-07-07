@@ -205,7 +205,8 @@
     "statsTotal": "Total",
     "statsScheduled": "Scheduled",
     "statsCompleted": "Completed",
-    "statsCancelled": "Cancelled"
+    "statsCancelled": "Cancelled",
+    "overdue": "Overdue"
   },
   "calendar": {
     "agentSubtitle": "Your appointment schedule",

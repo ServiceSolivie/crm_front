@@ -15,6 +15,7 @@ const props = defineProps({
   emptyDescription: { type: String, default: '' },
   skeletonRows: { type: Number, default: 5 },
   rowKey: { type: String, default: 'id' },
+  rowClass: { type: Function, default: null },
   sortKey: { type: String, default: '' },
   sortDir: { type: String, default: 'asc' }, // asc | desc
 })
@@ -91,7 +92,7 @@ function alignClass(align) {
           <tr
             v-for="row in rows"
             :key="row[rowKey]"
-            class="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+            :class="['border-b border-gray-100 hover:bg-gray-50 transition-colors', rowClass ? rowClass(row) : '']"
             @click="emit('row-click', row)"
           >
             <td

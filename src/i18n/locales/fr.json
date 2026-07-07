@@ -205,7 +205,8 @@
     "statsTotal": "Total",
     "statsScheduled": "Planifiés",
     "statsCompleted": "Réalisés",
-    "statsCancelled": "Annulés"
+    "statsCancelled": "Annulés",
+    "overdue": "En retard"
   },
   "calendar": {
     "agentSubtitle": "Votre planning de rendez-vous",
