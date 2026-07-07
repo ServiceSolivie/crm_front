@@ -20,6 +20,7 @@ import LeadTimeline from '@/components/modules/leads/LeadTimeline.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import RevenueCard from '@/components/modules/payments/RevenueCard.vue'
 import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
+import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.vue'
 import PaymentForm from '@/components/modules/payments/PaymentForm.vue'
 import PaymentList from '@/components/modules/payments/PaymentList.vue'
 import DossierTab from '@/components/modules/documents/DossierTab.vue'
@@ -43,6 +44,8 @@ const statusChanging = ref(false)
 const noteSubmitting = ref(false)
 const aptActionId = ref(null)
 const showRevenuePrompt = ref(false)
+const showRappelModal = ref(false)
+const rappelLoading = ref(false)
 const pendingStatus = ref(null)
 const showPaymentForm = ref(false)
 const paymentFormRef = ref(null)
@@ -88,7 +91,34 @@ function onStatusChange(status) {
     showRevenuePrompt.value = true
     return
   }
+  if (status === 'RAPPEL') {
+    pendingStatus.value = status
+    showRappelModal.value = true
+    return
+  }
   doStatusChange({ status })
+}
+
+async function onRappelConfirm({ scheduled_at, notes }) {
+  rappelLoading.value = true
+  try {
+    await leadsStore.updateStatus(id, { status: 'RAPPEL' })
+    const agentId = leadsStore.current?.assigned_agent?.id ?? leadsStore.current?.assigned_to ?? auth.user?.id
+    await leadsStore.createLeadAppointment(id, {
+      agent_id: agentId,
+      scheduled_at,
+      notes,
+      status: 'PLANIFIE',
+    })
+    toast.showSuccess(t('leads.rappelModal.success'))
+    showRappelModal.value = false
+    pendingStatus.value = null
+    onTabChange('appointments')
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to schedule callback')
+  } finally {
+    rappelLoading.value = false
+  }
 }
 
 async function onRevenueConfirm(expectedRevenue) {
@@ -137,6 +167,12 @@ async function onAddNote(note) {
   } finally {
     noteSubmitting.value = false
   }
+}
+
+function isAptOverdue(apt) {
+  if (!apt.scheduled_at) return false
+  if (apt.status === 'REALISE' || apt.status === 'ANNULE') return false
+  return new Date(apt.scheduled_at) < new Date()
 }
 
 async function onTabChange(tab) {
@@ -445,17 +481,23 @@ async function handleDelete() {
             <div
               v-for="apt in leadsStore.leadAppointments"
               :key="apt.id"
-              class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
+              :class="[
+                'flex items-start gap-3 p-4 rounded-xl border transition-colors',
+                isAptOverdue(apt) ? 'border-red-200 bg-red-50/60' : 'border-gray-100 hover:border-gray-200',
+              ]"
             >
-              <div class="w-9 h-9 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
-                <Calendar class="w-4 h-4 text-primary" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center shrink-0', isAptOverdue(apt) ? 'bg-red-100' : 'bg-primary-light']">
+                <Calendar :class="['w-4 h-4', isAptOverdue(apt) ? 'text-red-500' : 'text-primary']" />
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-sm font-medium text-gray-900 whitespace-nowrap">
+                  <span :class="['text-sm font-medium whitespace-nowrap', isAptOverdue(apt) ? 'text-red-600' : 'text-gray-900']">
                     {{ formatDateTime(apt.scheduled_at) }}
                   </span>
                   <AppointmentStatusBadge :status="apt.status" dot />
+                  <span v-if="isAptOverdue(apt)" class="text-[10px] font-semibold uppercase text-red-500">
+                    {{ t('appointments.overdue') }}
+                  </span>
                 </div>
                 <div v-if="apt.agent" class="flex items-center gap-1.5 mt-1">
                   <AppAvatar :name="apt.agent.name" size="xs" />
@@ -569,6 +611,13 @@ async function handleDelete() {
       :loading="statusChanging"
       @close="showRevenuePrompt = false; pendingStatus = null"
       @confirm="onRevenueConfirm"
+    />
+
+    <RappelScheduleModal
+      :open="showRappelModal"
+      :loading="rappelLoading"
+      @close="showRappelModal = false; pendingStatus = null"
+      @confirm="onRappelConfirm"
     />
 
     <!-- Payment form modal -->

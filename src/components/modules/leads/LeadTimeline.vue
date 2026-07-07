@@ -74,8 +74,8 @@ const events = computed(() => {
           <template v-else>
             <div class="flex items-center gap-2 mt-1">
               <span class="text-sm text-gray-700">Assigned to</span>
-              <AppAvatar :name="event.assigned_to?.name ?? '?'" size="xs" />
-              <span class="text-sm font-medium text-gray-900">{{ event.assigned_to?.name ?? '—' }}</span>
+              <AppAvatar :name="event.assigned_by?.name ?? '?'" size="xs" />
+              <span class="text-sm font-medium text-gray-900">{{ event.assigned_by.name ?? '—' }}</span>
             </div>
             <p v-if="event.previous_assignee" class="text-xs text-gray-400 mt-0.5">
               Previously: {{ event.previous_assignee?.name }}

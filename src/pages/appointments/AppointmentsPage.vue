@@ -27,6 +27,12 @@ const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
 
+function isOverdue(row) {
+  if (!row.scheduled_at) return false
+  if (row.status === 'REALISE' || row.status === 'ANNULE') return false
+  return new Date(row.scheduled_at) < new Date()
+}
+
 const showFilters = ref(false)
 
 const COLUMNS = computed(() => [
@@ -168,6 +174,7 @@ async function handleDelete(row) {
         :sort-key="store.filters.sort_by"
         :sort-dir="store.filters.sort_dir"
         row-key="id"
+        :row-class="(row) => isOverdue(row) ? 'bg-red-50/60' : ''"
         :empty-title="t('appointments.noAppointments')"
         :empty-description="t('appointments.noAppointmentsDesc')"
         @sort="({ key, dir }) => { store.filters.sort_by = key; store.filters.sort_dir = dir; store.fetchList() }"
@@ -183,10 +190,17 @@ async function handleDelete(row) {
           <span v-else class="text-gray-400 text-sm">—</span>
         </template>
 
-        <template #cell-scheduled_at="{ value }">
+        <template #cell-scheduled_at="{ row, value }">
           <div class="flex items-center gap-1.5">
-            <Calendar class="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span class="text-sm text-gray-700 whitespace-nowrap">{{ formatDateTime(value) }}</span>
+            <Calendar :class="['w-3.5 h-3.5 shrink-0', isOverdue(row) ? 'text-red-500' : 'text-gray-400']" />
+            <div>
+              <span :class="['text-sm whitespace-nowrap', isOverdue(row) ? 'text-red-600 font-medium' : 'text-gray-700']">
+                {{ formatDateTime(value) }}
+              </span>
+              <span v-if="isOverdue(row)" class="ml-1.5 text-[10px] font-semibold uppercase text-red-500">
+                {{ t('appointments.overdue') }}
+              </span>
+            </div>
           </div>
         </template>
 

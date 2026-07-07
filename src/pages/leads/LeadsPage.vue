@@ -9,6 +9,7 @@ import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
 import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
+import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.vue'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
@@ -32,14 +33,17 @@ const { t } = useI18n()
 const showFilters = ref(false)
 const statusChangingId = ref(null)
 const showRevenuePrompt = ref(false)
+const showRappelModal = ref(false)
+const rappelLoading = ref(false)
 const pendingValidateLead = ref(null)
+const pendingRappelLead = ref(null)
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('leads.name'), sortable: true },
-  { key: 'phone', label: t('leads.phone') },
-  { key: 'insurance_type', label: t('leads.insuranceType') },
-  { key: 'status', label: t('leads.status') },
-  { key: 'source', label: t('leads.source') },
+  { key: 'phone', label: t('leads.phone'),align: 'center' },
+  { key: 'insurance_type', label: t('leads.insuranceType'),align: 'center' },
+  { key: 'status', label: t('leads.status'),align: 'center' },
+  { key: 'source', label: t('leads.source'),align: 'center' },
   { key: 'assigned_to', label: t('leads.assignedTo') },
   { key: 'created_at', label: t('leads.createdAt'), sortable: true },
   { key: 'actions', label: '', align: 'right', width: '100px' },
@@ -60,8 +64,11 @@ onMounted(() => {
   sourcesStore.fetchList()
 })
 
+const SORT_KEY_MAP = { name: 'first_name' }
+const SORT_KEY_REVERSE = Object.fromEntries(Object.entries(SORT_KEY_MAP).map(([k, v]) => [v, k]))
+
 function onSort({ key, dir }) {
-  leadsStore.filters.sort_by = key
+  leadsStore.filters.sort_by = SORT_KEY_MAP[key] ?? key
   leadsStore.filters.sort_dir = dir
   leadsStore.fetchList()
 }
@@ -72,7 +79,34 @@ function onStatusChange(lead, status) {
     showRevenuePrompt.value = true
     return
   }
+  if (status === 'RAPPEL') {
+    pendingRappelLead.value = lead
+    showRappelModal.value = true
+    return
+  }
   doStatusChange(lead, { status })
+}
+
+async function onRappelConfirm({ scheduled_at, notes }) {
+  const lead = pendingRappelLead.value
+  rappelLoading.value = true
+  try {
+    await leadsStore.updateStatus(lead.id, { status: 'RAPPEL' })
+    const agentId = lead.assigned_agent?.id ?? lead.assigned_to ?? auth.user?.id
+    await leadsStore.createLeadAppointment(lead.id, {
+      agent_id: agentId,
+      scheduled_at,
+      notes,
+      status: 'PLANIFIE',
+    })
+    toast.showSuccess(t('leads.rappelModal.success'))
+    showRappelModal.value = false
+    pendingRappelLead.value = null
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to schedule callback')
+  } finally {
+    rappelLoading.value = false
+  }
 }
 
 async function onRevenueConfirm(expectedRevenue) {
@@ -204,7 +238,7 @@ const to = computed(() =>
         :columns="COLUMNS"
         :rows="leadsStore.list"
         :loading="leadsStore.loading.list"
-        :sort-key="leadsStore.filters.sort_by"
+        :sort-key="SORT_KEY_REVERSE[leadsStore.filters.sort_by] ?? leadsStore.filters.sort_by"
         :sort-dir="leadsStore.filters.sort_dir"
         row-key="id"
         :empty-title="t('leads.noLeads')"
@@ -301,6 +335,13 @@ const to = computed(() =>
       :loading="statusChangingId !== null"
       @close="showRevenuePrompt = false; pendingValidateLead = null"
       @confirm="onRevenueConfirm"
+    />
+
+    <RappelScheduleModal
+      :open="showRappelModal"
+      :loading="rappelLoading"
+      @close="showRappelModal = false; pendingRappelLead = null"
+      @confirm="onRappelConfirm"
     />
   </div>
 </template>
