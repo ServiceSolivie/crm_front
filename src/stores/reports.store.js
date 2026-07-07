@@ -148,12 +148,31 @@ export const useReportsStore = defineStore('reports', () => {
   }
 
   function exportCsv(data, columns, filename) {
+    _downloadCsv(data, columns, filename)
+  }
+
+  async function exportAllLeads(columns, filename, mapRow) {
+    const params = { ..._buildParams(), page: 1, per_page: 10000 }
+    const { data } = await reportsApi.leads(params)
+    const rows = mapRow ? data.map(mapRow) : data
+    _downloadCsv(rows, columns, filename)
+  }
+
+  async function exportAllAppointments(columns, filename) {
+    const params = { ..._buildParams(), page: 1, per_page: 10000 }
+    const { data } = await reportsApi.appointments(params)
+    _downloadCsv(data, columns, filename)
+  }
+
+  function _downloadCsv(data, columns, filename) {
     const header = columns.map((c) => c.label).join(',')
     const rows = data.map((row) =>
       columns
         .map((c) => {
           const val = row[c.key] ?? ''
-          return typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+          const str = String(val)
+          return str.includes(',') || str.includes('"') || str.includes('\n')
+            ? `"${str.replace(/"/g, '""')}"` : str
         })
         .join(','),
     )
@@ -189,5 +208,7 @@ export const useReportsStore = defineStore('reports', () => {
     setFilter,
     resetFilters,
     exportCsv,
+    exportAllLeads,
+    exportAllAppointments,
   }
 })

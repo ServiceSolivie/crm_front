@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { Download, X } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
@@ -34,6 +34,8 @@ const CSV_COLUMNS = [
   { key: 'created_at', label: 'Created At' },
 ]
 
+const exporting = ref(false)
+
 const from = computed(() =>
   store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1,
 )
@@ -41,12 +43,17 @@ const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page
 
 onMounted(() => store.fetchLeads())
 
-function exportCsv() {
-  const rows = store.leadsData.map((row) => ({
-    ...row,
-    name: [row.first_name, row.last_name].filter(Boolean).join(' '),
-  }))
-  store.exportCsv(rows, CSV_COLUMNS, 'leads-report.csv')
+async function exportCsv() {
+  exporting.value = true
+  try {
+    await store.exportAllLeads(
+      CSV_COLUMNS,
+      'leads-report.csv',
+      (row) => ({ ...row, name: [row.first_name, row.last_name].filter(Boolean).join(' ') }),
+    )
+  } finally {
+    exporting.value = false
+  }
 }
 </script>
 
@@ -61,9 +68,9 @@ function exportCsv() {
           <h1 class="text-2xl font-bold text-white">{{ t('reports.leads') }}</h1>
           <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('reports.records') }}</p>
         </div>
-        <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="exportCsv">
+        <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" :disabled="exporting" @click="exportCsv">
           <template #icon><Download class="w-4 h-4" /></template>
-          {{ t('reports.exportCsv') }}
+          {{ exporting ? t('common.loading') : t('reports.exportCsv') }}
         </AppButton>
       </div>
     </div>
