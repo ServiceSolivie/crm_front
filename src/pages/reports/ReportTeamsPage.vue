@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { Download, Users, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -8,6 +9,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { formatPercent, formatNumber } from '@/utils/formatters'
 
+const { t } = useI18n()
 const store = useReportsStore()
 
 const CSV_COLUMNS = [
@@ -29,12 +31,12 @@ onMounted(() => store.fetchTeams())
       <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
       <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-2xl font-bold text-white">Teams Report</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">Performance by team</p>
+          <h1 class="text-2xl font-bold text-white">{{ t('reports.teams') }}</h1>
+          <p class="text-sm text-indigo-200 mt-0.5">{{ t('reports.performanceByTeam') }}</p>
         </div>
         <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="store.exportCsv(store.teamsData, CSV_COLUMNS, 'teams-report.csv')">
           <template #icon><Download class="w-4 h-4" /></template>
-          Export CSV
+          {{ t('reports.exportCsv') }}
         </AppButton>
       </div>
     </div>
@@ -43,7 +45,7 @@ onMounted(() => store.fetchTeams())
     <AppCard padding="sm">
       <div class="flex items-center gap-2 flex-wrap justify-between">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-500">Date range:</span>
+          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
           <AppInput
             :model-value="store.filters.from"
             type="date"
@@ -65,7 +67,7 @@ onMounted(() => store.fetchTeams())
           @click="store.resetFilters(); store.fetchTeams()"
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
-          Clear
+          {{ t('common.clear') }}
         </AppButton>
       </div>
     </AppCard>
@@ -83,7 +85,7 @@ onMounted(() => store.fetchTeams())
 
     <AppCard v-else-if="store.teamsData.length === 0" class="text-center py-12">
       <Users class="w-8 h-8 text-gray-300 mx-auto mb-2" />
-      <p class="text-sm text-gray-400">No team data for this period.</p>
+      <p class="text-sm text-gray-400">{{ t('reports.noTeamData') }}</p>
     </AppCard>
 
     <div v-else class="space-y-3">
@@ -100,27 +102,27 @@ onMounted(() => store.fetchTeams())
             </div>
             <div>
               <p class="font-medium text-gray-900 text-sm">{{ team.name }}</p>
-              <p class="text-xs text-gray-400">{{ team.members_count ?? 0 }} members</p>
+              <p class="text-xs text-gray-400">{{ team.members_count ?? 0 }} {{ t('reports.members') }}</p>
             </div>
           </div>
           <div class="flex items-center gap-6 shrink-0">
             <div class="text-center">
               <p class="text-lg font-bold text-gray-900">{{ formatNumber(team.leads.total ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Leads</p>
+              <p class="text-xs text-gray-400">{{ t('reports.leadsCol') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-success">{{ formatNumber(team.leads.validated ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Validated</p>
+              <p class="text-xs text-gray-400">{{ t('reports.validated') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-primary">
                 {{ team.leads.conversion_rate != null ? formatPercent(team.leads.conversion_rate) : '—' }}
               </p>
-              <p class="text-xs text-gray-400">Conversion</p>
+              <p class="text-xs text-gray-400">{{ t('reports.conversionCol') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-info">{{ formatNumber(team.appointments.total ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Appts</p>
+              <p class="text-xs text-gray-400">{{ t('reports.appts') }}</p>
             </div>
           </div>
         </div>

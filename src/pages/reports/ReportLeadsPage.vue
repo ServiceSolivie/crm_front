@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { Download, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -11,17 +12,18 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import { formatDate } from '@/utils/formatters'
 
+const { t } = useI18n()
 const store = useReportsStore()
 
-const COLUMNS = [
-  { key: 'name', label: 'Name' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'status', label: 'Status' },
-  { key: 'insurance_type', label: 'Type' },
-  { key: 'source', label: 'Source' },
-  { key: 'assigned_to', label: 'Agent' },
-  { key: 'created_at', label: 'Created' },
-]
+const COLUMNS = computed(() => [
+  { key: 'name', label: t('reports.colName') },
+  { key: 'phone', label: t('reports.colPhone') },
+  { key: 'status', label: t('reports.colStatus') },
+  { key: 'insurance_type', label: t('reports.colType') },
+  { key: 'source', label: t('reports.colSource') },
+  { key: 'assigned_to', label: t('reports.colAgent') },
+  { key: 'created_at', label: t('reports.colCreated') },
+])
 
 const CSV_COLUMNS = [
   { key: 'name', label: 'Name' },
@@ -56,12 +58,12 @@ function exportCsv() {
       <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
       <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-2xl font-bold text-white">Leads Report</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} records</p>
+          <h1 class="text-2xl font-bold text-white">{{ t('reports.leads') }}</h1>
+          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('reports.records') }}</p>
         </div>
         <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="exportCsv">
           <template #icon><Download class="w-4 h-4" /></template>
-          Export CSV
+          {{ t('reports.exportCsv') }}
         </AppButton>
       </div>
     </div>
@@ -70,7 +72,7 @@ function exportCsv() {
     <AppCard padding="sm">
       <div class="flex items-center gap-2 flex-wrap justify-between">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-500">Date range:</span>
+          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
           <AppInput
             :model-value="store.filters.from"
             type="date"
@@ -92,7 +94,7 @@ function exportCsv() {
           @click="store.resetFilters(); store.fetchLeads()"
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
-          Clear
+          {{ t('common.clear') }}
         </AppButton>
       </div>
     </AppCard>
@@ -103,8 +105,8 @@ function exportCsv() {
         :rows="store.leadsData"
         :loading="store.loading.leads"
         row-key="id"
-        empty-title="No lead data"
-        empty-description="Adjust the date range to load report data."
+        :empty-title="t('reports.noLeadData')"
+        :empty-description="t('reports.adjustDate')"
       >
         <template #cell-name="{ row }">
           <span class="text-sm font-medium text-gray-900">

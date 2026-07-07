@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { Download, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -9,6 +10,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import { formatPercent, formatNumber } from '@/utils/formatters'
 
+const { t } = useI18n()
 const store = useReportsStore()
 
 const CSV_COLUMNS = [
@@ -30,12 +32,12 @@ onMounted(() => store.fetchAgents())
       <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
       <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 class="text-2xl font-bold text-white">Agents Report</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">Performance by agent</p>
+          <h1 class="text-2xl font-bold text-white">{{ t('reports.agents') }}</h1>
+          <p class="text-sm text-indigo-200 mt-0.5">{{ t('reports.performanceByAgent') }}</p>
         </div>
         <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="store.exportCsv(store.agentsData, CSV_COLUMNS, 'agents-report.csv')">
           <template #icon><Download class="w-4 h-4" /></template>
-          Export CSV
+          {{ t('reports.exportCsv') }}
         </AppButton>
       </div>
     </div>
@@ -44,7 +46,7 @@ onMounted(() => store.fetchAgents())
     <AppCard padding="sm">
       <div class="flex items-center gap-2 flex-wrap justify-between">
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-500">Date range:</span>
+          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
           <AppInput
             :model-value="store.filters.from"
             type="date"
@@ -66,7 +68,7 @@ onMounted(() => store.fetchAgents())
           @click="store.resetFilters(); store.fetchAgents()"
         >
           <template #icon><X class="w-3.5 h-3.5" /></template>
-          Clear
+          {{ t('common.clear') }}
         </AppButton>
       </div>
     </AppCard>
@@ -84,7 +86,7 @@ onMounted(() => store.fetchAgents())
     </div>
 
     <AppCard v-else-if="store.agentsData.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-400">No agent data for this period.</p>
+      <p class="text-sm text-gray-400">{{ t('reports.noAgentData') }}</p>
     </AppCard>
 
     <div v-else class="space-y-2">
@@ -105,21 +107,21 @@ onMounted(() => store.fetchAgents())
           <div class="flex items-center gap-6 shrink-0">
             <div class="text-center">
               <p class="text-lg font-bold text-gray-900">{{ formatNumber(agent.leads.total ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Leads</p>
+              <p class="text-xs text-gray-400">{{ t('reports.leadsCol') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-success">{{ formatNumber(agent.leads.validated ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Won</p>
+              <p class="text-xs text-gray-400">{{ t('reports.won') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-primary">
                 {{ agent.leads.conversion_rate != null ? formatPercent(agent.leads.conversion_rate) : '—' }}
               </p>
-              <p class="text-xs text-gray-400">Conv.</p>
+              <p class="text-xs text-gray-400">{{ t('reports.convCol') }}</p>
             </div>
             <div class="text-center">
               <p class="text-lg font-bold text-info">{{ formatNumber(agent.appointments.total ?? 0) }}</p>
-              <p class="text-xs text-gray-400">Appts</p>
+              <p class="text-xs text-gray-400">{{ t('reports.appts') }}</p>
             </div>
           </div>
         </div>

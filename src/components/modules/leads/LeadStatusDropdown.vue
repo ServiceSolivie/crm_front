@@ -1,5 +1,9 @@
+<script>
+let _closeActive = null
+</script>
+
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { ChevronDown, Check } from 'lucide-vue-next'
 import LeadStatusBadge from './LeadStatusBadge.vue'
 import { LEAD_STATUS } from '@/utils/enums'
@@ -19,8 +23,16 @@ const dropdownStyle = ref({})
 
 const DROPDOWN_HEIGHT = 220
 
+function close() {
+  open.value = false
+  if (_closeActive === close) _closeActive = null
+}
+
 function openMenu() {
   if (!triggerRef.value) return
+  if (_closeActive && _closeActive !== close) _closeActive()
+  _closeActive = close
+
   const rect = triggerRef.value.getBoundingClientRect()
   const spaceBelow = window.innerHeight - rect.bottom
 
@@ -45,17 +57,39 @@ function openMenu() {
 }
 
 function toggle() {
-  if (open.value) {
-    open.value = false
-  } else {
-    openMenu()
-  }
+  if (open.value) close()
+  else openMenu()
 }
 
 function select(value) {
   if (value !== props.status) emit('change', value)
-  open.value = false
+  close()
 }
+
+function onDocumentClick(e) {
+  if (!open.value) return
+  if (triggerRef.value?.contains(e.target)) return
+  close()
+}
+
+const dropdownRef = ref(null)
+
+function onScroll(e) {
+  if (!open.value) return
+  if (dropdownRef.value?.contains(e.target)) return
+  close()
+}
+
+onMounted(() => {
+  document.addEventListener('mousedown', onDocumentClick, true)
+  window.addEventListener('scroll', onScroll, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', onDocumentClick, true)
+  window.removeEventListener('scroll', onScroll, true)
+  if (_closeActive === close) _closeActive = null
+})
 </script>
 
 <template>
@@ -65,7 +99,6 @@ function select(value) {
       class="inline-flex items-center gap-1.5 focus:outline-none disabled:opacity-50"
       :disabled="loading"
       @click.stop="toggle"
-      @blur.capture="() => setTimeout(() => (open = false), 150)"
     >
       <LeadStatusBadge :status="status" dot />
       <ChevronDown class="w-3.5 h-3.5 text-gray-400 shrink-0" />
@@ -82,8 +115,10 @@ function select(value) {
       >
         <div
           v-if="open"
+          ref="dropdownRef"
           :style="dropdownStyle"
-          class="w-52 bg-white rounded-xl shadow-modal border border-gray-100 py-1"
+          class="w-52 max-h-72 overflow-y-auto bg-white rounded-xl shadow-modal border border-gray-100 py-1"
+          @mousedown.stop
         >
           <button
             v-for="key in statusKeys"

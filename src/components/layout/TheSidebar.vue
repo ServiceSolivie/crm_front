@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import {
   LayoutDashboard,
   Users,
-  CalendarDays,
+  CalendarClock,
   CalendarRange,
   Upload,
   UsersRound,
@@ -46,7 +46,7 @@ const reportSubItems = computed(() => {
   if (canViewReports.value) {
     items.push(
       { label: t('leads.title'), to: '/reports/leads', icon: Users },
-      { label: t('appointments.title'), to: '/reports/appointments', icon: CalendarDays },
+      { label: t('appointments.title'), to: '/reports/appointments', icon: CalendarClock },
       { label: t('teams.title'), to: '/reports/teams', icon: UsersRound },
       { label: t('reports.agents'), to: '/reports/agents', icon: UserCheck },
       { label: t('reports.conversion'), to: '/reports/conversion', icon: TrendingUp },
@@ -68,7 +68,7 @@ const navGroups = computed(() => [
     label: t('nav.crm'),
     items: [
       { icon: Users, label: t('nav.leads'), to: '/leads', permission: 'LEADS_VIEW_*' },
-      { icon: CalendarDays, label: t('nav.appointments'), to: '/appointments', permission: 'APPOINTMENTS_VIEW_*' },
+      { icon: CalendarClock, label: t('nav.appointments'), to: '/appointments', permission: 'APPOINTMENTS_VIEW_*' },
       { icon: CalendarRange, label: t('nav.calendar'), to: '/calendar', permission: 'APPOINTMENTS_VIEW_*' },
       { icon: Upload, label: t('nav.importLeads'), to: '/lead-imports', permission: 'LEADS_IMPORT' },
     ],
