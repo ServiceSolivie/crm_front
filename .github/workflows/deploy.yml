@@ -30,6 +30,13 @@ jobs:
     
     - name: Check dist folder
       run: ls -la ./dist
+
+    - name: Check dist before upload
+      run: |
+        pwd
+        ls -la
+        find . -maxdepth 3 -type f | head -50
+        ls -la dist
   
   deploy:
     needs: build
