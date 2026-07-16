@@ -22,15 +22,11 @@ jobs:
 
 
     - name: Install dependencies
-      run: |
-        cd crm_front
-        npm install
+      run: npm install
 
 
     - name: Build Vue
-      run: |
-        cd crm_front
-        npm run build
+      run: npm run build
   
   deploy:
     needs: build
