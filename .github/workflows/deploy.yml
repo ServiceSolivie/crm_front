@@ -31,12 +31,11 @@ jobs:
     - name: Check dist folder
       run: ls -la ./dist
 
-    - name: Check dist before upload
-      run: |
-        pwd
-        ls -la
-        find . -maxdepth 3 -type f | head -50
-        ls -la dist
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: vue-dist
+        path: dist
   
   deploy:
     needs: build
@@ -44,6 +43,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: vue-dist
+          path: dist
       - name: Deploy to Hostinger
         uses: appleboy/ssh-action@v1
         with:
@@ -62,6 +66,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
-          source: "dist"
+          source: "dist/*"
           target: "~/domains/solvaconseil.fr/public_html/crm_frontend/"
           overwrite: true
