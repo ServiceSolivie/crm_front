@@ -47,3 +47,13 @@ jobs:
           script: |
             cd  ~/domains/solvaconseil.fr/public_html/crm_frontend
             git pull origin master
+
+      - name: Upload dist folder
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "./dist/*"
+          target: "~/domains/solvaconseil.fr/public_html/crm_frontend/"
