@@ -62,5 +62,6 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
-          source: "dist/*"
+          source: "dist"
           target: "~/domains/solvaconseil.fr/public_html/crm_frontend/"
+          overwrite: true
