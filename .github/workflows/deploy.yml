@@ -1,0 +1,50 @@
+name: Deploy Vue App
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+
+    - name: Install dependencies
+      run: |
+        cd crm_front
+        npm install
+
+
+    - name: Build Vue
+      run: |
+        cd crm_front
+        npm run build
+  
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Hostinger
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS}}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd  ~/domains/solvaconseil.fr/public_html/crm_frontend
+            git pull origin main
