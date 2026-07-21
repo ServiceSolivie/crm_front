@@ -27,9 +27,6 @@ jobs:
 
     - name: Build Vue
       run: npm run build
-    
-    - name: Check dist folder
-      run: ls -la ./dist
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
