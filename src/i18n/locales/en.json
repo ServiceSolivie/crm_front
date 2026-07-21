@@ -295,7 +295,7 @@
     "createUser": "Create User",
     "noTeam": "No Team",
     "namePlaceholder": "Jane Doe",
-    "emailPlaceholder": "jane@company.com",
+    "emailPlaceholder": "jane{'@'}company.com",
     "nameRequired": "Name is required",
     "emailRequired": "Email is required",
     "passwordRequired": "Password is required",

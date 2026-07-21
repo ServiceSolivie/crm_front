@@ -295,7 +295,7 @@
     "createUser": "Créer l'utilisateur",
     "noTeam": "Sans équipe",
     "namePlaceholder": "Jean Dupont",
-    "emailPlaceholder": "jean@entreprise.com",
+    "emailPlaceholder": "jean{'@'}entreprise.com",
     "nameRequired": "Le nom est obligatoire",
     "emailRequired": "L'e-mail est obligatoire",
     "passwordRequired": "Le mot de passe est obligatoire",
