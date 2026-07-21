@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, UserPlus, Trash2, Users } from 'lucide-vue-next'
+import { ArrowLeft, UserPlus, Trash2, Users, Crown } from 'lucide-vue-next'
 import { useTeamsStore } from '@/stores/teams.store'
 import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -90,6 +90,10 @@ async function onRemoveMember(member) {
             <p v-if="store.current.description" class="text-sm text-gray-500 mt-0.5">
               {{ store.current.description }}
             </p>
+            <div v-if="store.current.leader" class="flex items-center gap-1.5 mt-1">
+              <Crown class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span class="text-sm text-gray-600 font-medium">{{ store.current.leader.name }}</span>
+            </div>
             <p class="text-sm text-gray-400 mt-1">{{ store.members.length }} {{ t('teams.members') }}</p>
           </div>
         </div>
@@ -154,7 +158,14 @@ async function onRemoveMember(member) {
             <p class="font-medium text-gray-900 text-sm truncate">{{ member.name }}</p>
             <p class="text-xs text-gray-400">{{ member.email }}</p>
           </div>
-          <span class="text-xs text-gray-500 capitalize px-2 py-0.5 rounded-full bg-gray-100">
+          <span
+            v-if="store.current?.leader?.id === member.id"
+            class="flex items-center gap-1 text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full"
+          >
+            <Crown class="w-3 h-3" />
+            {{ t('teams.leader') }}
+          </span>
+          <span v-else class="text-xs text-gray-500 capitalize px-2 py-0.5 rounded-full bg-gray-100">
             {{ member.role }}
           </span>
           <button

@@ -255,7 +255,11 @@
     "deleteConfirmMsg": "Delete \"{name}\"? Members will be unassigned.",
     "descriptionOptional": "Description (optional)",
     "descriptionPlaceholder": "What is this team responsible for?",
-    "namePlaceholder": "e.g. Sales Team Alpha"
+    "namePlaceholder": "e.g. Sales Team Alpha",
+    "leader": "Team Leader",
+    "selectLeader": "Select Team Leader",
+    "chooseLeader": "Choose a team leader…",
+    "noLeader": "No leader assigned"
   },
   "users": {
     "title": "Users",

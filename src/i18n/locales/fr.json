@@ -255,7 +255,11 @@
     "deleteConfirmMsg": "Supprimer « {name} » ? Les membres seront désassignés.",
     "descriptionOptional": "Description (optionnel)",
     "descriptionPlaceholder": "Quelle est la mission de cette équipe ?",
-    "namePlaceholder": "ex. Équipe Vente Alpha"
+    "namePlaceholder": "ex. Équipe Vente Alpha",
+    "leader": "Chef d'équipe",
+    "selectLeader": "Sélectionner le chef d'équipe",
+    "chooseLeader": "Choisir un chef d'équipe…",
+    "noLeader": "Aucun chef d'équipe assigné"
   },
   "users": {
     "title": "Utilisateurs",

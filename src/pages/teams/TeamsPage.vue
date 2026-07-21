@@ -2,8 +2,9 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Plus, Users, TrendingUp, Pencil, Trash2 } from 'lucide-vue-next'
+import { Plus, Users, TrendingUp, Pencil, Trash2, Crown } from 'lucide-vue-next'
 import { useTeamsStore } from '@/stores/teams.store'
+import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
@@ -11,6 +12,7 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppSearchInput from '@/components/base/AppSearchInput.vue'
 import AppModal from '@/components/base/AppModal.vue'
 import AppInput from '@/components/base/AppInput.vue'
+import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
@@ -18,31 +20,41 @@ import AppPagination from '@/components/base/AppPagination.vue'
 const router = useRouter()
 const { t } = useI18n()
 const store = useTeamsStore()
+const usersStore = useUsersStore()
 const ui = useUiStore()
 const toast = useToast()
 
 const showCreateModal = ref(false)
 const editingTeam = ref(null)
-const form = ref({ name: '', description: '' })
+const form = ref({ name: '', description: '', leader_id: '' })
 const formErrors = ref({})
+const leaderOptions = ref([{ value: '', label: '' }])
 
 const from = computed(() =>
   store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1,
 )
 const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page, store.meta.total))
 
-onMounted(() => store.fetchList())
+onMounted(async () => {
+  await Promise.all([store.fetchList(), usersStore.fetchList({ per_page: 100 })])
+  leaderOptions.value = [
+    { value: '', label: t('teams.noLeader') },
+    ...usersStore.list
+      .filter((u) => u.role === 'team_leader')
+      .map((u) => ({ value: u.id, label: u.name })),
+  ]
+})
 
 function openCreate() {
   editingTeam.value = null
-  form.value = { name: '', description: '' }
+  form.value = { name: '', description: '', leader_id: '' }
   formErrors.value = {}
   showCreateModal.value = true
 }
 
 function openEdit(team) {
   editingTeam.value = team
-  form.value = { name: team.name, description: team.description ?? '' }
+  form.value = { name: team.name, description: team.description ?? '', leader_id: team.leader?.id ?? '' }
   formErrors.value = {}
   showCreateModal.value = true
 }
@@ -56,11 +68,13 @@ function validate() {
 async function submit() {
   if (!validate()) return
   try {
+    const payload = { ...form.value }
+    if (!payload.leader_id) payload.leader_id = null
     if (editingTeam.value) {
-      await store.update(editingTeam.value.id, form.value)
+      await store.update(editingTeam.value.id, payload)
       toast.showSuccess(t('teams.updateSuccess'))
     } else {
-      await store.create(form.value)
+      await store.create(payload)
       toast.showSuccess(t('teams.createSuccess'))
     }
     showCreateModal.value = false
@@ -148,7 +162,11 @@ async function handleDelete(team) {
               <p v-if="team.description" class="text-xs text-gray-500 mt-0.5 line-clamp-2">
                 {{ team.description }}
               </p>
-              <div class="flex items-center gap-3 mt-2">
+              <div v-if="team.leader" class="flex items-center gap-1.5 mt-1.5">
+                <Crown class="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span class="text-xs text-gray-600 font-medium truncate">{{ team.leader.name }}</span>
+              </div>
+              <div class="flex items-center gap-3 mt-1.5">
                 <span class="text-xs text-gray-500">
                   {{ team.members_count ?? 0 }} {{ t('teams.members') }}
                 </span>
@@ -205,6 +223,12 @@ async function handleDelete(team) {
           :placeholder="t('teams.namePlaceholder')"
           :error="formErrors.name"
           required
+        />
+        <AppSelect
+          v-model="form.leader_id"
+          :label="t('teams.leader')"
+          :options="leaderOptions"
+          :placeholder="t('teams.chooseLeader')"
         />
         <AppTextarea
           v-model="form.description"
