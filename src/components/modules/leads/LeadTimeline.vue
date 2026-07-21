@@ -1,10 +1,13 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ArrowRight, UserCheck, RefreshCw } from 'lucide-vue-next'
 import LeadStatusBadge from './LeadStatusBadge.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { formatDateTime } from '@/utils/formatters'
+
+const { t } = useI18n()
 
 const props = defineProps({
   statusHistory: { type: Array, default: () => [] },
@@ -61,8 +64,10 @@ const events = computed(() => {
           <!-- Status change -->
           <template v-if="event._type === 'status'">
             <div class="flex items-center gap-1.5 mt-1 flex-wrap">
-              <LeadStatusBadge :status="event.from_status" />
-              <ArrowRight class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <template v-if="event.from_status">
+                <LeadStatusBadge :status="event.from_status" />
+                <ArrowRight class="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              </template>
               <LeadStatusBadge :status="event.to_status" />
             </div>
             <p v-if="event.comment" class="text-xs text-gray-500 mt-1 italic">
@@ -73,24 +78,24 @@ const events = computed(() => {
           <!-- Assignment change -->
           <template v-else>
             <div class="flex items-center gap-2 mt-1">
-              <span class="text-sm text-gray-700">Assigned to</span>
-              <AppAvatar :name="event.assigned_by?.name ?? '?'" size="xs" />
-              <span class="text-sm font-medium text-gray-900">{{ event.assigned_by.name ?? '—' }}</span>
+              <span class="text-sm text-gray-700">{{ t('leads.history.assigned') }}</span>
+              <AppAvatar :name="event.to_user?.name ?? '?'" size="xs" />
+              <span class="text-sm font-medium text-gray-900">{{ event.to_user?.name ?? '—' }}</span>
             </div>
-            <p v-if="event.previous_assignee" class="text-xs text-gray-400 mt-0.5">
-              Previously: {{ event.previous_assignee?.name }}
+            <p v-if="event.from_user" class="text-xs text-gray-400 mt-0.5">
+              {{ t('leads.history.previously') }} {{ event.from_user?.name }}
             </p>
           </template>
 
           <!-- Changed by -->
           <p class="text-xs text-gray-400 mt-1">
-            by {{ event.changed_by?.name ?? event.actor?.name ?? 'System' }}
+            {{ t('leads.history.by') }} {{ (event._type === 'status' ? event.changed_by?.name : event.assigned_by?.name) ?? t('leads.history.importSource') }}
           </p>
         </div>
       </div>
 
       <p v-if="events.length === 0" class="text-sm text-gray-400 text-center py-6">
-        No history yet.
+        {{ t('leads.history.noHistory') }}
       </p>
     </div>
   </div>

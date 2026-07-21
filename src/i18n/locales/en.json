@@ -162,6 +162,9 @@
       "details": "Details",
       "statusChange": "Status changed",
       "assigned": "Assigned to",
+      "previously": "Previously:",
+      "by": "by",
+      "importSource": "Import Google Sheets",
       "noHistory": "No history yet"
     },
     "rappelModal": {

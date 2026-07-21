@@ -162,6 +162,9 @@
       "details": "Détails",
       "statusChange": "Statut modifié",
       "assigned": "Assigné à",
+      "previously": "Précédemment :",
+      "by": "par",
+      "importSource": "Import Google Sheets",
       "noHistory": "Aucun historique"
     },
     "rappelModal": {
