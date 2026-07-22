@@ -324,7 +324,9 @@
     "searchPlaceholder": "Rechercher une source…",
     "deleteConfirmMsg": "Supprimer « {name} » ? Les leads perdront cette source.",
     "descriptionOptional": "Description (optionnel)",
-    "namePlaceholder": "ex. Google Ads, Facebook, Parrainage…"
+    "namePlaceholder": "ex. Google Ads, Facebook, Parrainage…",
+    "code": "Code",
+    "codePlaceholder": "ex. google_ads"
   },
   "imports": {
     "title": "Importation de leads",

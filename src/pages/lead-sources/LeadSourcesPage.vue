@@ -20,28 +20,33 @@ const toast = useToast()
 
 const showModal = ref(false)
 const editing = ref(null)
-const form = ref({ name: '', description: '' })
+const form = ref({ name: '', code: '', description: '' })
 const formErrors = ref({})
 
 onMounted(() => store.fetchList(true))
 
 function openCreate() {
   editing.value = null
-  form.value = { name: '', description: '' }
+  form.value = { name: '', code: '', description: '' }
   formErrors.value = {}
   showModal.value = true
 }
 
 function openEdit(source) {
   editing.value = source
-  form.value = { name: source.name, description: source.description ?? '' }
+  form.value = { name: source.name, code: source.code ?? '', description: source.description ?? '' }
   formErrors.value = {}
   showModal.value = true
+}
+
+function slugify(text) {
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').substring(0, 50)
 }
 
 function validate() {
   formErrors.value = {}
   if (!form.value.name.trim()) formErrors.value.name = t('common.nameRequired')
+  if (!editing.value && !form.value.code.trim()) formErrors.value.code = t('common.required')
   return Object.keys(formErrors.value).length === 0
 }
 
@@ -174,6 +179,15 @@ async function handleDelete(source) {
           :placeholder="t('leadSources.namePlaceholder')"
           :error="formErrors.name"
           required
+          @input="() => { if (!editing) form.code = slugify(form.name) }"
+        />
+        <AppInput
+          v-model="form.code"
+          :label="t('leadSources.code')"
+          :placeholder="t('leadSources.codePlaceholder')"
+          :error="formErrors.code"
+          required
+          :disabled="!!editing"
         />
         <AppTextarea
           v-model="form.description"
