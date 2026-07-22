@@ -592,6 +592,40 @@ async function handleDelete() {
             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('users.lastUpdated') }}</p>
             <p class="text-sm text-gray-900">{{ formatDateTime(leadsStore.current.updated_at) }}</p>
           </div>
+
+          <template v-if="leadsStore.current.insurance_type === 'DECENNALE'">
+            <div class="sm:col-span-2 border-t border-gray-100 pt-4 mt-1">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t('leads.companyInfo') }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_name">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.companyName') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_name }}</p>
+            </div>
+            <div v-if="leadsStore.current.address">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.address') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.address }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_legal_form">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.legalForm') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_legal_form }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_sector">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.sector') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_sector }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_employee_count">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.employeeCount') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_employee_count }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_annual_revenue">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.annualRevenue') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_annual_revenue }}</p>
+            </div>
+            <div v-if="leadsStore.current.company_status">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.applicantStatus') }}</p>
+              <p class="text-sm text-gray-900">{{ leadsStore.current.company_status }}</p>
+            </div>
+          </template>
         </div>
       </div>
     </AppCard>

@@ -34,6 +34,13 @@ const form = reactive({
   client_type: '',
   source_id: '',
   assigned_to: '',
+  address: '',
+  company_name: '',
+  company_legal_form: '',
+  company_sector: '',
+  company_employee_count: '',
+  company_annual_revenue: '',
+  company_status: '',
 })
 const errors = ref({})
 
@@ -41,6 +48,7 @@ const agentOptions = ref([{ value: '', label: 'Unassigned' }])
 const sourceOptions = ref([{ value: '', label: 'No Source' }])
 
 const showClientType = (type) => ['AUTO', 'MOTO'].includes(type)
+const showCompanyFields = (type) => type === 'DECENNALE'
 
 const fullName = computed(() => {
   const lead = leadsStore.current
@@ -65,6 +73,13 @@ onMounted(async () => {
       form.client_type = lead.client_type ?? ''
       form.source_id = lead.lead_source?.id ?? ''
       form.assigned_to = lead.assigned_agent?.id ?? ''
+      form.address = lead.address ?? ''
+      form.company_name = lead.company_name ?? ''
+      form.company_legal_form = lead.company_legal_form ?? ''
+      form.company_sector = lead.company_sector ?? ''
+      form.company_employee_count = lead.company_employee_count ?? ''
+      form.company_annual_revenue = lead.company_annual_revenue ?? ''
+      form.company_status = lead.company_status ?? ''
     }
     sourceOptions.value = [
       { value: '', label: 'No Source' },
@@ -102,6 +117,15 @@ async function submit() {
     if (form.client_type) payload.client_type = form.client_type
     if (form.source_id) payload.source_id = form.source_id
     if (form.assigned_to) payload.assigned_to = form.assigned_to
+    if (showCompanyFields(form.insurance_type)) {
+      payload.address = form.address || null
+      payload.company_name = form.company_name || null
+      payload.company_legal_form = form.company_legal_form || null
+      payload.company_sector = form.company_sector || null
+      payload.company_employee_count = form.company_employee_count || null
+      payload.company_annual_revenue = form.company_annual_revenue || null
+      payload.company_status = form.company_status || null
+    }
     await leadsStore.update(id, payload)
     toast.showSuccess('Lead updated')
     router.push({ name: 'leads.detail', params: { id } })
@@ -201,6 +225,23 @@ async function submit() {
             />
           </div>
         </div>
+
+        <template v-if="showCompanyFields(form.insurance_type)">
+          <div class="border-t border-gray-100" />
+
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">Company Information</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <AppInput v-model="form.company_name" label="Company Name" class="sm:col-span-2" />
+              <AppInput v-model="form.address" label="Address" class="sm:col-span-2" />
+              <AppInput v-model="form.company_legal_form" label="Legal Form" />
+              <AppInput v-model="form.company_sector" label="Business Sector" />
+              <AppInput v-model="form.company_employee_count" label="Number of Employees" />
+              <AppInput v-model="form.company_annual_revenue" label="Estimated Annual Revenue" />
+              <AppInput v-model="form.company_status" label="Applicant Status" class="sm:col-span-2" />
+            </div>
+          </div>
+        </template>
 
         <div class="flex items-center justify-end gap-3 pt-2">
           <AppButton variant="ghost" type="button" @click="router.back()">Cancel</AppButton>

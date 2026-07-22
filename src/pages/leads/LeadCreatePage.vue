@@ -33,6 +33,13 @@ const form = reactive({
   source_id: '',
   assigned_to: '',
   notes: '',
+  address: '',
+  company_name: '',
+  company_legal_form: '',
+  company_sector: '',
+  company_employee_count: '',
+  company_annual_revenue: '',
+  company_status: '',
 })
 
 const errors = ref({})
@@ -41,6 +48,7 @@ const agentOptions = ref([{ value: '', label: 'Unassigned' }])
 const sourceOptions = ref([{ value: '', label: 'No Source' }])
 
 const showClientType = (type) => ['AUTO', 'MOTO'].includes(type)
+const showCompanyFields = (type) => type === 'DECENNALE'
 
 watch(
   () => form.insurance_type,
@@ -89,6 +97,15 @@ async function submit() {
     if (form.source_id) payload.source_id = form.source_id
     if (form.assigned_to) payload.assigned_to = form.assigned_to
     if (form.notes) payload.notes = form.notes
+    if (showCompanyFields(form.insurance_type)) {
+      if (form.address) payload.address = form.address
+      if (form.company_name) payload.company_name = form.company_name
+      if (form.company_legal_form) payload.company_legal_form = form.company_legal_form
+      if (form.company_sector) payload.company_sector = form.company_sector
+      if (form.company_employee_count) payload.company_employee_count = form.company_employee_count
+      if (form.company_annual_revenue) payload.company_annual_revenue = form.company_annual_revenue
+      if (form.company_status) payload.company_status = form.company_status
+    }
     const lead = await leadsStore.create(payload)
     toast.showSuccess('Lead created successfully')
     router.push({ name: 'leads.detail', params: { id: lead.id } })
@@ -192,6 +209,24 @@ async function submit() {
             />
           </div>
         </div>
+
+        <template v-if="showCompanyFields(form.insurance_type)">
+          <div class="border-t border-gray-100" />
+
+          <!-- Company info -->
+          <div>
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">Company Information</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <AppInput v-model="form.company_name" label="Company Name" class="sm:col-span-2" />
+              <AppInput v-model="form.address" label="Address" class="sm:col-span-2" />
+              <AppInput v-model="form.company_legal_form" label="Legal Form" />
+              <AppInput v-model="form.company_sector" label="Business Sector" />
+              <AppInput v-model="form.company_employee_count" label="Number of Employees" />
+              <AppInput v-model="form.company_annual_revenue" label="Estimated Annual Revenue" />
+              <AppInput v-model="form.company_status" label="Applicant Status" class="sm:col-span-2" />
+            </div>
+          </div>
+        </template>
 
         <div class="border-t border-gray-100" />
 

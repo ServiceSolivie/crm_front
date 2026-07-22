@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, Filter, X, UserCircle, Pencil, Trash2 } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useLeadSourcesStore } from '@/stores/leadSources.store'
+import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
@@ -25,6 +26,7 @@ import { formatDate } from '@/utils/formatters'
 const router = useRouter()
 const leadsStore = useLeadsStore()
 const sourcesStore = useLeadSourcesStore()
+const usersStore = useUsersStore()
 const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
@@ -54,6 +56,11 @@ const sourceOptions = computed(() => [
   ...sourcesStore.list.map((s) => ({ value: s.id, label: s.name })),
 ])
 
+const agentOptions = computed(() => [
+  { value: '', label: t('leads.allAgents') },
+  ...usersStore.list.map((u) => ({ value: u.id, label: u.name })),
+])
+
 const leadStatusOptions = useEnumOptions(LEAD_STATUS, 'statuses.lead')
 const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
 const statusOptions = computed(() => [{ value: '', label: t('leads.allStatuses') }, ...leadStatusOptions.value])
@@ -62,6 +69,7 @@ const insuranceOptions = computed(() => [{ value: '', label: t('leads.allTypes')
 onMounted(() => {
   leadsStore.fetchList()
   sourcesStore.fetchList()
+  usersStore.fetchList({ per_page: 100 })
 })
 
 const SORT_KEY_MAP = { name: 'first_name' }
@@ -199,7 +207,7 @@ const to = computed(() =>
         leave-from-class="opacity-100 translate-y-0"
         leave-to-class="opacity-0 -translate-y-2"
       >
-        <div v-if="showFilters" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div v-if="showFilters" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <AppSelect
             :model-value="leadsStore.filters.status"
             :options="statusOptions"
@@ -214,6 +222,11 @@ const to = computed(() =>
             :model-value="leadsStore.filters.source_id"
             :options="sourceOptions"
             @update:model-value="leadsStore.setFilter('source_id', $event)"
+          />
+          <AppSelect
+            :model-value="leadsStore.filters.assigned_to"
+            :options="agentOptions"
+            @update:model-value="leadsStore.setFilter('assigned_to', $event)"
           />
           <div class="flex items-end">
             <AppButton
