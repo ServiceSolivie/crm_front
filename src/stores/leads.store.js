@@ -8,6 +8,7 @@ export const useLeadsStore = defineStore('leads', () => {
   const list = ref([])
   const current = ref(null)
   const notes = ref([])
+  const calls = ref([])
   const statusHistory = ref([])
   const assignmentHistory = ref([])
   const leadAppointments = ref([])
@@ -35,6 +36,7 @@ export const useLeadsStore = defineStore('leads', () => {
     detail: false,
     form: false,
     notes: false,
+    calls: false,
     history: false,
     appointments: false,
     payments: false,
@@ -182,6 +184,39 @@ export const useLeadsStore = defineStore('leads', () => {
       throw e
     } finally {
       loading.notes = false
+    }
+  }
+
+  async function fetchCalls(leadId) {
+    loading.calls = true
+    try {
+      const { data } = await leadsApi.calls.list(leadId)
+      calls.value = data
+    } catch (e) {
+      errors.value = e
+    } finally {
+      loading.calls = false
+    }
+  }
+
+  async function logCall(leadId, payload) {
+    loading.calls = true
+    try {
+      const { data } = await leadsApi.calls.create(leadId, payload)
+      calls.value.unshift(data)
+      if (current.value?.id === Number(leadId)) {
+        current.value = { ...current.value, calls_count: (current.value.calls_count ?? 0) + 1 }
+      }
+      const idx = list.value.findIndex((l) => l.id === Number(leadId))
+      if (idx !== -1) {
+        list.value.splice(idx, 1, { ...list.value[idx], calls_count: (list.value[idx].calls_count ?? 0) + 1 })
+      }
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.calls = false
     }
   }
 
@@ -382,6 +417,7 @@ export const useLeadsStore = defineStore('leads', () => {
     list,
     current,
     notes,
+    calls,
     statusHistory,
     assignmentHistory,
     leadAppointments,
@@ -401,6 +437,8 @@ export const useLeadsStore = defineStore('leads', () => {
     updateStatus,
     fetchNotes,
     addNote,
+    fetchCalls,
+    logCall,
     fetchStatusHistory,
     fetchAssignmentHistory,
     fetchLeadAppointments,

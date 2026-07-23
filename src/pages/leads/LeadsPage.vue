@@ -2,7 +2,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Plus, Filter, X, UserCircle, Pencil, Trash2 } from 'lucide-vue-next'
+import { Plus, Filter, X, UserCircle, Pencil, Trash2, PhoneCall } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useLeadSourcesStore } from '@/stores/leadSources.store'
 import { useUsersStore } from '@/stores/users.store'
@@ -47,6 +47,7 @@ const COLUMNS = computed(() => [
   { key: 'status', label: t('leads.status'),align: 'center' },
   { key: 'source', label: t('leads.source'),align: 'center' },
   { key: 'assigned_to', label: t('leads.assignedTo') },
+  { key: 'calls_count', label: t('leads.calls'), align: 'center' },
   { key: 'created_at', label: t('leads.createdAt'), sortable: true },
   { key: 'actions', label: '', align: 'right', width: '100px' },
 ])
@@ -300,6 +301,13 @@ const to = computed(() =>
             <UserCircle class="w-4 h-4" />
             <span class="text-xs">{{ t('common.unassigned') }}</span>
           </div>
+        </template>
+
+        <template #cell-calls_count="{ value }">
+          <span class="inline-flex items-center gap-1 text-sm text-gray-600">
+            <PhoneCall class="w-3.5 h-3.5 text-gray-400" />
+            {{ value ?? 0 }}
+          </span>
         </template>
 
         <template #cell-created_at="{ value }">

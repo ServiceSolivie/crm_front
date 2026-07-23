@@ -16,6 +16,7 @@ import AppSpinner from '@/components/base/AppSpinner.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
 import LeadAssignModal from '@/components/modules/leads/LeadAssignModal.vue'
 import LeadNotesFeed from '@/components/modules/leads/LeadNotesFeed.vue'
+import LeadCallsFeed from '@/components/modules/leads/LeadCallsFeed.vue'
 import LeadTimeline from '@/components/modules/leads/LeadTimeline.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import RevenueCard from '@/components/modules/payments/RevenueCard.vue'
@@ -42,6 +43,7 @@ const activeTab = ref('notes')
 const showAssignModal = ref(false)
 const statusChanging = ref(false)
 const noteSubmitting = ref(false)
+const callSubmitting = ref(false)
 const aptActionId = ref(null)
 const showRevenuePrompt = ref(false)
 const showRappelModal = ref(false)
@@ -65,6 +67,7 @@ const isValidated = computed(() => leadsStore.current?.status === 'VALIDE')
 const TABS = computed(() => {
   const tabs = [
     { key: 'notes',        label: t('leads.history.notes') },
+    { key: 'calls',        label: t('leads.calls') },
     { key: 'history',      label: t('leads.history.history') },
     { key: 'appointments', label: t('nav.appointments') },
   ]
@@ -169,6 +172,18 @@ async function onAddNote(note) {
   }
 }
 
+async function onLogCall(payload) {
+  callSubmitting.value = true
+  try {
+    await leadsStore.logCall(id, payload)
+    toast.showSuccess(t('leads.callLogged'))
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to log call')
+  } finally {
+    callSubmitting.value = false
+  }
+}
+
 function isAptOverdue(apt) {
   if (!apt.scheduled_at) return false
   if (apt.status === 'REALISE' || apt.status === 'ANNULE') return false
@@ -182,6 +197,9 @@ async function onTabChange(tab) {
       leadsStore.fetchStatusHistory(id),
       leadsStore.fetchAssignmentHistory(id),
     ])
+  }
+  if (tab === 'calls' && leadsStore.calls.length === 0) {
+    await leadsStore.fetchCalls(id)
   }
   if (tab === 'appointments') {
     await leadsStore.fetchLeadAppointments(id)
@@ -433,6 +451,15 @@ async function handleDelete() {
           :loading="leadsStore.loading.notes"
           :submitting="noteSubmitting"
           @add-note="onAddNote"
+        />
+
+        <!-- Calls -->
+        <LeadCallsFeed
+          v-else-if="activeTab === 'calls'"
+          :calls="leadsStore.calls"
+          :loading="leadsStore.loading.calls"
+          :submitting="callSubmitting"
+          @log-call="onLogCall"
         />
 
         <!-- History -->
