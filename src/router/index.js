@@ -59,6 +59,20 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', permission: 'LEADS_UPDATE', title: 'Edit Lead' },
     },
 
+    /* Contracts */
+    {
+      path: '/contracts',
+      name: 'contracts',
+      component: () => import('@/pages/contracts/ContractsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'CONTRACTS_VIEW', title: 'Contracts' },
+    },
+    {
+      path: '/contracts/new',
+      name: 'contracts.create',
+      component: () => import('@/pages/contracts/ContractGeneratePage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'CONTRACTS_GENERATE', title: 'New Contract' },
+    },
+
     /* Calendar */
     {
       path: '/calendar',

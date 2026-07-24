@@ -20,6 +20,7 @@ import {
   UserCheck,
   Banknote,
   ClipboardList,
+  FileSignature,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -70,6 +71,7 @@ const navGroups = computed(() => [
       { icon: Users, label: t('nav.leads'), to: '/leads', permission: 'LEADS_VIEW_*' },
       { icon: CalendarClock, label: t('nav.appointments'), to: '/appointments', permission: 'APPOINTMENTS_VIEW_*' },
       { icon: CalendarRange, label: t('nav.calendar'), to: '/calendar', permission: 'APPOINTMENTS_VIEW_*' },
+      { icon: FileSignature, label: t('nav.contracts'), to: '/contracts', permission: 'CONTRACTS_*' },
       { icon: Upload, label: t('nav.importLeads'), to: '/lead-imports', permission: 'LEADS_IMPORT' },
     ],
   },
