@@ -12,6 +12,7 @@ node_modules
 dist-ssr
 coverage
 *.local
+.env
 
 # Editor directories and files
 .vscode/*
