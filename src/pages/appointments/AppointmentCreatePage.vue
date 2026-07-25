@@ -14,6 +14,7 @@ import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
+import { fromDatetimeLocalValue } from '@/utils/formatters'
 
 const route = useRoute()
 const router = useRouter()
@@ -73,7 +74,7 @@ function validate() {
 async function submit() {
   if (!validate()) return
   try {
-    const payload = { ...form }
+    const payload = { ...form, scheduled_at: fromDatetimeLocalValue(form.scheduled_at) }
     if (!payload.agent_id) delete payload.agent_id
     if (!payload.notes) delete payload.notes
     await leadsStore.createLeadAppointment(leadId, payload)

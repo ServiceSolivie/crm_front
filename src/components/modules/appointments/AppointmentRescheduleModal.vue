@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
+import { toDatetimeLocalValue, fromDatetimeLocalValue } from '@/utils/formatters'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -19,7 +20,7 @@ watch(
   () => props.open,
   (val) => {
     if (val) {
-      scheduledAt.value = props.currentDate ? props.currentDate.slice(0, 16) : ''
+      scheduledAt.value = toDatetimeLocalValue(props.currentDate)
       error.value = ''
     }
   },
@@ -31,7 +32,7 @@ function submit() {
     return
   }
   error.value = ''
-  emit('reschedule', scheduledAt.value)
+  emit('reschedule', fromDatetimeLocalValue(scheduledAt.value))
 }
 </script>
 

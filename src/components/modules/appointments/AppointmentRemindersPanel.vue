@@ -6,7 +6,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
-import { formatDateTime } from '@/utils/formatters'
+import { formatDateTime, fromDatetimeLocalValue } from '@/utils/formatters'
 
 defineProps({
   reminders: { type: Array, default: () => [] },
@@ -35,7 +35,7 @@ const CHANNEL_VARIANTS = {
 
 function submit() {
   if (!form.value.remind_at) return
-  emit('add', { ...form.value })
+  emit('add', { ...form.value, remind_at: fromDatetimeLocalValue(form.value.remind_at) })
   showForm.value = false
   form.value = { channel: 'email', remind_at: '', message: '' }
 }

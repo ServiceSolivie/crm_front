@@ -1,31 +1,81 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { Bell } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { Bell, Calendar, CheckCheck } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
+import { useNotificationsStore } from '@/stores/notifications.store'
+import { formatRelative } from '@/utils/formatters'
 
+const { t } = useI18n()
+const router = useRouter()
 const auth = useAuthStore()
-const canViewNotifications = computed(() => auth.can('NOTIFICATIONS_VIEW'))
+const notifications = useNotificationsStore()
 
-// Stub: real data will come from appointment reminders polling in the module layer
-const unreadCount = ref(0)
+const canViewNotifications = computed(() => auth.can('NOTIFICATIONS_VIEW'))
 const open = ref(false)
 
 function toggle() {
   if (!canViewNotifications.value) return
   open.value = !open.value
+  if (open.value) notifications.fetchList()
 }
 
 function close() {
   open.value = false
 }
 
-// Close on outside click
+/**
+ * The stored payload's `title` is baked in English at creation time and
+ * can never be retranslated — render our own localized title from the
+ * notification type + count instead, so switching language updates it.
+ */
+function notificationTitle(item) {
+  if (item.type === 'TodayAppointmentsNotification') {
+    const count = item.payload?.count ?? item.payload?.appointments?.length ?? 0
+    return t('notifications.todayDigestTitle', count, { count })
+  }
+  if (item.type === 'AppointmentReminderNotification') {
+    return t('notifications.reminderTitle')
+  }
+  return item.payload?.title
+}
+
+function openNotification(item) {
+  if (!item.read_at) notifications.markRead(item.id)
+
+  const appointmentId = item.payload?.appointments?.[0]?.id
+  if (appointmentId) router.push(`/appointments/${appointmentId}`)
+
+  close()
+}
+
 function handleClickOutside(e) {
   if (!e.target.closest('[data-bell]')) close()
 }
 
-onMounted(() => document.addEventListener('click', handleClickOutside))
-onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+/**
+ * Resilience fallback for the live Pusher push: if a socket event was
+ * missed (dropped connection, laptop sleep, ad-blocker), refetch the
+ * unread count whenever the tab regains focus/visibility. Event-driven,
+ * not a timer — no background polling while the tab isn't in view.
+ */
+function handleVisibility() {
+  if (document.visibilityState === 'visible') notifications.fetchUnreadCount()
+}
+
+onMounted(() => {
+  if (canViewNotifications.value) notifications.fetchUnreadCount()
+  document.addEventListener('click', handleClickOutside)
+  document.addEventListener('visibilitychange', handleVisibility)
+  window.addEventListener('focus', handleVisibility)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('visibilitychange', handleVisibility)
+  window.removeEventListener('focus', handleVisibility)
+})
 </script>
 
 <template>
@@ -40,11 +90,11 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     >
       <Bell class="w-5 h-5" />
       <span
-        v-if="unreadCount > 0"
+        v-if="notifications.unreadCount > 0"
         class="absolute top-1 right-1 w-4 h-4 bg-danger text-white text-[10px] font-bold
                rounded-full flex items-center justify-center"
       >
-        {{ unreadCount > 9 ? '9+' : unreadCount }}
+        {{ notifications.unreadCount > 9 ? '9+' : notifications.unreadCount }}
       </span>
     </button>
 
@@ -54,11 +104,61 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
         v-if="open"
         class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-dropdown border border-gray-100 z-50"
       >
-        <div class="p-4 border-b border-gray-100">
-          <h3 class="text-sm font-semibold text-gray-900">Notifications</h3>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+          <h3 class="text-sm font-semibold text-gray-900">{{ t('notifications.title') }}</h3>
+          <button
+            v-if="notifications.unreadCount > 0"
+            class="flex items-center gap-1 text-xs text-primary hover:underline"
+            @click="notifications.markAllRead()"
+          >
+            <CheckCheck class="w-3.5 h-3.5" />
+            {{ t('notifications.markAllRead') }}
+          </button>
         </div>
-        <div class="p-6 text-center text-sm text-gray-500">
-          No pending notifications
+
+        <div class="max-h-96 overflow-y-auto">
+          <template v-if="notifications.loading.list">
+            <div v-for="n in 3" :key="n" class="flex gap-3 p-4 border-b border-gray-50">
+              <div class="w-8 h-8 rounded-full bg-gray-100 shrink-0 animate-pulse" />
+              <div class="flex-1 space-y-1.5">
+                <div class="h-3 bg-gray-100 rounded animate-pulse w-3/4" />
+                <div class="h-3 bg-gray-100 rounded animate-pulse w-1/2" />
+              </div>
+            </div>
+          </template>
+
+          <template v-else>
+            <p v-if="notifications.list.length === 0" class="p-6 text-center text-sm text-gray-500">
+              {{ t('notifications.empty') }}
+            </p>
+
+            <button
+              v-for="item in notifications.list"
+              :key="item.id"
+              :class="[
+                'w-full flex gap-3 p-4 text-left border-b border-gray-50 last:border-0 transition-colors hover:bg-gray-50',
+                !item.read_at && 'bg-primary-light/40',
+              ]"
+              @click="openNotification(item)"
+            >
+              <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
+                <Calendar class="w-4 h-4 text-primary" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-gray-900 font-medium">{{ notificationTitle(item) }}</p>
+                <p
+                  v-for="apt in item.payload?.appointments?.slice(0, 3)"
+                  :key="apt.id"
+                  class="text-xs text-gray-500 mt-0.5 truncate"
+                >
+                  {{ apt.lead_name ?? t('notifications.unknownLead') }} —
+                  {{ apt.scheduled_at ? formatRelative(apt.scheduled_at) : '' }}
+                </p>
+                <p class="text-[11px] text-gray-400 mt-1">{{ formatRelative(item.created_at) }}</p>
+              </div>
+              <span v-if="!item.read_at" class="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
+            </button>
+          </template>
         </div>
       </div>
     </Transition>

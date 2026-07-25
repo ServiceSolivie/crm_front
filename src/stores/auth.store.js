@@ -1,6 +1,8 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { authApi } from '@/api/auth'
+import { getEcho, disconnectEcho } from '@/plugins/echo'
+import { useNotificationsStore } from './notifications.store'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token'))
@@ -92,6 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await authApi.me()
       user.value = _normalizeUser(response?.data ?? response?.user ?? response)
+      _subscribeToNotifications()
       return true
     } finally {
       booting.value = false
@@ -102,6 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     user.value = null
     localStorage.removeItem('auth_token')
+    disconnectEcho()
   }
 
   function _setSession(newToken, newUser) {
@@ -112,6 +116,22 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = newToken
     user.value = _normalizeUser(newUser)
     localStorage.setItem('auth_token', newToken)
+    _subscribeToNotifications()
+  }
+
+  /**
+   * Live "today's appointment" reminders arrive over a private Pusher
+   * channel scoped to this user (see routes/channels.php on the backend).
+   * No-op if VITE_PUSHER_APP_KEY isn't configured (getEcho() returns null).
+   */
+  function _subscribeToNotifications() {
+    if (!user.value?.id) return
+    const echo = getEcho()
+    if (!echo) return
+
+    echo.private(`App.Models.User.${user.value.id}`).notification((notification) => {
+      useNotificationsStore().pushLive(notification)
+    })
   }
 
   return {

@@ -18,7 +18,7 @@ const pageTitle = computed(() => route.meta?.title ?? 'CRM')
 </script>
 
 <template>
-  <header class="h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 shrink-0 z-10">
+  <header class="relative z-40 h-14 bg-white border-b border-gray-200 flex items-center px-4 gap-4 shrink-0">
     <!-- Mobile hamburger -->
     <button
       class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"

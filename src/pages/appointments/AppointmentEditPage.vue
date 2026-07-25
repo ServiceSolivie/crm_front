@@ -14,6 +14,7 @@ import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
+import { toDatetimeLocalValue, fromDatetimeLocalValue } from '@/utils/formatters'
 
 const route = useRoute()
 const router = useRouter()
@@ -45,7 +46,7 @@ onMounted(async () => {
     await Promise.all(promises)
     const apt = store.current
     if (apt) {
-      form.scheduled_at = apt.scheduled_at ? apt.scheduled_at.slice(0, 16) : ''
+      form.scheduled_at = toDatetimeLocalValue(apt.scheduled_at)
       form.status = apt.status ?? ''
       form.agent_id = apt.agent?.id ?? ''
       form.notes = apt.notes ?? ''
@@ -78,7 +79,7 @@ async function submit() {
     await store.update(id, payload)
 
     if (form.scheduled_at !== original.scheduled_at) {
-      await store.reschedule(id, form.scheduled_at)
+      await store.reschedule(id, fromDatetimeLocalValue(form.scheduled_at))
     }
     if (form.status !== original.status) {
       await store.updateStatus(id, form.status)

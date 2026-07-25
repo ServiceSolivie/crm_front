@@ -1,4 +1,12 @@
 {
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Tout marquer comme lu",
+    "empty": "Aucune notification en attente",
+    "unknownLead": "Lead inconnu",
+    "todayDigestTitle": "Vous avez {count} rendez-vous aujourd'hui | Vous avez {count} rendez-vous aujourd'hui",
+    "reminderTitle": "Rendez-vous dans 30 minutes"
+  },
   "nav": {
     "dashboard": "Tableau de bord",
     "leads": "Leads",
@@ -38,6 +46,10 @@
     "yes": "Oui",
     "no": "Non",
     "confirm": "Confirmer",
+    "justNow": "à l'instant",
+    "minutesAgo": "il y a {count}m",
+    "hoursAgo": "il y a {count}h",
+    "daysAgo": "il y a {count}j",
     "from": "Du",
     "to": "Au",
     "dateRange": "Période",

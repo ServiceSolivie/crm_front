@@ -1,4 +1,12 @@
 {
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No pending notifications",
+    "unknownLead": "Unknown lead",
+    "todayDigestTitle": "You have {count} appointment today | You have {count} appointments today",
+    "reminderTitle": "Appointment in 30 minutes"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "leads": "Leads",
@@ -38,6 +46,10 @@
     "yes": "Yes",
     "no": "No",
     "confirm": "Confirm",
+    "justNow": "just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago",
     "from": "From",
     "to": "To",
     "dateRange": "Date range",

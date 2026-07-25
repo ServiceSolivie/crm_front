@@ -1,3 +1,28 @@
+import { i18n } from '@/i18n'
+
+/**
+ * Convert a UTC ISO string from the backend into the local-wall-clock
+ * string a <input type="datetime-local"> expects (YYYY-MM-DDTHH:mm).
+ */
+export function toDatetimeLocalValue(isoString) {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  if (isNaN(date)) return ''
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+/**
+ * Convert a <input type="datetime-local"> value (local wall-clock,
+ * timezone-less) into a proper UTC ISO string for the API.
+ */
+export function fromDatetimeLocalValue(localValue) {
+  if (!localValue) return ''
+  const date = new Date(localValue) // no tz suffix => JS parses as local time
+  if (isNaN(date)) return ''
+  return date.toISOString()
+}
+
 /**
  * Format an ISO date string to a human-readable date.
  * @param {string|null} value
@@ -68,12 +93,13 @@ export function formatRelative(value) {
   if (isNaN(date)) return '—'
   const diff = Date.now() - date.getTime()
   const minutes = Math.floor(diff / 60_000)
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
+  const t = i18n.global.t
+  if (minutes < 1) return t('common.justNow')
+  if (minutes < 60) return t('common.minutesAgo', { count: minutes })
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return t('common.hoursAgo', { count: hours })
   const days = Math.floor(hours / 24)
-  if (days < 7) return `${days}d ago`
+  if (days < 7) return t('common.daysAgo', { count: days })
   return formatDate(value)
 }
 

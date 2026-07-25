@@ -5,6 +5,7 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
+import { fromDatetimeLocalValue } from '@/utils/formatters'
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -35,7 +36,7 @@ function submit() {
     return
   }
   error.value = ''
-  emit('confirm', { scheduled_at: scheduledAt.value, notes: notes.value || undefined })
+  emit('confirm', { scheduled_at: fromDatetimeLocalValue(scheduledAt.value), notes: notes.value || undefined })
 }
 </script>
 
