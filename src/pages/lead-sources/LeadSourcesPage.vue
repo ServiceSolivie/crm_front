@@ -12,6 +12,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSearchInput from '@/components/base/AppSearchInput.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import { firstErrorMessage } from '@/utils/errors'
 
 const { t } = useI18n()
 const store = useLeadSourcesStore()
@@ -66,9 +67,8 @@ async function submit() {
       formErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? t('common.noData'))
     }
+    toast.showError(firstErrorMessage(e, t('common.noData')))
   }
 }
 
@@ -79,7 +79,7 @@ async function handleDelete(source) {
     await store.remove(source.id)
     toast.showSuccess(t('leadSources.deleteSuccess'))
   } catch (e) {
-    toast.showError(e?.message ?? t('common.noData'))
+    toast.showError(firstErrorMessage(e, t('common.noData')))
   }
 }
 </script>

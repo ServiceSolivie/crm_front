@@ -15,6 +15,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { fromDatetimeLocalValue } from '@/utils/formatters'
+import { firstErrorMessage } from '@/utils/errors'
 
 const route = useRoute()
 const router = useRouter()
@@ -85,9 +86,8 @@ async function submit() {
       errors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? 'Failed to create appointment')
     }
+    toast.showError(firstErrorMessage(e, 'Failed to create appointment'))
   }
 }
 

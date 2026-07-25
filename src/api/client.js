@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { i18n } from '@/i18n'
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1',
@@ -9,12 +10,13 @@ const client = axios.create({
   },
 })
 
-/* ── Request interceptor: attach Bearer token ─────────────────── */
+/* ── Request interceptor: attach Bearer token + current locale ────── */
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token')
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  config.headers['X-Locale'] = i18n.global.locale.value
   return config
 })
 

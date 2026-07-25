@@ -11,6 +11,7 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppToggle from '@/components/base/AppToggle.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import { firstErrorMessage } from '@/utils/errors'
 
 const { t } = useI18n()
 const store = useDocumentRequirementsStore()
@@ -72,9 +73,8 @@ async function submitType() {
       typeErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? t('common.noData'))
     }
+    toast.showError(firstErrorMessage(e, t('common.noData')))
   }
 }
 
@@ -89,7 +89,7 @@ async function handleDeleteType(type) {
     toast.showSuccess(t('documentRequirements.typeDeleted'))
     store.fetchMatrix(true)
   } catch (e) {
-    toast.showError(e?.message ?? t('common.noData'))
+    toast.showError(firstErrorMessage(e, t('common.noData')))
   }
 }
 
@@ -110,7 +110,7 @@ async function toggleRequirement(matrixEntry, groupIdx, docTypeId) {
   try {
     await store.syncRequirements(matrixEntry.insurance_type, group.client_type, current)
   } catch (e) {
-    toast.showError(e?.message ?? t('common.noData'))
+    toast.showError(firstErrorMessage(e, t('common.noData')))
   }
 }
 

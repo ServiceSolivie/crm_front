@@ -16,6 +16,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
+import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -83,9 +84,8 @@ async function submit() {
       formErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? t('teams.addMemberFailed'))
     }
+    toast.showError(firstErrorMessage(e, t('teams.addMemberFailed')))
   }
 }
 
@@ -96,7 +96,7 @@ async function handleDelete(team) {
     await store.remove(team.id)
     toast.showSuccess(t('teams.deleteSuccess'))
   } catch (e) {
-    toast.showError(e?.message ?? t('teams.removeMemberFailed'))
+    toast.showError(firstErrorMessage(e, t('teams.removeMemberFailed')))
   }
 }
 </script>

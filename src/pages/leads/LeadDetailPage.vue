@@ -28,6 +28,7 @@ import DossierTab from '@/components/modules/documents/DossierTab.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
 import { documentsApi } from '@/api/documents'
 import { formatDate, formatDateTime } from '@/utils/formatters'
+import { firstErrorMessage } from '@/utils/errors'
 
 const route = useRoute()
 const router = useRouter()
@@ -118,7 +119,7 @@ async function onRappelConfirm({ scheduled_at, notes }) {
     pendingStatus.value = null
     onTabChange('appointments')
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to schedule callback')
+    toast.showError(firstErrorMessage(e, 'Failed to schedule callback'))
   } finally {
     rappelLoading.value = false
   }
@@ -137,7 +138,7 @@ async function doStatusChange(payload) {
     await leadsStore.updateStatus(id, payload)
     toast.showSuccess(t('leads.statusUpdated'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec de la mise à jour du statut')
+    toast.showError(firstErrorMessage(e, 'Échec de la mise à jour du statut'))
   } finally {
     statusChanging.value = false
   }
@@ -156,7 +157,7 @@ async function onAssign(assignedTo, agent) {
     toast.showSuccess(t('leads.assignSuccess'))
     showAssignModal.value = false
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to assign lead')
+    toast.showError(firstErrorMessage(e, 'Failed to assign lead'))
   }
 }
 
@@ -166,7 +167,7 @@ async function onAddNote(note) {
     await leadsStore.addNote(id, note)
     toast.showSuccess(t('leads.noteAdded'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to add note')
+    toast.showError(firstErrorMessage(e, 'Failed to add note'))
   } finally {
     noteSubmitting.value = false
   }
@@ -178,7 +179,7 @@ async function onLogCall(payload) {
     await leadsStore.logCall(id, payload)
     toast.showSuccess(t('leads.callLogged'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to log call')
+    toast.showError(firstErrorMessage(e, 'Failed to log call'))
   } finally {
     callSubmitting.value = false
   }
@@ -220,9 +221,8 @@ async function onPaymentSubmit(payload) {
   } catch (e) {
     if (e?.errors) {
       paymentFormRef.value?.setServerErrors(e.errors)
-    } else {
-      toast.showError(e?.message ?? 'Échec de l\'enregistrement du paiement')
     }
+    toast.showError(firstErrorMessage(e, 'Échec de l\'enregistrement du paiement'))
   }
 }
 
@@ -231,7 +231,7 @@ async function onPaymentDelete(payment) {
     await leadsStore.removePayment(id, payment.id)
     toast.showSuccess('Paiement supprimé avec succès')
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec de la suppression du paiement')
+    toast.showError(firstErrorMessage(e, 'Échec de la suppression du paiement'))
   }
 }
 
@@ -244,7 +244,7 @@ async function onAptDelete(apt) {
     leadsStore.leadAppointments = leadsStore.leadAppointments.filter((a) => a.id !== apt.id)
     toast.showSuccess(t('appointments.deleteSuccess'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to delete appointment')
+    toast.showError(firstErrorMessage(e, 'Failed to delete appointment'))
   } finally {
     aptActionId.value = null
   }
@@ -255,7 +255,7 @@ async function onDossierUpload(formData) {
     await leadsStore.uploadDocument(id, formData)
     toast.showSuccess('Document téléversé avec succès')
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec du téléversement')
+    toast.showError(firstErrorMessage(e, 'Échec du téléversement'))
   }
 }
 
@@ -264,7 +264,7 @@ async function onDossierDelete(document) {
     await leadsStore.removeDocument(id, document.id)
     toast.showSuccess('Document supprimé avec succès')
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec de la suppression')
+    toast.showError(firstErrorMessage(e, 'Échec de la suppression'))
   }
 }
 
@@ -272,7 +272,7 @@ async function onDossierDownload(document) {
   try {
     await leadsStore.downloadDocument(id, document.id, document.original_filename)
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec du téléchargement')
+    toast.showError(firstErrorMessage(e, 'Échec du téléchargement'))
   }
 }
 
@@ -283,7 +283,7 @@ async function onSetClientType(clientType) {
     await leadsStore.fetchDossier(id)
     toast.showSuccess(t('documents.clientTypeUpdated'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Échec de la mise à jour')
+    toast.showError(firstErrorMessage(e, 'Échec de la mise à jour'))
   } finally {
     updatingClientType.value = false
   }
@@ -297,7 +297,7 @@ async function onDossierPreview(doc) {
     const response = await documentsApi.download(id, doc.document.id)
     previewBlobUrl.value = URL.createObjectURL(new Blob([response.data], { type: doc.document.mime_type }))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to load preview')
+    toast.showError(firstErrorMessage(e, 'Failed to load preview'))
   } finally {
     previewLoading.value = false
   }
@@ -319,7 +319,7 @@ async function handleDelete() {
     toast.showSuccess(t('leads.deleteSuccess'))
     router.replace({ name: 'leads' })
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to delete lead')
+    toast.showError(firstErrorMessage(e, 'Failed to delete lead'))
   }
 }
 </script>

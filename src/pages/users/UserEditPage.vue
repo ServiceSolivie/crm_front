@@ -12,6 +12,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { ROLES } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
+import { firstErrorMessage } from '@/utils/errors'
 
 const route = useRoute()
 const router = useRouter()
@@ -67,9 +68,8 @@ async function submit() {
       errors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? 'Failed to update user')
     }
+    toast.showError(firstErrorMessage(e, 'Failed to update user'))
   }
 }
 </script>

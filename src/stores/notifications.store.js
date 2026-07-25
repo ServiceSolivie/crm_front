@@ -1,6 +1,8 @@
 import { ref, reactive } from 'vue'
 import { defineStore } from 'pinia'
 import { notificationsApi } from '@/api/notifications'
+import { useUiStore } from '@/stores/ui.store'
+import { notificationTitle } from '@/utils/notifications'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const list = ref([])
@@ -82,14 +84,16 @@ export const useNotificationsStore = defineStore('notifications', () => {
    */
   function pushLive(raw) {
     const { id, type, read_at, ...payload } = raw
-    list.value.unshift({
+    const item = {
       id,
       type: type?.split('\\').pop() ?? type,
       payload,
       read_at: read_at ?? null,
       created_at: new Date().toISOString(),
-    })
+    }
+    list.value.unshift(item)
     unreadCount.value += 1
+    useUiStore().showInfo(notificationTitle(item))
   }
 
   return {

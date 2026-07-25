@@ -13,6 +13,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
+import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
 const leadsStore = useLeadsStore()
@@ -114,9 +115,8 @@ async function submit() {
       errors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? 'Failed to create lead')
     }
+    toast.showError(firstErrorMessage(e, 'Failed to create lead'))
   }
 }
 </script>

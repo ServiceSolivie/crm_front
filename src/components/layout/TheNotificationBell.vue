@@ -6,11 +6,14 @@ import { Bell, Calendar, CheckCheck } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import { formatRelative } from '@/utils/formatters'
+import { notificationTitle } from '@/utils/notifications'
+import { useToast } from '@/composables/useToast'
 
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 const notifications = useNotificationsStore()
+const toast = useToast()
 
 const canViewNotifications = computed(() => auth.can('NOTIFICATIONS_VIEW'))
 const open = ref(false)
@@ -25,29 +28,27 @@ function close() {
   open.value = false
 }
 
-/**
- * The stored payload's `title` is baked in English at creation time and
- * can never be retranslated — render our own localized title from the
- * notification type + count instead, so switching language updates it.
- */
-function notificationTitle(item) {
-  if (item.type === 'TodayAppointmentsNotification') {
-    const count = item.payload?.count ?? item.payload?.appointments?.length ?? 0
-    return t('notifications.todayDigestTitle', count, { count })
+async function openNotification(item) {
+  if (!item.read_at) {
+    try {
+      await notifications.markRead(item.id)
+    } catch (e) {
+      toast.showError(e?.message ?? 'Failed to mark notification as read')
+    }
   }
-  if (item.type === 'AppointmentReminderNotification') {
-    return t('notifications.reminderTitle')
-  }
-  return item.payload?.title
-}
-
-function openNotification(item) {
-  if (!item.read_at) notifications.markRead(item.id)
 
   const appointmentId = item.payload?.appointments?.[0]?.id
   if (appointmentId) router.push(`/appointments/${appointmentId}`)
 
   close()
+}
+
+async function onMarkAllRead() {
+  try {
+    await notifications.markAllRead()
+  } catch (e) {
+    toast.showError(e?.message ?? 'Failed to mark all as read')
+  }
 }
 
 function handleClickOutside(e) {
@@ -109,7 +110,7 @@ onUnmounted(() => {
           <button
             v-if="notifications.unreadCount > 0"
             class="flex items-center gap-1 text-xs text-primary hover:underline"
-            @click="notifications.markAllRead()"
+            @click="onMarkAllRead"
           >
             <CheckCheck class="w-3.5 h-3.5" />
             {{ t('notifications.markAllRead') }}

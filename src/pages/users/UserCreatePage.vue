@@ -12,6 +12,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import { ROLES } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
+import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
 const store = useUsersStore()
@@ -65,9 +66,8 @@ async function submit() {
       errors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? t('users.createFailed'))
     }
+    toast.showError(firstErrorMessage(e, t('users.createFailed')))
   }
 }
 </script>

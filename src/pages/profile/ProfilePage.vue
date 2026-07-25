@@ -10,6 +10,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import { formatDate } from '@/utils/formatters'
+import { firstErrorMessage } from '@/utils/errors'
 
 const auth = useAuthStore()
 const toast = useToast()
@@ -55,9 +56,8 @@ async function saveProfile() {
       profileErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? 'Failed to update profile')
     }
+    toast.showError(firstErrorMessage(e, 'Failed to update profile'))
   } finally {
     savingProfile.value = false
   }
@@ -86,9 +86,8 @@ async function savePassword() {
       passwordErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
-    } else {
-      toast.showError(e?.message ?? 'Failed to change password')
     }
+    toast.showError(firstErrorMessage(e, 'Failed to change password'))
   } finally {
     savingPassword.value = false
   }
