@@ -18,6 +18,7 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
     list: false,
     detail: false,
     upload: false,
+    syncingSheets: false,
   })
 
   const errors = ref(null)
@@ -71,6 +72,21 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
     }
   }
 
+  async function syncFromGoogleSheets() {
+    loading.syncingSheets = true
+    errors.value = null
+    try {
+      const { data } = await leadImportsApi.syncFromGoogleSheets()
+      await fetchList()
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.syncingSheets = false
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -96,6 +112,7 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
     fetchList,
     fetchOne,
     upload,
+    syncFromGoogleSheets,
     setFilter,
   }
 })

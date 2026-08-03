@@ -5,7 +5,8 @@
     "empty": "No pending notifications",
     "unknownLead": "Unknown lead",
     "todayDigestTitle": "You have {count} appointment today | You have {count} appointments today",
-    "reminderTitle": "Appointment in 30 minutes"
+    "reminderTitle": "Appointment in 30 minutes",
+    "leadReceivedTitle": "You received a new lead"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -166,6 +167,8 @@
     "employeeCount": "Number of Employees",
     "annualRevenue": "Estimated Annual Revenue",
     "applicantStatus": "Applicant Status",
+    "submittedAt": "Submitted in Sheet",
+    "sheetDetails": "Sheet Details",
     "notes": "Notes",
     "initialNotes": "Add any initial notes about this lead…",
     "personalInfo": "Personal Information",
@@ -400,6 +403,7 @@
   "imports": {
     "title": "Lead Imports",
     "importCSV": "Import CSV",
+    "syncGoogleSheets": "Sync from Google Sheets",
     "total": "import jobs",
     "file": "File",
     "status": "Status",

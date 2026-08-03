@@ -12,4 +12,5 @@ export const leadImportsApi = {
       })
       .then((r) => r.data)
   },
+  syncFromGoogleSheets: () => client.post('/lead-imports/sync-google-sheets').then((r) => r.data),
 }

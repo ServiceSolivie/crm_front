@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Bell, Calendar, CheckCheck } from 'lucide-vue-next'
+import { Bell, Calendar, UserPlus, CheckCheck } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import { formatRelative } from '@/utils/formatters'
@@ -38,7 +38,9 @@ async function openNotification(item) {
   }
 
   const appointmentId = item.payload?.appointments?.[0]?.id
+  const leadId = item.payload?.leads?.[0]?.id
   if (appointmentId) router.push(`/appointments/${appointmentId}`)
+  else if (leadId) router.push(`/leads/${leadId}`)
 
   close()
 }
@@ -143,7 +145,8 @@ onUnmounted(() => {
               @click="openNotification(item)"
             >
               <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
-                <Calendar class="w-4 h-4 text-primary" />
+                <UserPlus v-if="item.payload?.leads" class="w-4 h-4 text-primary" />
+                <Calendar v-else class="w-4 h-4 text-primary" />
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-sm text-gray-900 font-medium">{{ notificationTitle(item) }}</p>
@@ -154,6 +157,14 @@ onUnmounted(() => {
                 >
                   {{ apt.lead_name ?? t('notifications.unknownLead') }} —
                   {{ apt.scheduled_at ? formatRelative(apt.scheduled_at) : '' }}
+                </p>
+                <p
+                  v-for="lead in item.payload?.leads?.slice(0, 3)"
+                  :key="lead.id"
+                  class="text-xs text-gray-500 mt-0.5 truncate"
+                >
+                  {{ lead.name ?? t('notifications.unknownLead') }}
+                  <template v-if="lead.source"> — {{ lead.source }}</template>
                 </p>
                 <p class="text-[11px] text-gray-400 mt-1">{{ formatRelative(item.created_at) }}</p>
               </div>

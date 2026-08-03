@@ -82,8 +82,8 @@ const events = computed(() => {
               <AppAvatar :name="event.to_user?.name ?? '?'" size="xs" />
               <span class="text-sm font-medium text-gray-900">{{ event.to_user?.name ?? '—' }}</span>
             </div>
-            <p v-if="event.from_user" class="text-xs text-gray-400 mt-0.5">
-              {{ t('leads.history.previously') }} {{ event.from_user?.name }}
+            <p v-if="event.from_user || event.from_agent_name" class="text-xs text-gray-400 mt-0.5">
+              {{ t('leads.history.previously') }} {{ event.from_user?.name ?? event.from_agent_name }}
             </p>
           </template>
 

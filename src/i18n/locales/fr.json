@@ -5,7 +5,8 @@
     "empty": "Aucune notification en attente",
     "unknownLead": "Lead inconnu",
     "todayDigestTitle": "Vous avez {count} rendez-vous aujourd'hui | Vous avez {count} rendez-vous aujourd'hui",
-    "reminderTitle": "Rendez-vous dans 30 minutes"
+    "reminderTitle": "Rendez-vous dans 30 minutes",
+    "leadReceivedTitle": "Vous avez reçu un nouveau lead"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -166,6 +167,8 @@
     "employeeCount": "Nombre de salariés",
     "annualRevenue": "Chiffre d'affaires annuel estimé",
     "applicantStatus": "Statut du demandeur",
+    "submittedAt": "Soumis dans la feuille",
+    "sheetDetails": "Détails de la feuille",
     "notes": "Notes",
     "initialNotes": "Ajoutez des notes initiales sur ce lead…",
     "personalInfo": "Informations personnelles",
@@ -400,6 +403,7 @@
   "imports": {
     "title": "Importation de leads",
     "importCSV": "Importer CSV",
+    "syncGoogleSheets": "Synchroniser depuis Google Sheets",
     "total": "imports",
     "file": "Fichier",
     "status": "Statut",

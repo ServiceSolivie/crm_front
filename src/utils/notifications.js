@@ -16,5 +16,8 @@ export function notificationTitle(item) {
   if (item.type === 'AppointmentReminderNotification') {
     return t('notifications.reminderTitle')
   }
+  if (item.type === 'LeadReceivedNotification') {
+    return t('notifications.leadReceivedTitle')
+  }
   return item.payload?.title
 }

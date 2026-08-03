@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ArrowLeft, Edit2, Trash2, UserPlus, Plus, Calendar, Pencil } from 'lucide-vue-next'
@@ -39,7 +39,7 @@ const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
 
-const id = route.params.id
+const id = computed(() => route.params.id)
 const activeTab = ref('notes')
 const showAssignModal = ref(false)
 const statusChanging = ref(false)
@@ -63,6 +63,35 @@ const leadFullName = computed(() => {
   return [c.first_name, c.last_name].filter(Boolean).join(' ')
 })
 
+function humanizeKey(key) {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (ch) => ch.toUpperCase())
+}
+
+/**
+ * The sheet's own extra/unmapped fields are stored as JSON in `comment`
+ * (e.g. currently_insured, reason_change, plate — anything without a
+ * dedicated Lead column). Parsed here into label/value pairs so they
+ * render like every other field on this tab instead of as raw text.
+ * Falls back to null (raw text) for any older, pre-JSON comment value.
+ */
+const sheetExtraFields = computed(() => {
+  const raw = leadsStore.current?.comment
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null
+    return Object.entries(parsed).map(([key, value]) => ({
+      key,
+      label: humanizeKey(key),
+      value: typeof value === 'string' ? value : JSON.stringify(value),
+    }))
+  } catch {
+    return null
+  }
+})
+
 const isValidated = computed(() => leadsStore.current?.status === 'VALIDE')
 
 const TABS = computed(() => {
@@ -80,14 +109,37 @@ const TABS = computed(() => {
   return tabs
 })
 
-onMounted(async () => {
+async function loadLead() {
   try {
-    await leadsStore.fetchOne(id)
-    await leadsStore.fetchNotes(id)
+    await leadsStore.fetchOne(id.value)
+    await leadsStore.fetchNotes(id.value)
   } catch {
     router.replace({ name: 'leads' })
   }
-})
+}
+
+onMounted(loadLead)
+
+/**
+ * Vue Router reuses this component instance when navigating between two
+ * leads' detail pages (same route, different :id) — onMounted does not
+ * fire again, so without this watcher the page would keep showing the
+ * previously-viewed lead's data (including stale tab caches below).
+ */
+watch(
+  () => route.params.id,
+  (newId, oldId) => {
+    if (newId === oldId) return
+    activeTab.value = 'notes'
+    leadsStore.statusHistory = []
+    leadsStore.assignmentHistory = []
+    leadsStore.calls = []
+    leadsStore.leadAppointments = []
+    leadsStore.payments = []
+    leadsStore.dossier = null
+    loadLead()
+  },
+)
 
 function onStatusChange(status) {
   if (status === 'VALIDE' && leadsStore.current?.status !== 'VALIDE') {
@@ -106,9 +158,9 @@ function onStatusChange(status) {
 async function onRappelConfirm({ scheduled_at, notes }) {
   rappelLoading.value = true
   try {
-    await leadsStore.updateStatus(id, { status: 'RAPPEL' })
+    await leadsStore.updateStatus(id.value, { status: 'RAPPEL' })
     const agentId = leadsStore.current?.assigned_agent?.id ?? leadsStore.current?.assigned_to ?? auth.user?.id
-    await leadsStore.createLeadAppointment(id, {
+    await leadsStore.createLeadAppointment(id.value, {
       agent_id: agentId,
       scheduled_at,
       notes,
@@ -135,7 +187,7 @@ async function onRevenueConfirm(expectedRevenue) {
 async function doStatusChange(payload) {
   statusChanging.value = true
   try {
-    await leadsStore.updateStatus(id, payload)
+    await leadsStore.updateStatus(id.value, payload)
     toast.showSuccess(t('leads.statusUpdated'))
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec de la mise à jour du statut'))
@@ -146,7 +198,7 @@ async function doStatusChange(payload) {
 
 async function onAssign(assignedTo, agent) {
   try {
-    await leadsStore.assign(id, assignedTo)
+    await leadsStore.assign(id.value, assignedTo)
     if (agent && leadsStore.current) {
       leadsStore.current.assigned_agent = {
         id: agent.id,
@@ -164,7 +216,7 @@ async function onAssign(assignedTo, agent) {
 async function onAddNote(note) {
   noteSubmitting.value = true
   try {
-    await leadsStore.addNote(id, note)
+    await leadsStore.addNote(id.value, note)
     toast.showSuccess(t('leads.noteAdded'))
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Failed to add note'))
@@ -176,7 +228,7 @@ async function onAddNote(note) {
 async function onLogCall(payload) {
   callSubmitting.value = true
   try {
-    await leadsStore.logCall(id, payload)
+    await leadsStore.logCall(id.value, payload)
     toast.showSuccess(t('leads.callLogged'))
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Failed to log call'))
@@ -195,27 +247,27 @@ async function onTabChange(tab) {
   activeTab.value = tab
   if (tab === 'history' && leadsStore.statusHistory.length === 0) {
     await Promise.all([
-      leadsStore.fetchStatusHistory(id),
-      leadsStore.fetchAssignmentHistory(id),
+      leadsStore.fetchStatusHistory(id.value),
+      leadsStore.fetchAssignmentHistory(id.value),
     ])
   }
   if (tab === 'calls' && leadsStore.calls.length === 0) {
-    await leadsStore.fetchCalls(id)
+    await leadsStore.fetchCalls(id.value)
   }
   if (tab === 'appointments') {
-    await leadsStore.fetchLeadAppointments(id)
+    await leadsStore.fetchLeadAppointments(id.value)
   }
   if (tab === 'payments') {
-    await leadsStore.fetchPayments(id)
+    await leadsStore.fetchPayments(id.value)
   }
   if (tab === 'dossier') {
-    await leadsStore.fetchDossier(id)
+    await leadsStore.fetchDossier(id.value)
   }
 }
 
 async function onPaymentSubmit(payload) {
   try {
-    await leadsStore.addPayment(id, payload)
+    await leadsStore.addPayment(id.value, payload)
     toast.showSuccess('Paiement enregistré avec succès')
     showPaymentForm.value = false
   } catch (e) {
@@ -228,7 +280,7 @@ async function onPaymentSubmit(payload) {
 
 async function onPaymentDelete(payment) {
   try {
-    await leadsStore.removePayment(id, payment.id)
+    await leadsStore.removePayment(id.value, payment.id)
     toast.showSuccess('Paiement supprimé avec succès')
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec de la suppression du paiement'))
@@ -252,7 +304,7 @@ async function onAptDelete(apt) {
 
 async function onDossierUpload(formData) {
   try {
-    await leadsStore.uploadDocument(id, formData)
+    await leadsStore.uploadDocument(id.value, formData)
     toast.showSuccess('Document téléversé avec succès')
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec du téléversement'))
@@ -261,7 +313,7 @@ async function onDossierUpload(formData) {
 
 async function onDossierDelete(document) {
   try {
-    await leadsStore.removeDocument(id, document.id)
+    await leadsStore.removeDocument(id.value, document.id)
     toast.showSuccess('Document supprimé avec succès')
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec de la suppression'))
@@ -270,7 +322,7 @@ async function onDossierDelete(document) {
 
 async function onDossierDownload(document) {
   try {
-    await leadsStore.downloadDocument(id, document.id, document.original_filename)
+    await leadsStore.downloadDocument(id.value, document.id, document.original_filename)
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec du téléchargement'))
   }
@@ -279,8 +331,8 @@ async function onDossierDownload(document) {
 async function onSetClientType(clientType) {
   updatingClientType.value = true
   try {
-    await leadsStore.setClientType(id, clientType)
-    await leadsStore.fetchDossier(id)
+    await leadsStore.setClientType(id.value, clientType)
+    await leadsStore.fetchDossier(id.value)
     toast.showSuccess(t('documents.clientTypeUpdated'))
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec de la mise à jour'))
@@ -294,7 +346,7 @@ async function onDossierPreview(doc) {
   previewBlobUrl.value = null
   previewLoading.value = true
   try {
-    const response = await documentsApi.download(id, doc.document.id)
+    const response = await documentsApi.download(id.value, doc.document.id)
     previewBlobUrl.value = URL.createObjectURL(new Blob([response.data], { type: doc.document.mime_type }))
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Failed to load preview'))
@@ -315,7 +367,7 @@ async function handleDelete() {
   const ok = await ui.confirm(t('leads.deleteTitle'), `${t('leads.deleteConfirm')}`)
   if (!ok) return
   try {
-    await leadsStore.remove(id)
+    await leadsStore.remove(id.value)
     toast.showSuccess(t('leads.deleteSuccess'))
     router.replace({ name: 'leads' })
   } catch (e) {
@@ -619,6 +671,10 @@ async function handleDelete() {
             <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('users.lastUpdated') }}</p>
             <p class="text-sm text-gray-900">{{ formatDateTime(leadsStore.current.updated_at) }}</p>
           </div>
+          <div v-if="leadsStore.current.lead_submitted_at">
+            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ t('leads.submittedAt') }}</p>
+            <p class="text-sm text-gray-900">{{ formatDateTime(leadsStore.current.lead_submitted_at) }}</p>
+          </div>
 
           <template v-if="leadsStore.current.insurance_type === 'DECENNALE'">
             <div class="sm:col-span-2 border-t border-gray-100 pt-4 mt-1">
@@ -653,6 +709,20 @@ async function handleDelete() {
               <p class="text-sm text-gray-900">{{ leadsStore.current.company_status }}</p>
             </div>
           </template>
+
+          <template v-if="sheetExtraFields">
+            <div class="sm:col-span-2 border-t border-gray-100 pt-4 mt-1">
+              <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">{{ t('leads.sheetDetails') }}</p>
+            </div>
+            <div v-for="field in sheetExtraFields" :key="field.key">
+              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">{{ field.label }}</p>
+              <p class="text-sm text-gray-900">{{ field.value }}</p>
+            </div>
+          </template>
+          <div v-else-if="leadsStore.current.comment" class="sm:col-span-2 border-t border-gray-100 pt-4 mt-1">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{{ t('leads.sheetDetails') }}</p>
+            <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ leadsStore.current.comment }}</p>
+          </div>
         </div>
       </div>
     </AppCard>

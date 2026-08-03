@@ -2,8 +2,11 @@
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Upload } from 'lucide-vue-next'
+import { Upload, RefreshCw } from 'lucide-vue-next'
 import { useLeadImportsStore } from '@/stores/leadImports.store'
+import { useAuthStore } from '@/stores/auth.store'
+import { useToast } from '@/composables/useToast'
+import { firstErrorMessage } from '@/utils/errors'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
@@ -15,7 +18,21 @@ import { formatDateTime } from '@/utils/formatters'
 
 const router = useRouter()
 const store = useLeadImportsStore()
+const auth = useAuthStore()
+const toast = useToast()
 const { t } = useI18n()
+
+async function onSyncGoogleSheets() {
+  try {
+    const results = await store.syncFromGoogleSheets()
+    const summary = Object.entries(results)
+      .map(([sheet, s]) => `${sheet}: +${s.imported} (${s.skipped} skipped)`)
+      .join(' · ')
+    toast.showSuccess(summary)
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, 'Failed to sync from Google Sheets'))
+  }
+}
 
 const STATUS_VARIANT = {
   PENDING: 'neutral',
@@ -51,10 +68,23 @@ onMounted(() => store.fetchList())
           <h1 class="text-2xl font-bold text-white">{{ t('imports.title') }}</h1>
           <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('imports.total') }}</p>
         </div>
-        <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="router.push({ name: 'lead-imports.create' })">
-          <template #icon><Upload class="w-4 h-4" /></template>
-          {{ t('imports.importCSV') }}
-        </AppButton>
+        <div class="flex items-center gap-2">
+          <AppButton
+            v-if="auth.hasRole('super_admin')"
+            size="sm"
+            variant="ghost"
+            class="!bg-white/10 !text-white hover:!bg-white/20"
+            :loading="store.loading.syncingSheets"
+            @click="onSyncGoogleSheets"
+          >
+            <template #icon><RefreshCw class="w-4 h-4" /></template>
+            {{ t('imports.syncGoogleSheets') }}
+          </AppButton>
+          <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="router.push({ name: 'lead-imports.create' })">
+            <template #icon><Upload class="w-4 h-4" /></template>
+            {{ t('imports.importCSV') }}
+          </AppButton>
+        </div>
       </div>
     </div>
 
