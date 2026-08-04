@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Phone, PhoneCall, PhoneOff, Voicemail, ThumbsUp, ThumbsDown, MoreHorizontal } from 'lucide-vue-next'
+import { Phone, PhoneCall, PhoneOff, Voicemail, ThumbsUp, ThumbsDown, ShieldCheck, MoreHorizontal } from 'lucide-vue-next'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -27,6 +27,7 @@ const OUTCOMES = [
   { value: 'voicemail', variant: 'info', icon: Voicemail },
   { value: 'interested', variant: 'success', icon: ThumbsUp },
   { value: 'not_interested', variant: 'danger', icon: ThumbsDown },
+  { value: 'already_insured', variant: 'info', icon: ShieldCheck },
   { value: 'other', variant: 'neutral', icon: MoreHorizontal },
 ]
 
