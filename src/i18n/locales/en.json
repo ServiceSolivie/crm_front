@@ -157,6 +157,7 @@
       "voicemail": "Left voicemail",
       "interested": "Spoke — interested",
       "not_interested": "Spoke — not interested",
+      "already_insured": "Already insured",
       "other": "Other"
     },
     "companyInfo": "Company Information",
