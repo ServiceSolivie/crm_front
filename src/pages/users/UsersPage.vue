@@ -2,10 +2,11 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Plus, Filter, X, Pencil, Trash2 } from 'lucide-vue-next'
+import { Plus, Filter, X, Pencil, Trash2, KeyRound } from 'lucide-vue-next'
 import { useUsersStore } from '@/stores/users.store'
 import { useTeamsStore } from '@/stores/teams.store'
 import { useUiStore } from '@/stores/ui.store'
+import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -16,6 +17,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppToggle from '@/components/base/AppToggle.vue'
+import ResetPasswordModal from '@/components/modules/users/ResetPasswordModal.vue'
 import { ROLES } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDate } from '@/utils/formatters'
@@ -24,10 +26,13 @@ const router = useRouter()
 const store = useUsersStore()
 const teamsStore = useTeamsStore()
 const ui = useUiStore()
+const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
 
 const showFilters = ref(false)
+const showResetPasswordModal = ref(false)
+const resetPasswordTarget = ref(null)
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('users.name'), sortable: false },
@@ -77,6 +82,27 @@ async function handleDelete(user) {
     toast.showSuccess(t('users.deleteSuccess'))
   } catch (e) {
     toast.showError(e?.message ?? 'Failed to delete user')
+  }
+}
+
+function canResetPassword(user) {
+  return auth.hasRole('super_admin') && !user.roles?.includes('super_admin')
+}
+
+function openResetPassword(user) {
+  resetPasswordTarget.value = user
+  showResetPasswordModal.value = true
+}
+
+async function onResetPassword(payload) {
+  const user = resetPasswordTarget.value
+  try {
+    await store.resetPassword(user.id, payload)
+    toast.showSuccess(t('users.resetPasswordSuccess'))
+    showResetPasswordModal.value = false
+    resetPasswordTarget.value = null
+  } catch (e) {
+    toast.showError(e?.message ?? t('users.resetPasswordFailed'))
   }
 }
 </script>
@@ -196,6 +222,14 @@ async function handleDelete(user) {
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1" @click.stop>
             <button
+              v-if="canResetPassword(row)"
+              :title="t('users.resetPassword')"
+              class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
+              @click="openResetPassword(row)"
+            >
+              <KeyRound class="w-3.5 h-3.5" />
+            </button>
+            <button
               :title="t('common.edit')"
               class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
               @click="router.push({ name: 'users.edit', params: { id: row.id } })"
@@ -226,5 +260,13 @@ async function handleDelete(user) {
         />
       </div>
     </AppCard>
+
+    <ResetPasswordModal
+      :open="showResetPasswordModal"
+      :user="resetPasswordTarget"
+      :loading="store.loading.action"
+      @close="showResetPasswordModal = false"
+      @reset="onResetPassword"
+    />
   </div>
 </template>

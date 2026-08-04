@@ -135,6 +135,22 @@ export const useUsersStore = defineStore('users', () => {
     }
   }
 
+  async function resetPassword(id, payload) {
+    loading.action = true
+    try {
+      const { data } = await usersApi.resetPassword(id, payload)
+      if (current.value?.id === id) current.value = data
+      const idx = list.value.findIndex((u) => u.id === id)
+      if (idx !== -1) list.value[idx] = data
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -168,6 +184,7 @@ export const useUsersStore = defineStore('users', () => {
     remove,
     assignRole,
     toggleStatus,
+    resetPassword,
     setFilter,
     resetFilters,
   }

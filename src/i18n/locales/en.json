@@ -347,7 +347,12 @@
     "passwordMin": "Password must be at least 8 characters",
     "passwordMismatch": "Passwords do not match",
     "roleRequired": "Role is required",
-    "createFailed": "Failed to create user"
+    "createFailed": "Failed to create user",
+    "resetPassword": "Reset Password",
+    "resetPasswordDesc": "Set a new password for {name}.",
+    "newPassword": "New Password",
+    "resetPasswordSuccess": "Password reset successfully",
+    "resetPasswordFailed": "Failed to reset password"
   },
   "leadSources": {
     "title": "Lead Sources",

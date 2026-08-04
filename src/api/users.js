@@ -10,4 +10,6 @@ export const usersApi = {
     client.patch(`/users/${id}/role`, { role }).then((r) => r.data),
   toggleStatus: (id, isActive) =>
     client.patch(`/users/${id}/status`, { is_active: isActive }).then((r) => r.data),
+  resetPassword: (id, payload) =>
+    client.patch(`/users/${id}/password`, payload).then((r) => r.data),
 }
