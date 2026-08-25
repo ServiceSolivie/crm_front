@@ -54,6 +54,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd  ~/domains/solvaconseil.fr/public_html/crm_frontend
+            rm -rf dist
             git pull origin master
 
       - name: Upload dist folder
