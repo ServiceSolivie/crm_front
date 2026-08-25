@@ -1,0 +1,1 @@
+function e(e,t){if(e?.errors){let t=Object.values(e.errors)[0];return Array.isArray(t)?t[0]:t}return e?.message??t}export{e as t};

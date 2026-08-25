@@ -26,7 +26,11 @@
     "logout": "Logout",
     "crm": "CRM",
     "organization": "Organization",
-    "contracts": "Contracts"
+    "contracts": "Contracts",
+    "credentialVault": "Credential Vault",
+    "vaultPartners": "Partners",
+    "vaultCredentials": "Credentials",
+    "vaultAuditLogs": "Audit Logs"
   },
   "common": {
     "save": "Save",
@@ -654,5 +658,63 @@
     "pendingFollowUps": "Pending Follow-ups",
     "hoursIdle": "{hours}h idle",
     "noAgents": "No agents in your team"
+  },
+  "vault": {
+    "partners": {
+      "title": "Partners",
+      "total": "partners",
+      "new": "New Partner",
+      "edit": "Edit Partner",
+      "name": "Partner Name",
+      "namePlaceholder": "e.g. Allianz, AXA...",
+      "loginUrl": "Login URL",
+      "domain": "Domain",
+      "selectors": "CSS Selectors (auto-fill)",
+      "formSelector": "Form Selector",
+      "identitySelector": "Identity Selector (username/email field)",
+      "passwordSelector": "Password Selector",
+      "notes": "Notes",
+      "searchPlaceholder": "Search partners...",
+      "empty": "No partners yet. Add your first partner.",
+      "createSuccess": "Partner created successfully",
+      "updateSuccess": "Partner updated successfully",
+      "deleteTitle": "Delete Partner",
+      "deleteConfirm": "Are you sure you want to delete {name}? All linked credentials will be deleted.",
+      "deleteSuccess": "Partner deleted successfully"
+    },
+    "credentials": {
+      "title": "Credentials",
+      "total": "credentials",
+      "new": "New Credential",
+      "edit": "Edit Credential",
+      "label": "Label",
+      "labelPlaceholder": "e.g. Agent - Allianz Portal",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "secrets": "Encrypted Fields",
+      "leaveBlank": "Leave blank to keep existing values.",
+      "allPartners": "All Partners",
+      "searchPlaceholder": "Search credentials...",
+      "empty": "No credentials yet.",
+      "createSuccess": "Credential created successfully",
+      "updateSuccess": "Credential updated successfully",
+      "deleteTitle": "Delete Credential",
+      "deleteConfirm": "Are you sure you want to delete \"{label}\"?",
+      "deleteSuccess": "Credential deleted successfully"
+    },
+    "auditLogs": {
+      "title": "Audit Logs",
+      "total": "entries",
+      "date": "Date",
+      "user": "User",
+      "action": "Action",
+      "domain": "Domain",
+      "ip": "IP Address",
+      "allActions": "All Actions",
+      "from": "From",
+      "to": "To",
+      "empty": "No audit logs found."
+    }
   }
 }

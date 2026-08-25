@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
+import { useNotificationSound } from '@/composables/useNotificationSound'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import ToastContainer from '@/components/base/ToastContainer.vue'
@@ -10,6 +11,17 @@ import ConfirmDialog from '@/components/base/ConfirmDialog.vue'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+
+onMounted(() => {
+  const { unlock } = useNotificationSound()
+  const handler = () => {
+    unlock()
+    document.removeEventListener('click', handler)
+    document.removeEventListener('keydown', handler)
+  }
+  document.addEventListener('click', handler, { once: true })
+  document.addEventListener('keydown', handler, { once: true })
+})
 
 const routerReady = ref(false)
 router.isReady().then(() => { routerReady.value = true })

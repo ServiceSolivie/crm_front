@@ -26,7 +26,11 @@
     "logout": "Déconnexion",
     "crm": "CRM",
     "organization": "Organisation",
-    "contracts": "Contrats"
+    "contracts": "Contrats",
+    "credentialVault": "Coffre-fort",
+    "vaultPartners": "Partenaires",
+    "vaultCredentials": "Identifiants",
+    "vaultAuditLogs": "Journal d'audit"
   },
   "common": {
     "save": "Enregistrer",
@@ -654,5 +658,63 @@
     "pendingFollowUps": "Suivis en attente",
     "hoursIdle": "{hours}h d'inactivité",
     "noAgents": "Aucun agent dans votre équipe"
+  },
+  "vault": {
+    "partners": {
+      "title": "Partenaires",
+      "total": "partenaires",
+      "new": "Nouveau Partenaire",
+      "edit": "Modifier le Partenaire",
+      "name": "Nom du partenaire",
+      "namePlaceholder": "ex. Allianz, AXA...",
+      "loginUrl": "URL de connexion",
+      "domain": "Domaine",
+      "selectors": "Sélecteurs CSS (remplissage auto)",
+      "formSelector": "Sélecteur formulaire",
+      "identitySelector": "Sélecteur identifiant (champ email/utilisateur)",
+      "passwordSelector": "Sélecteur mot de passe",
+      "notes": "Notes",
+      "searchPlaceholder": "Rechercher des partenaires...",
+      "empty": "Aucun partenaire. Ajoutez votre premier partenaire.",
+      "createSuccess": "Partenaire créé avec succès",
+      "updateSuccess": "Partenaire mis à jour avec succès",
+      "deleteTitle": "Supprimer le partenaire",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer {name} ? Tous les identifiants liés seront supprimés.",
+      "deleteSuccess": "Partenaire supprimé avec succès"
+    },
+    "credentials": {
+      "title": "Identifiants",
+      "total": "identifiants",
+      "new": "Nouvel identifiant",
+      "edit": "Modifier l'identifiant",
+      "label": "Libellé",
+      "labelPlaceholder": "ex. Agent - Portail Allianz",
+      "username": "Nom d'utilisateur",
+      "email": "Email",
+      "password": "Mot de passe",
+      "secrets": "Champs chiffrés",
+      "leaveBlank": "Laisser vide pour conserver les valeurs existantes.",
+      "allPartners": "Tous les partenaires",
+      "searchPlaceholder": "Rechercher des identifiants...",
+      "empty": "Aucun identifiant.",
+      "createSuccess": "Identifiant créé avec succès",
+      "updateSuccess": "Identifiant mis à jour avec succès",
+      "deleteTitle": "Supprimer l'identifiant",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer \"{label}\" ?",
+      "deleteSuccess": "Identifiant supprimé avec succès"
+    },
+    "auditLogs": {
+      "title": "Journal d'audit",
+      "total": "entrées",
+      "date": "Date",
+      "user": "Utilisateur",
+      "action": "Action",
+      "domain": "Domaine",
+      "ip": "Adresse IP",
+      "allActions": "Toutes les actions",
+      "from": "Du",
+      "to": "Au",
+      "empty": "Aucune entrée trouvée."
+    }
   }
 }

@@ -177,6 +177,26 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Document Requirements' },
     },
 
+    /* Credential Vault */
+    {
+      path: '/vault/partners',
+      name: 'vault-partners',
+      component: () => import('@/pages/vault/VaultPartnersPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Vault Partners' },
+    },
+    {
+      path: '/vault/credentials',
+      name: 'vault-credentials',
+      component: () => import('@/pages/vault/VaultCredentialsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Vault Credentials' },
+    },
+    {
+      path: '/vault/audit-logs',
+      name: 'vault-audit-logs',
+      component: () => import('@/pages/vault/VaultAuditLogsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Vault Audit Logs' },
+    },
+
     /* Lead Imports */
     {
       path: '/lead-imports',
