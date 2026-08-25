@@ -1,0 +1,1 @@
+import{O as e,bt as t,d as n,j as r}from"./runtime-core.esm-bundler-DTvcxusf.js";var i={__name:`AppCard`,props:{padding:{type:String,default:`md`},class:{type:String,default:``}},setup(i){let a=i,o={none:``,sm:`p-4`,md:`p-5`,lg:`p-6`};return(s,c)=>(e(),n(`div`,{class:t([`bg-white rounded-2xl shadow-card`,o[i.padding],a.class])},[r(s.$slots,`default`)],2))}};export{i as t};

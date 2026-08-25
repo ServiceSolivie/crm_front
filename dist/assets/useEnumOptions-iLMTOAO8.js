@@ -1,0 +1,1 @@
+import{i as e}from"./client-Di7RZ2ME.js";import{s as t}from"./runtime-core.esm-bundler-DTvcxusf.js";function n(n,r){let{t:i}=e();return t(()=>Object.entries(n).map(([e,t])=>({value:e,label:i(`${r}.${e}`,e),...t?.color?{color:t.color}:{}})))}export{n as t};

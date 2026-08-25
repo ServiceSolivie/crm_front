@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { notificationsApi } from '@/api/notifications'
 import { useUiStore } from '@/stores/ui.store'
 import { notificationTitle } from '@/utils/notifications'
+import { useNotificationSound } from '@/composables/useNotificationSound'
 
 export const useNotificationsStore = defineStore('notifications', () => {
   const list = ref([])
@@ -94,6 +95,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     list.value.unshift(item)
     unreadCount.value += 1
     useUiStore().showInfo(notificationTitle(item))
+    useNotificationSound().play()
   }
 
   return {

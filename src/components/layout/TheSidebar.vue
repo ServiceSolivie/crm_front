@@ -21,6 +21,9 @@ import {
   Banknote,
   ClipboardList,
   FileSignature,
+  KeyRound,
+  ScrollText,
+  Building2,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -89,6 +92,14 @@ const navGroups = computed(() => [
       { icon: UserCog, label: t('nav.users'), to: '/users', permission: 'USERS_VIEW' },
       { icon: Tag, label: t('nav.leadSources'), to: '/lead-sources', role: 'super_admin' },
       { icon: FileCog, label: t('nav.documentRequirements'), to: '/document-requirements', role: 'super_admin' },
+    ],
+  },
+  {
+    label: t('nav.credentialVault'),
+    items: [
+      { icon: Building2, label: t('nav.vaultPartners'), to: '/vault/partners', role: 'super_admin' },
+      { icon: KeyRound, label: t('nav.vaultCredentials'), to: '/vault/credentials', role: 'super_admin' },
+      { icon: ScrollText, label: t('nav.vaultAuditLogs'), to: '/vault/audit-logs', role: 'super_admin' },
     ],
   },
 ])
