@@ -20,6 +20,7 @@
     "documentRequirements": "Config Documents",
     "myAgents": "Mes Agents",
     "followUps": "Suivi",
+    "gestionDashboard": "Tableau de bord gestion",
     "team": "Équipe",
     "reports": "Rapports",
     "settings": "Paramètres",
@@ -534,7 +535,13 @@
       "PERDU": "Perdu",
       "PAS_INTERESSE": "Pas intéressé",
       "MAUVAIS_NUMERO": "Mauvais numéro",
-      "LEAD_INVALIDE": "Lead invalide"
+      "LEAD_INVALIDE": "Lead invalide",
+      "GESTION": "Gestion",
+      "A_CORRIGER": "À corriger",
+      "CALL2_OK": "Call2 OK",
+      "CALL2_KO": "Call2 KO",
+      "PDG_OK": "PDG OK",
+      "PDG_KO": "PDG KO"
     },
     "appointment": {
       "PLANIFIE": "Planifié",
@@ -581,7 +588,8 @@
     "super_admin": "Super Admin",
     "manager": "Manager",
     "team_leader": "Chef d'équipe",
-    "agent": "Agent"
+    "agent": "Agent",
+    "gestion": "Gestion"
   },
   "payments": {
     "title": "Paiements"
@@ -590,6 +598,7 @@
     "dossier": "Dossier",
     "documents": "documents",
     "noDocumentsRequired": "Aucun document requis pour ce type d'assurance.",
+    "loadFailed": "Impossible de charger le dossier. Vous n'avez peut-être pas accès à ce lead.",
     "uploaded": "Téléversé",
     "missing": "Manquant",
     "upload": "Téléverser",
@@ -637,6 +646,22 @@
     "typeDeleted": "Type de document supprimé",
     "deleteTypeTitle": "Supprimer le Type de Document",
     "deleteTypeConfirm": "Supprimer « {name} » ? Cette action est irréversible."
+  },
+  "gestion": {
+    "dashboardTitle": "Tableau de bord gestion",
+    "dashboardSubtitle": "Votre file d'attente et vos dossiers en cours",
+    "backlog": "En attente",
+    "stuck": "Bloqués",
+    "waitingOnAgent": "En attente de l'agent",
+    "validatedThisWeek": "Validés cette semaine",
+    "avgHours": "{hours} h en moyenne en gestion",
+    "stuckLeadsTitle": "Dossiers bloqués à traiter",
+    "noStuckLeads": "Aucun dossier bloqué pour le moment.",
+    "checkpointsTitle": "Points de contrôle Call2 / PDG",
+    "call2KoCount": "Call2 KO",
+    "awaitingPdgCount": "En attente de PDG",
+    "pdgKoCount": "PDG KO",
+    "pdgOkCount": "PDG OK (à valider)"
   },
   "teamLeader": {
     "title": "Tableau de bord équipe",

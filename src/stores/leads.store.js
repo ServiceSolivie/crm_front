@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { leadsApi } from '@/api/leads'
 import { paymentsApi } from '@/api/payments'
 import { documentsApi } from '@/api/documents'
+import { gestionApi } from '@/api/gestion'
 
 export const useLeadsStore = defineStore('leads', () => {
   const list = ref([])
@@ -383,6 +384,23 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
+  async function flagIssue(leadId, payload) {
+    loading.action = true
+    try {
+      const { data } = await gestionApi.flagIssue(leadId, payload)
+      const numId = Number(leadId)
+      if (current.value?.id === numId) current.value = data
+      const idx = list.value.findIndex((l) => l.id === numId)
+      if (idx !== -1) list.value[idx] = data
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
   function setFilter(key, value) {
     filters[key] = value
     if (key !== 'page') filters.page = 1
@@ -447,6 +465,7 @@ export const useLeadsStore = defineStore('leads', () => {
     addPayment,
     removePayment,
     setClientType,
+    flagIssue,
     fetchDossier,
     uploadDocument,
     removeDocument,

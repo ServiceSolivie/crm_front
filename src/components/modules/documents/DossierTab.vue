@@ -1,6 +1,6 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { FolderOpen } from 'lucide-vue-next'
+import { FolderOpen, AlertTriangle } from 'lucide-vue-next'
 import AppProgressBar from '@/components/base/AppProgressBar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import DossierChecklist from './DossierChecklist.vue'
@@ -65,5 +65,11 @@ const emit = defineEmits(['upload', 'delete', 'download', 'preview', 'set-client
       @download="(doc) => emit('download', doc)"
       @preview="(doc) => emit('preview', doc)"
     />
+  </div>
+
+  <!-- Failed to load (e.g. an authorization error) and nothing to show -->
+  <div v-else class="text-center py-10">
+    <AlertTriangle class="w-10 h-10 text-gray-300 mx-auto mb-2" />
+    <p class="text-sm text-gray-500">{{ t('documents.loadFailed') }}</p>
   </div>
 </template>

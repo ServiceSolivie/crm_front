@@ -20,6 +20,7 @@
     "documentRequirements": "Document Config",
     "myAgents": "My Agents",
     "followUps": "Follow-ups",
+    "gestionDashboard": "Gestion Dashboard",
     "team": "Team",
     "reports": "Reports",
     "settings": "Settings",
@@ -534,7 +535,13 @@
       "PERDU": "Lost",
       "PAS_INTERESSE": "Not Interested",
       "MAUVAIS_NUMERO": "Wrong Number",
-      "LEAD_INVALIDE": "Invalid Lead"
+      "LEAD_INVALIDE": "Invalid Lead",
+      "GESTION": "Management Review",
+      "A_CORRIGER": "Needs Correction",
+      "CALL2_OK": "Call2 OK",
+      "CALL2_KO": "Call2 KO",
+      "PDG_OK": "PDG OK",
+      "PDG_KO": "PDG KO"
     },
     "appointment": {
       "PLANIFIE": "Scheduled",
@@ -581,7 +588,8 @@
     "super_admin": "Super Admin",
     "manager": "Manager",
     "team_leader": "Team Leader",
-    "agent": "Agent"
+    "agent": "Agent",
+    "gestion": "Gestion"
   },
   "payments": {
     "title": "Payments"
@@ -590,6 +598,7 @@
     "dossier": "Documents",
     "documents": "documents",
     "noDocumentsRequired": "No documents required for this insurance type.",
+    "loadFailed": "Couldn't load the file. You may not have access to this lead.",
     "uploaded": "Uploaded",
     "missing": "Missing",
     "upload": "Upload",
@@ -637,6 +646,22 @@
     "typeDeleted": "Document type deleted",
     "deleteTypeTitle": "Delete Document Type",
     "deleteTypeConfirm": "Delete \"{name}\"? This cannot be undone."
+  },
+  "gestion": {
+    "dashboardTitle": "Gestion Dashboard",
+    "dashboardSubtitle": "Your queue and files currently in progress",
+    "backlog": "Backlog",
+    "stuck": "Stuck",
+    "waitingOnAgent": "Waiting on Agent",
+    "validatedThisWeek": "Validated This Week",
+    "avgHours": "{hours}h avg. time in gestion",
+    "stuckLeadsTitle": "Stuck Files to Handle",
+    "noStuckLeads": "No stuck files right now.",
+    "checkpointsTitle": "Call2 / PDG Checkpoints",
+    "call2KoCount": "Call2 KO",
+    "awaitingPdgCount": "Awaiting PDG",
+    "pdgKoCount": "PDG KO",
+    "pdgOkCount": "PDG OK (to finalize)"
   },
   "teamLeader": {
     "title": "Team Dashboard",

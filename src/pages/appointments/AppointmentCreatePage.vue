@@ -26,7 +26,9 @@ const toast = useToast()
 
 const leadId = route.params.leadId
 
-const isAgent = computed(() => auth.hasRole('agent'))
+// Agents and gestion only ever book appointments for themselves - only an
+// admin/team leader picks who the appointment is for.
+const isSelfScoped = computed(() => auth.hasRole('agent') || auth.hasRole('gestion'))
 
 const form = reactive({
   agent_id: '',
@@ -47,12 +49,12 @@ const leadFullName = computed(() => {
 onMounted(async () => {
   try {
     const promises = [leadsStore.fetchOne(leadId)]
-    if (!isAgent.value) {
+    if (!isSelfScoped.value) {
       promises.push(usersStore.fetchList({ role: 'agent', per_page: 100 }))
     }
     await Promise.all(promises)
 
-    if (isAgent.value) {
+    if (isSelfScoped.value) {
       form.agent_id = auth.user?.id ?? ''
     } else {
       agentOptions.value = [
@@ -137,7 +139,7 @@ function goBack() {
             :options="appointmentStatusOptions"
           />
           <!-- Agents and admins/managers see different things for assignment -->
-          <div v-if="isAgent" class="sm:col-span-2 p-3 rounded-xl bg-gray-50 text-sm text-gray-600">
+          <div v-if="isSelfScoped" class="sm:col-span-2 p-3 rounded-xl bg-gray-50 text-sm text-gray-600">
             Assigned to: <span class="font-medium text-gray-900">{{ auth.user?.name ?? 'You' }}</span>
           </div>
           <AppSelect

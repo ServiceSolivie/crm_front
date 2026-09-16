@@ -12,6 +12,12 @@ export const LEAD_STATUS = {
   PAS_INTERESSE: { color: 'danger' },
   MAUVAIS_NUMERO: { color: 'danger' },
   LEAD_INVALIDE: { color: 'danger' },
+  GESTION: { color: 'info' },
+  A_CORRIGER: { color: 'warning' },
+  CALL2_OK: { color: 'success' },
+  CALL2_KO: { color: 'warning' },
+  PDG_OK: { color: 'success' },
+  PDG_KO: { color: 'warning' },
 }
 
 export const APPOINTMENT_STATUS = {
@@ -47,6 +53,7 @@ export const ROLES = {
   manager: {},
   team_leader: {},
   agent: {},
+  gestion: {},
 }
 
 export const REMINDER_CHANNEL = {

@@ -2,7 +2,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Plus, Filter, X, UserCircle, Pencil, Trash2, PhoneCall } from 'lucide-vue-next'
+import { Plus, Filter, X, UserCircle, Pencil, Trash2, PhoneCall, AlertTriangle } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useLeadSourcesStore } from '@/stores/leadSources.store'
 import { useUsersStore } from '@/stores/users.store'
@@ -255,6 +255,7 @@ const to = computed(() =>
         :sort-key="SORT_KEY_REVERSE[leadsStore.filters.sort_by] ?? leadsStore.filters.sort_by"
         :sort-dir="leadsStore.filters.sort_dir"
         row-key="id"
+        :row-class="(row) => (row.is_doublon ? 'bg-red-50/60' : '')"
         :empty-title="t('leads.noLeads')"
         :empty-description="t('leads.noLeadsDesc')"
         @sort="onSort"
@@ -264,8 +265,13 @@ const to = computed(() =>
           <div class="flex items-center gap-2.5 min-w-0 max-w-[220px]">
             <AppAvatar :name="`${row.first_name ?? ''} ${row.last_name ?? ''}`" size="sm" class="shrink-0" />
             <div class="min-w-0 flex-1">
-              <p class="font-medium text-gray-900 text-sm truncate leading-tight">
+              <p class="font-medium text-gray-900 text-sm truncate leading-tight flex items-center gap-1.5">
                 {{ [row.first_name, row.last_name].filter(Boolean).join(' ') || '—' }}
+                <AlertTriangle
+                  v-if="row.is_doublon"
+                  class="w-3.5 h-3.5 text-red-500 shrink-0"
+                  :title="row.doublon_of ? `Doublon de ${row.doublon_of.reference}` : 'Doublon'"
+                />
               </p>
               <p v-if="row.email" class="text-xs text-gray-400 truncate">{{ row.email }}</p>
             </div>

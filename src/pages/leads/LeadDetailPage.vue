@@ -2,7 +2,7 @@
 import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, Edit2, Trash2, UserPlus, Plus, Calendar, Pencil } from 'lucide-vue-next'
+import { ArrowLeft, Edit2, Trash2, UserPlus, Plus, Calendar, Pencil, Flag } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -25,6 +25,7 @@ import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.
 import PaymentForm from '@/components/modules/payments/PaymentForm.vue'
 import PaymentList from '@/components/modules/payments/PaymentList.vue'
 import DossierTab from '@/components/modules/documents/DossierTab.vue'
+import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
 import { documentsApi } from '@/api/documents'
 import { formatDate, formatDateTime } from '@/utils/formatters'
@@ -56,6 +57,8 @@ const updatingClientType = ref(false)
 const previewDoc = ref(null)
 const previewBlobUrl = ref(null)
 const previewLoading = ref(false)
+const showFlagIssueModal = ref(false)
+const flagIssueLoading = ref(false)
 
 const leadFullName = computed(() => {
   const c = leadsStore.current
@@ -93,6 +96,14 @@ const sheetExtraFields = computed(() => {
 })
 
 const isValidated = computed(() => leadsStore.current?.status === 'VALIDE')
+
+const GESTION_REVIEW_STATUSES = ['GESTION', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO']
+const canFlagIssue = computed(() =>
+  auth.hasRole('gestion') && GESTION_REVIEW_STATUSES.includes(leadsStore.current?.status),
+)
+const missingDossierDocuments = computed(() =>
+  (leadsStore.dossier?.documents ?? []).filter((d) => d.status === 'missing'),
+)
 
 const TABS = computed(() => {
   const tabs = [
@@ -189,6 +200,14 @@ async function doStatusChange(payload) {
   try {
     await leadsStore.updateStatus(id.value, payload)
     toast.showSuccess(t('leads.statusUpdated'))
+    // The history tab only fetches once and caches (see onTabChange) - a
+    // status change makes that cache stale, so drop it and, if the tab is
+    // currently open, refetch immediately instead of waiting for the user
+    // to leave and come back.
+    leadsStore.statusHistory = []
+    if (activeTab.value === 'history') {
+      await leadsStore.fetchStatusHistory(id.value)
+    }
   } catch (e) {
     toast.showError(firstErrorMessage(e, 'Échec de la mise à jour du statut'))
   } finally {
@@ -363,6 +382,30 @@ function closePreview() {
   previewBlobUrl.value = null
 }
 
+async function openFlagIssueModal() {
+  if (!leadsStore.dossier) {
+    await leadsStore.fetchDossier(id.value)
+  }
+  showFlagIssueModal.value = true
+}
+
+async function onFlagIssueConfirm(payload) {
+  flagIssueLoading.value = true
+  try {
+    await leadsStore.flagIssue(id.value, payload)
+    toast.showSuccess('Le lead a été renvoyé à l\'agent pour correction')
+    showFlagIssueModal.value = false
+    leadsStore.statusHistory = []
+    if (activeTab.value === 'history') {
+      await leadsStore.fetchStatusHistory(id.value)
+    }
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, 'Échec du signalement'))
+  } finally {
+    flagIssueLoading.value = false
+  }
+}
+
 async function handleDelete() {
   const ok = await ui.confirm(t('leads.deleteTitle'), `${t('leads.deleteConfirm')}`)
   if (!ok) return
@@ -425,6 +468,16 @@ async function handleDelete() {
 
         <!-- Actions -->
         <div class="flex items-center gap-2 shrink-0">
+          <AppButton
+            v-if="canFlagIssue"
+            variant="ghost"
+            size="sm"
+            class="!text-danger"
+            @click="openFlagIssueModal"
+          >
+            <template #icon><Flag class="w-4 h-4" /></template>
+            Signaler un problème
+          </AppButton>
           <AppButton
             v-if="!auth.hasRole('agent')"
             variant="ghost"
@@ -759,6 +812,15 @@ async function handleDelete() {
       :loading="leadsStore.loading.payments"
       @close="showPaymentForm = false"
       @submit="onPaymentSubmit"
+    />
+
+    <!-- Flag issue modal (gestion only) -->
+    <FlagIssueModal
+      :open="showFlagIssueModal"
+      :loading="flagIssueLoading"
+      :missing-documents="missingDossierDocuments"
+      @close="showFlagIssueModal = false"
+      @confirm="onFlagIssueConfirm"
     />
 
     <!-- Document preview modal -->

@@ -24,6 +24,7 @@ import {
   KeyRound,
   ScrollText,
   Building2,
+  ClipboardCheck,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -65,7 +66,7 @@ const reportSubItems = computed(() => {
 const navGroups = computed(() => [
   {
     items: [
-      { icon: LayoutDashboard, label: t('nav.dashboard'), to: '/dashboard', permission: null },
+      { icon: LayoutDashboard, label: t('nav.dashboard'), to: '/dashboard', permission: null, excludeRole: 'gestion' },
     ],
   },
   {
@@ -83,6 +84,7 @@ const navGroups = computed(() => [
     items: [
       { icon: UserCheck, label: t('nav.myAgents'), to: '/my-agents', role: 'team_leader' },
       { icon: ClipboardList, label: t('nav.followUps'), to: '/follow-ups', role: 'team_leader' },
+      { icon: ClipboardCheck, label: t('nav.gestionDashboard'), to: '/gestion-dashboard', role: 'gestion' },
     ],
   },
   {
@@ -111,6 +113,7 @@ if (route.path.startsWith('/reports')) {
 }
 
 function isVisible(item) {
+  if (item.excludeRole && auth.hasRole(item.excludeRole)) return false
   if (item.role) return auth.hasRole(item.role)
   if (!item.permission) return true
   const perms = Array.isArray(item.permission) ? item.permission : [item.permission]
