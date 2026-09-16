@@ -31,7 +31,8 @@ async function submit() {
   loading.value = true
   try {
     await auth.login(form.email, form.password)
-    const redirect = route.query.redirect ?? '/dashboard'
+    const defaultLanding = auth.hasRole('gestion') ? '/gestion-dashboard' : '/dashboard'
+    const redirect = route.query.redirect ?? defaultLanding
     router.push(redirect)
   } catch (err) {
     if (err.type === 'validation') {

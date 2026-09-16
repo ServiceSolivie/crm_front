@@ -25,7 +25,9 @@ const auth = useAuthStore()
 const toast = useToast()
 
 const id = route.params.id
-const isAgent = computed(() => auth.hasRole('agent'))
+// Agents and gestion only ever book appointments for themselves - only an
+// admin/team leader picks who the appointment is for.
+const isSelfScoped = computed(() => auth.hasRole('agent') || auth.hasRole('gestion'))
 
 const form = reactive({
   scheduled_at: '',
@@ -41,7 +43,7 @@ const original = reactive({ scheduled_at: '', status: '' })
 onMounted(async () => {
   try {
     const promises = [store.fetchOne(id)]
-    if (!isAgent.value) {
+    if (!isSelfScoped.value) {
       promises.push(usersStore.fetchList({ role: 'agent', per_page: 100 }))
     }
     await Promise.all(promises)
@@ -54,7 +56,7 @@ onMounted(async () => {
       original.scheduled_at = form.scheduled_at
       original.status = form.status
     }
-    if (!isAgent.value) {
+    if (!isSelfScoped.value) {
       agentOptions.value = [
         { value: '', label: 'Unassigned' },
         ...usersStore.list.map((u) => ({ value: u.id, label: u.name })),
@@ -132,7 +134,7 @@ async function submit() {
             label="Status"
             :options="appointmentStatusOptions"
           />
-          <div v-if="isAgent" class="sm:col-span-2 p-3 rounded-xl bg-gray-50 text-sm text-gray-600">
+          <div v-if="isSelfScoped" class="sm:col-span-2 p-3 rounded-xl bg-gray-50 text-sm text-gray-600">
             Assigned to: <span class="font-medium text-gray-900">{{ auth.user?.name ?? 'You' }}</span>
           </div>
           <AppSelect

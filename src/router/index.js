@@ -161,6 +161,14 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'team_leader', title: 'Follow-ups' },
     },
 
+    /* Gestion */
+    {
+      path: '/gestion-dashboard',
+      name: 'gestion.dashboard',
+      component: () => import('@/pages/gestion/GestionDashboardPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', title: 'Gestion Dashboard' },
+    },
+
     /* Lead Sources */
     {
       path: '/lead-sources',
