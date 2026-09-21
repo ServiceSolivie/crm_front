@@ -77,7 +77,7 @@ export const useVaultCredentialsStore = defineStore('vaultCredentials', () => {
     errors.value = null
     try {
       const { data } = await vaultCredentialsApi.update(id, payload)
-      const idx = list.value.findIndex((c) => c.id === id)
+      const idx = list.value.findIndex((c) => String(c.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       current.value = data
       return data
@@ -93,7 +93,7 @@ export const useVaultCredentialsStore = defineStore('vaultCredentials', () => {
     loading.action = true
     try {
       await vaultCredentialsApi.remove(id)
-      list.value = list.value.filter((c) => c.id !== id)
+      list.value = list.value.filter((c) => String(c.id) !== String(id))
       meta.value.total--
     } catch (e) {
       errors.value = e

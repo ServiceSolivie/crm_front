@@ -1,21 +1,30 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import AppBadge from '@/components/base/AppBadge.vue'
-import { LEAD_STATUS } from '@/utils/enums'
+import { ChevronDown } from 'lucide-vue-next'
+import { LEAD_STAGES, leadStage } from '@/utils/enums'
 
-defineProps({
+/** Status pill coloured by pipeline stage (see LEAD_STAGES in utils/enums). */
+const props = defineProps({
   status: { type: String, default: '' },
   dot: { type: Boolean, default: false },
+  caret: { type: Boolean, default: false },
 })
 
 const { t } = useI18n()
-const VARIANT_MAP = { success: 'success', danger: 'danger', warning: 'warning', info: 'info', neutral: 'neutral' }
+const stage = computed(() => LEAD_STAGES[leadStage(props.status)])
 </script>
 
 <template>
-  <AppBadge
-    :variant="VARIANT_MAP[LEAD_STATUS[status]?.color] ?? 'neutral'"
-    :label="t('statuses.lead.' + status, status)"
-    :dot="dot"
-  />
+  <span
+    :class="[
+      'inline-flex items-center gap-1.5 h-6 rounded-md text-[12.5px] font-medium whitespace-nowrap',
+      caret ? 'pl-2 pr-1.5' : 'px-2',
+      stage.badge,
+    ]"
+  >
+    <span v-if="dot" :class="['w-1.5 h-1.5 rounded-full shrink-0', stage.dot]" />
+    {{ t('statuses.lead.' + status, status) }}
+    <ChevronDown v-if="caret" class="w-3 h-3 shrink-0 opacity-80" />
+  </span>
 </template>

@@ -76,7 +76,7 @@ export const useVaultPartnersStore = defineStore('vaultPartners', () => {
     errors.value = null
     try {
       const { data } = await vaultPartnersApi.update(id, payload)
-      const idx = list.value.findIndex((p) => p.id === id)
+      const idx = list.value.findIndex((p) => String(p.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       current.value = data
       return data
@@ -92,7 +92,7 @@ export const useVaultPartnersStore = defineStore('vaultPartners', () => {
     loading.action = true
     try {
       await vaultPartnersApi.remove(id)
-      list.value = list.value.filter((p) => p.id !== id)
+      list.value = list.value.filter((p) => String(p.id) !== String(id))
       meta.value.total--
     } catch (e) {
       errors.value = e

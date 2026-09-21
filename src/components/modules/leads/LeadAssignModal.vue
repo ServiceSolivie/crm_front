@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search } from 'lucide-vue-next'
 import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -7,6 +8,8 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import { usersApi } from '@/api/users'
 import { teamLeaderApi } from '@/api/teamLeader'
 import { useAuthStore } from '@/stores/auth.store'
+
+const { t } = useI18n()
 
 const props = defineProps({
   open: { type: Boolean, default: false },
@@ -64,14 +67,14 @@ function confirm() {
 </script>
 
 <template>
-  <AppModal :open="open" title="Assign Lead" size="sm" @close="emit('close')">
+  <AppModal :open="open" :title="t('leads.assignModal.title')" size="sm" @close="emit('close')">
     <!-- Search -->
     <div class="relative mb-4">
       <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
       <input
         v-model="search"
         type="text"
-        placeholder="Search agents…"
+        :placeholder="t('leads.assignModal.searchAgent')"
         class="w-full h-10 pl-9 pr-3 rounded-lg border border-gray-300 bg-gray-50 text-sm
                focus:outline-none focus:border-primary focus:bg-white"
       />
@@ -79,12 +82,13 @@ function confirm() {
 
     <!-- Agent list -->
     <div class="space-y-1 max-h-64 overflow-y-auto -mx-1 px-1">
-      <div
-        v-if="loadingAgents"
-        v-for="n in 4"
-        :key="n"
-        class="h-12 rounded-lg bg-gray-100 animate-pulse"
-      />
+      <template v-if="loadingAgents">
+        <div
+          v-for="n in 4"
+          :key="n"
+          class="h-12 rounded-lg bg-gray-100 animate-pulse"
+        />
+      </template>
       <button
         v-else
         v-for="agent in filtered"
@@ -113,14 +117,14 @@ function confirm() {
       </button>
 
       <p v-if="!loadingAgents && filtered.length === 0" class="text-center py-6 text-sm text-gray-400">
-        No agents found
+        {{ t('leads.assignModal.noAgents') }}
       </p>
     </div>
 
     <template #footer>
-      <AppButton variant="ghost" @click="emit('close')">Cancel</AppButton>
+      <AppButton variant="secondary" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
       <AppButton :loading="loading" :disabled="selected === null" @click="confirm">
-        Assign
+        {{ t('leads.assignModal.assign') }}
       </AppButton>
     </template>
   </AppModal>

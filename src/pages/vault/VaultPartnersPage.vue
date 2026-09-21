@@ -15,6 +15,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
 import { firstErrorMessage } from '@/utils/errors'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 
 const { t } = useI18n()
 const store = useVaultPartnersStore()
@@ -87,7 +88,7 @@ async function submit() {
 }
 
 async function handleDelete(partner) {
-  const ok = await ui.confirm(t('vault.partners.deleteTitle'), t('vault.partners.deleteConfirm', { name: partner.name }))
+  const ok = await ui.confirm(t('vault.partners.deleteTitle'), t('vault.partners.deleteConfirm', { name: partner.name }), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.remove(partner.id)
@@ -99,22 +100,18 @@ async function handleDelete(partner) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('vault.partners.title') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('vault.partners.total') }}</p>
-        </div>
-        <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="openCreate">
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('vault.partners.title')">
+      <template #meta>
+        <p class="text-[13px] text-gray-500 mt-0.5">{{ store.meta.total }} {{ t('vault.partners.total') }}</p>
+      </template>
+      <template #actions>
+        <AppButton @click="openCreate">
           <template #icon><Plus class="w-4 h-4" /></template>
           {{ t('vault.partners.new') }}
         </AppButton>
-      </div>
-    </div>
+      </template>
+    </AppPageHeader>
 
     <!-- Search -->
     <AppCard padding="sm">
@@ -173,7 +170,7 @@ async function handleDelete(partner) {
           </button>
           <button
             :title="t('common.delete')"
-            class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors"
+            class="p-1.5 rounded-lg text-gray-400 hover:text-danger-text hover:bg-danger-bg transition-colors"
             @click="handleDelete(partner)"
           >
             <Trash2 class="w-3.5 h-3.5" />

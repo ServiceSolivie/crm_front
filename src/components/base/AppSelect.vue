@@ -28,10 +28,10 @@ const hasEmptyOption = computed(() => props.options.some((opt) => opt.value === 
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-gray-700 select-none"
+      class="text-[12.5px] font-medium text-gray-600 select-none"
     >
       {{ label }}
-      <span v-if="required" class="text-danger ml-0.5">*</span>
+      <span v-if="required" class="text-danger-text ml-0.5">*</span>
     </label>
 
     <div class="relative">
@@ -41,9 +41,9 @@ const hasEmptyOption = computed(() => props.options.some((opt) => opt.value === 
         :disabled="disabled"
         :required="required"
         :class="[
-          'w-full h-11 pl-3 pr-9 rounded-lg border bg-gray-50 text-sm text-gray-900',
+          'w-full h-10 pl-3 pr-9 rounded-lg border bg-white text-[13.5px] text-gray-900',
           'appearance-none transition-colors duration-150 cursor-pointer',
-          'focus:outline-none focus:bg-white focus:border-primary focus-ring',
+          'focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary-soft/20',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           error ? 'border-danger' : 'border-gray-300',
           modelValue === null || modelValue === '' ? 'text-gray-400' : 'text-gray-900',
@@ -68,7 +68,7 @@ const hasEmptyOption = computed(() => props.options.some((opt) => opt.value === 
       />
     </div>
 
-    <p v-if="error" class="text-xs text-danger">{{ error }}</p>
+    <p v-if="error" class="text-xs text-danger-text">{{ error }}</p>
     <p v-else-if="hint" class="text-xs text-gray-500">{{ hint }}</p>
   </div>
 </template>

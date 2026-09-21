@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
@@ -12,6 +13,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'reschedule'])
+const { t } = useI18n()
 
 const scheduledAt = ref('')
 const error = ref('')
@@ -28,7 +30,7 @@ watch(
 
 function submit() {
   if (!scheduledAt.value) {
-    error.value = 'Please select a new date and time.'
+    error.value = t('reschedule.required')
     return
   }
   error.value = ''
@@ -37,22 +39,22 @@ function submit() {
 </script>
 
 <template>
-  <AppModal :open="open" title="Reschedule Appointment" size="sm" @close="emit('close')">
+  <AppModal :open="open" :title="t('reschedule.title')" size="sm" @close="emit('close')">
     <div class="space-y-4">
-      <p class="text-sm text-gray-500">Select the new date and time for this appointment.</p>
+      <p class="text-sm text-gray-500">{{ t('reschedule.description') }}</p>
 
       <AppInput
         v-model="scheduledAt"
         type="datetime-local"
-        label="New Date & Time"
+        :label="t('reschedule.label')"
         :error="error"
         required
       />
     </div>
 
     <template #footer>
-      <AppButton variant="ghost" @click="emit('close')">Cancel</AppButton>
-      <AppButton :loading="loading" @click="submit">Reschedule</AppButton>
+      <AppButton variant="ghost" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
+      <AppButton :loading="loading" @click="submit">{{ t('reschedule.confirm') }}</AppButton>
     </template>
   </AppModal>
 </template>

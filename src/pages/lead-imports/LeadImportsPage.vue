@@ -13,8 +13,8 @@ import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
-import { LEAD_IMPORT_STATUS } from '@/utils/enums'
 import { formatDateTime } from '@/utils/formatters'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 
 const router = useRouter()
 const store = useLeadImportsStore()
@@ -58,35 +58,29 @@ onMounted(() => store.fetchList())
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('imports.title') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('imports.total') }}</p>
-        </div>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('imports.title')">
+      <template #meta>
+        <p class="text-[13px] text-gray-500 mt-0.5">{{ store.meta.total }} {{ t('imports.total') }}</p>
+      </template>
+      <template #actions>
         <div class="flex items-center gap-2">
           <AppButton
             v-if="auth.hasRole('super_admin')"
-            size="sm"
-            variant="ghost"
-            class="!bg-white/10 !text-white hover:!bg-white/20"
+            variant="secondary"
             :loading="store.loading.syncingSheets"
             @click="onSyncGoogleSheets"
           >
             <template #icon><RefreshCw class="w-4 h-4" /></template>
             {{ t('imports.syncGoogleSheets') }}
           </AppButton>
-          <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" @click="router.push({ name: 'lead-imports.create' })">
+          <AppButton @click="router.push({ name: 'lead-imports.create' })">
             <template #icon><Upload class="w-4 h-4" /></template>
             {{ t('imports.importCSV') }}
           </AppButton>
         </div>
-      </div>
-    </div>
+      </template>
+    </AppPageHeader>
 
     <AppCard padding="none">
       <AppTable

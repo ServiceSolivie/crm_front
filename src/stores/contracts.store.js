@@ -106,7 +106,7 @@ export const useContractsStore = defineStore('contracts', () => {
     loading.action = true
     try {
       await contractsApi.remove(id)
-      list.value = list.value.filter((c) => c.id !== id)
+      list.value = list.value.filter((c) => String(c.id) !== String(id))
     } catch (e) {
       errors.value = e
       throw e

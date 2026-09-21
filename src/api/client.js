@@ -37,12 +37,13 @@ client.interceptors.response.use(
 
     if (status === 401) {
       const url = error.config?.url ?? ''
-      const isAuthRoute = /\/(login|logout|register)/.test(url)
+      const isAuthRoute = /\/(login|logout)/.test(url)
       if (!isAuthRoute) {
         localStorage.removeItem('auth_token')
         window.dispatchEvent(new CustomEvent('crm:unauthorized'))
       }
-      return Promise.reject({ type: 'auth', message, errors: null })
+      // Login: errors.attempts_left tells how many tries remain before the lock
+      return Promise.reject({ type: 'auth', message, errors: data?.errors ?? null })
     }
 
     if (status === 403) {
@@ -58,6 +59,16 @@ client.interceptors.response.use(
 
     if (status === 404) {
       return Promise.reject({ type: 'not_found', message, errors: null })
+    }
+
+    // Too many attempts (login lock, API throttle)
+    if (status === 429) {
+      return Promise.reject({
+        type: 'rate_limited',
+        message,
+        errors: data?.errors ?? null,
+        retryAfter: Number(data?.errors?.retry_after ?? error.response.headers?.['retry-after'] ?? 60),
+      })
     }
 
     if (status === 422) {

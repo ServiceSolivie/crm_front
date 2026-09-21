@@ -1,7 +1,6 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { CalendarDays } from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: {
@@ -29,19 +28,19 @@ function selectPreset(days) {
 </script>
 
 <template>
-  <div class="flex items-center gap-1.5 bg-white border border-gray-200 rounded-xl p-1">
-    <CalendarDays class="w-3.5 h-3.5 text-gray-400 ml-1.5" />
+  <div role="group" :aria-label="t('dashboard.period')" class="flex gap-0.5 p-[3px] bg-gray-200 rounded-[9px]">
     <button
       v-for="p in presets"
       :key="p.days"
       type="button"
-      @click="selectPreset(p.days)"
+      :aria-pressed="activePreset === p.days"
       :class="[
-        'px-3 py-1 rounded-lg text-xs font-medium transition-all',
+        'h-7.5 px-3 rounded-[7px] text-[13px] transition-colors whitespace-nowrap',
         activePreset === p.days
-          ? 'bg-primary text-white shadow-sm'
-          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50',
+          ? 'bg-white text-gray-900 font-medium shadow-[0_1px_2px_rgba(17,24,39,0.08)]'
+          : 'text-gray-600 hover:text-gray-900',
       ]"
+      @click="selectPreset(p.days)"
     >
       {{ p.label }}
     </button>

@@ -9,6 +9,11 @@ import { formatRelative } from '@/utils/formatters'
 import { notificationTitle } from '@/utils/notifications'
 import { useToast } from '@/composables/useToast'
 
+const props = defineProps({
+  // Rendered on the dark sidebar: light icon, panel opens to the right
+  dark: { type: Boolean, default: false },
+})
+
 const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
@@ -33,7 +38,7 @@ async function openNotification(item) {
     try {
       await notifications.markRead(item.id)
     } catch (e) {
-      toast.showError(e?.message ?? 'Failed to mark notification as read')
+      toast.showError(e?.message ?? t('notifications.markReadError'))
     }
   }
 
@@ -49,7 +54,7 @@ async function onMarkAllRead() {
   try {
     await notifications.markAllRead()
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to mark all as read')
+    toast.showError(e?.message ?? t('notifications.markReadError'))
   }
 }
 
@@ -88,14 +93,20 @@ onUnmounted(() => {
     data-bell
   >
     <button
-      class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+      :class="[
+        'relative p-2 rounded-lg transition-colors',
+        props.dark ? 'text-sidebar-icon hover:bg-white/10 hover:text-white' : 'text-gray-500 hover:bg-gray-100',
+      ]"
+      :aria-label="t('notifications.title')"
       @click="toggle"
     >
-      <Bell class="w-5 h-5" />
+      <Bell :class="props.dark ? 'w-[18px] h-[18px]' : 'w-5 h-5'" />
       <span
         v-if="notifications.unreadCount > 0"
-        class="absolute top-1 right-1 w-4 h-4 bg-danger text-white text-[10px] font-bold
-               rounded-full flex items-center justify-center"
+        :class="[
+          'absolute top-1 right-1 w-4 h-4 bg-urgent text-white text-[10px] font-bold rounded-full flex items-center justify-center',
+          props.dark ? 'ring-2 ring-sidebar' : '',
+        ]"
       >
         {{ notifications.unreadCount > 9 ? '9+' : notifications.unreadCount }}
       </span>
@@ -105,7 +116,10 @@ onUnmounted(() => {
     <Transition name="modal">
       <div
         v-if="open"
-        class="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-dropdown border border-gray-100 z-50"
+        :class="[
+          'absolute top-full mt-2 w-80 bg-white rounded-xl shadow-dropdown border border-gray-100 z-50',
+          props.dark ? 'left-0' : 'right-0',
+        ]"
       >
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <h3 class="text-sm font-semibold text-gray-900">{{ t('notifications.title') }}</h3>

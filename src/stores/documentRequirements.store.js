@@ -6,6 +6,8 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
   const documentTypes = ref([])
   const matrix = ref([])
   const matrixDocumentTypes = ref([])
+  // Types required for every product by the backend (the signed DVC), shown locked
+  const alwaysRequired = ref([])
   const loaded = reactive({ types: false, matrix: false })
 
   const loading = reactive({
@@ -40,6 +42,7 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
       const { data } = await documentRequirementsApi.getMatrix()
       matrix.value = data.matrix
       matrixDocumentTypes.value = data.document_types
+      alwaysRequired.value = data.always_required ?? []
       loaded.matrix = true
     } catch (e) {
       errors.value = e
@@ -69,7 +72,7 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
     errors.value = null
     try {
       const { data } = await documentRequirementsApi.updateDocumentType(id, payload)
-      const idx = documentTypes.value.findIndex((t) => t.id === id)
+      const idx = documentTypes.value.findIndex((t) => String(t.id) === String(id))
       if (idx !== -1) documentTypes.value[idx] = data
       loaded.matrix = false
       return data
@@ -85,7 +88,7 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
     loading.form = true
     try {
       await documentRequirementsApi.deleteDocumentType(id)
-      documentTypes.value = documentTypes.value.filter((t) => t.id !== id)
+      documentTypes.value = documentTypes.value.filter((t) => String(t.id) !== String(id))
       loaded.matrix = false
     } catch (e) {
       errors.value = e
@@ -106,6 +109,7 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
       })
       matrix.value = data.matrix
       matrixDocumentTypes.value = data.document_types
+      alwaysRequired.value = data.always_required ?? alwaysRequired.value
     } catch (e) {
       errors.value = e
       throw e
@@ -118,6 +122,7 @@ export const useDocumentRequirementsStore = defineStore('documentRequirements', 
     documentTypes,
     matrix,
     matrixDocumentTypes,
+    alwaysRequired,
     loaded,
     loading,
     errors,

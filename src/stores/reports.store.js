@@ -10,6 +10,9 @@ export const useReportsStore = defineStore('reports', () => {
   const conversionData = ref([])
   const revenueData = ref([])
   const revenueSummary = ref(null)
+  // Headline figures over the whole filtered period (not just the current page)
+  const leadsSummary = ref(null)
+  const appointmentsSummary = ref(null)
 
   const meta = ref({ total: 0, per_page: 25, current_page: 1, last_page: 1 })
 
@@ -18,6 +21,7 @@ export const useReportsStore = defineStore('reports', () => {
     to: '',
     group_by: 'source',
     payment_status: null,
+    team_id: '',
     page: 1,
     per_page: 25,
   })
@@ -33,14 +37,18 @@ export const useReportsStore = defineStore('reports', () => {
 
   const errors = ref(null)
 
-  const activeFiltersCount = computed(() => [filters.from, filters.to, filters.payment_status].filter(Boolean).length)
+  const activeFiltersCount = computed(() => [filters.from, filters.to, filters.payment_status, filters.team_id].filter(Boolean).length)
 
   async function fetchLeads() {
     loading.leads = true
     errors.value = null
     try {
-      const { data, meta: m } = await reportsApi.leads(_buildParams())
+      const [{ data, meta: m }, summary] = await Promise.all([
+        reportsApi.leads(_buildParams()),
+        reportsApi.leadsSummary(_buildParams()).catch(() => null),
+      ])
       leadsData.value = data
+      leadsSummary.value = summary?.data ?? null
       if (m) meta.value = m
     } catch (e) {
       errors.value = e
@@ -53,8 +61,12 @@ export const useReportsStore = defineStore('reports', () => {
     loading.appointments = true
     errors.value = null
     try {
-      const { data, meta: m } = await reportsApi.appointments(_buildParams())
+      const [{ data, meta: m }, summary] = await Promise.all([
+        reportsApi.appointments(_buildParams()),
+        reportsApi.appointmentsSummary(_buildParams()).catch(() => null),
+      ])
       appointmentsData.value = data
+      appointmentsSummary.value = summary?.data ?? null
       if (m) meta.value = m
     } catch (e) {
       errors.value = e
@@ -169,14 +181,16 @@ export const useReportsStore = defineStore('reports', () => {
     const rows = data.map((row) =>
       columns
         .map((c) => {
-          const val = row[c.key] ?? ''
+          // A column may read a nested value through value(row)
+          const val = (c.value ? c.value(row) : row[c.key]) ?? ''
           const str = String(val)
           return str.includes(',') || str.includes('"') || str.includes('\n')
             ? `"${str.replace(/"/g, '""')}"` : str
         })
         .join(','),
     )
-    const csv = [header, ...rows].join('\n')
+    // BOM so Excel opens accents (é, è…) correctly
+    const csv = '﻿' + [header, ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -194,6 +208,8 @@ export const useReportsStore = defineStore('reports', () => {
     conversionData,
     revenueData,
     revenueSummary,
+    leadsSummary,
+    appointmentsSummary,
     meta,
     filters,
     loading,

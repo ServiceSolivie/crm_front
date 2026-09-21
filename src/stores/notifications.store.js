@@ -49,7 +49,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
   async function markRead(id) {
     try {
       await notificationsApi.markRead(id)
-      const item = list.value.find((n) => n.id === id)
+      const item = list.value.find((n) => String(n.id) === String(id))
       if (item && !item.read_at) {
         item.read_at = new Date().toISOString()
         unreadCount.value = Math.max(0, unreadCount.value - 1)

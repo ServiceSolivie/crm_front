@@ -16,19 +16,23 @@ export const useUiStore = defineStore('ui', () => {
   }
 
   function dismissToast(id) {
-    const idx = toasts.value.findIndex((t) => t.id === id)
+    const idx = toasts.value.findIndex((t) => String(t.id) === String(id))
     if (idx > -1) toasts.value.splice(idx, 1)
   }
 
   const showSuccess = (msg) => showToast('success', msg)
-  const showError = (msg) => showToast('error', msg)
+  const showError = (msg) => showToast('error', msg, 8000) // errors stay longer so they can be read
   const showWarning = (msg) => showToast('warning', msg)
   const showInfo = (msg) => showToast('info', msg)
 
   /* ── Confirm dialog ─────────────────────────────────────────── */
-  function confirm(title, message) {
+  /**
+   * Ask the user to confirm. options: { confirmLabel, tone: 'danger' | 'primary' }
+   * (defaults: a red "Confirmer" button).
+   */
+  function confirm(title, message, options = {}) {
     return new Promise((resolve) => {
-      confirmState.value = { title, message, resolve }
+      confirmState.value = { title, message, tone: 'danger', ...options, resolve }
     })
   }
 

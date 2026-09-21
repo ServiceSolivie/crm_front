@@ -40,15 +40,15 @@ function alignClass(align) {
     <table class="w-full text-sm">
       <!-- Head -->
       <thead>
-        <tr class="border-b border-gray-200">
+        <tr class="bg-gray-50 border-b border-gray-200">
           <th
             v-for="col in columns"
             :key="col.key"
             :style="col.width ? { width: col.width } : {}"
             :class="[
-              'px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide',
+              'px-4 h-10 text-xs font-medium text-gray-600 whitespace-nowrap',
               alignClass(col.align),
-              col.sortable ? 'cursor-pointer select-none hover:text-gray-700' : '',
+              col.sortable ? 'cursor-pointer select-none hover:text-gray-900' : '',
             ]"
             @click="handleSort(col)"
           >
@@ -92,13 +92,13 @@ function alignClass(align) {
           <tr
             v-for="row in rows"
             :key="row[rowKey]"
-            :class="['border-b border-gray-100 hover:bg-gray-50 transition-colors', rowClass ? rowClass(row) : '']"
+            :class="['border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors', rowClass ? rowClass(row) : '']"
             @click="emit('row-click', row)"
           >
             <td
               v-for="col in columns"
               :key="col.key"
-              :class="['px-4 py-3.5 text-gray-900', alignClass(col.align)]"
+              :class="['px-4 py-3 text-[13px] text-gray-900', alignClass(col.align)]"
             >
               <!-- Named slot per column key: #cell-status, #cell-name, etc. -->
               <slot :name="`cell-${col.key}`" :row="row" :value="row[col.key]">

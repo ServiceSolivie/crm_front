@@ -15,9 +15,9 @@ const emit = defineEmits(['close', 'confirm'])
 const { t } = useI18n()
 
 const ISSUE_TYPES = [
-  { key: 'documents_manquants', label: 'Documents manquants' },
-  { key: 'information_manquante', label: 'Information manquante' },
-  { key: 'information_incorrecte', label: 'Information incorrecte' },
+  { key: 'documents_manquants', labelKey: 'flagIssue.categories.documents_manquants' },
+  { key: 'information_manquante', labelKey: 'flagIssue.categories.information_manquante' },
+  { key: 'information_incorrecte', labelKey: 'flagIssue.categories.information_incorrecte' },
 ]
 
 const selectedTypes = ref([])
@@ -53,7 +53,7 @@ function toggleDocument(label) {
 
 function submit() {
   if (selectedTypes.value.length === 0) {
-    error.value = 'Sélectionnez au moins une catégorie'
+    error.value = t('flagIssue.categoryRequired')
     return
   }
   error.value = ''
@@ -66,7 +66,7 @@ function submit() {
 </script>
 
 <template>
-  <AppModal :open="open" title="Signaler un problème" size="md" @close="emit('close')">
+  <AppModal :open="open" :title="t('flagIssue.title')" size="md" @close="emit('close')">
     <div class="space-y-4">
       <p class="text-sm text-gray-500">
         Le lead sera renvoyé à l'agent avec le statut "À corriger" et les points ci-dessous.
@@ -84,12 +84,12 @@ function submit() {
             class="rounded border-gray-300 text-primary focus:ring-primary"
             @change="toggleType(issue.key)"
           >
-          <span class="text-sm text-gray-900">{{ issue.label }}</span>
+          <span class="text-sm text-gray-900">{{ t(issue.labelKey) }}</span>
         </label>
       </div>
 
       <div v-if="showDocumentChecklist" class="pl-3 border-l-2 border-primary/20 space-y-1.5">
-        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Documents manquants</p>
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ t('flagIssue.categories.documents_manquants') }}</p>
         <p v-if="missingDocuments.length === 0" class="text-sm text-gray-400">
           Aucun document manquant détecté dans le dossier.
         </p>
@@ -110,17 +110,17 @@ function submit() {
 
       <AppTextarea
         v-model="comment"
-        label="Commentaire"
-        placeholder="Précisez ce qui manque ou ce qui est incorrect..."
+        :label="t('flagIssue.comment')"
+        :placeholder="t('flagIssue.commentPlaceholder')"
         :rows="3"
       />
 
-      <p v-if="error" class="text-xs text-danger">{{ error }}</p>
+      <p v-if="error" class="text-xs text-danger-text">{{ error }}</p>
     </div>
 
     <template #footer>
-      <AppButton variant="ghost" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
-      <AppButton :loading="loading" @click="submit">Signaler</AppButton>
+      <AppButton variant="secondary" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
+      <AppButton :loading="loading" @click="submit">{{ t('flagIssue.submit') }}</AppButton>
     </template>
   </AppModal>
 </template>

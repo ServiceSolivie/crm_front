@@ -1,66 +1,43 @@
 <script setup>
-import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Check, X, AlertTriangle, Info } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
 
 const ui = useUiStore()
+const { t } = useI18n()
 
-const icons = {
-  success: CheckCircle,
-  error: XCircle,
-  warning: AlertTriangle,
-  info: Info,
-}
+const icons = { success: Check, error: X, warning: AlertTriangle, info: Info }
 
-const variantClasses = {
-  success: 'border-success bg-success-bg text-success',
-  error: 'border-danger bg-danger-bg text-danger',
-  warning: 'border-warning bg-warning-bg text-warning',
-  info: 'border-info bg-info-bg text-info',
-}
-
-const iconWrapClasses = {
-  success: 'bg-success text-white',
-  error: 'bg-danger text-white',
-  warning: 'bg-warning text-white',
-  info: 'bg-info text-white',
+// Small coloured disc on a dark card — same look for every type
+const discClasses = {
+  success: 'bg-success',
+  error: 'bg-urgent',
+  warning: 'bg-warning',
+  info: 'bg-primary-soft',
 }
 </script>
 
 <template>
   <Teleport to="body">
-    <div
-      class="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none"
-      aria-live="assertive"
-    >
-      <TransitionGroup name="toast" tag="div" class="flex flex-col gap-3">
+    <div class="fixed bottom-5 right-5 left-5 sm:left-auto z-[100] pointer-events-none" aria-live="polite">
+      <TransitionGroup name="toast" tag="div" class="flex flex-col items-end gap-2.5">
         <div
           v-for="toast in ui.toasts"
           :key="toast.id"
-          :class="[
-            'pointer-events-auto flex items-center gap-4 px-5 py-4 rounded-2xl border-2 shadow-2xl',
-            'min-w-[340px] max-w-[460px] bg-white',
-            variantClasses[toast.type],
-          ]"
-          role="alert"
+          :role="toast.type === 'error' ? 'alert' : 'status'"
+          class="pointer-events-auto w-full sm:w-auto sm:min-w-[320px] max-w-[440px] flex items-center gap-3 pl-3.5 pr-2 py-2.5 rounded-[10px] bg-sidebar text-white shadow-[0_10px_30px_rgba(17,24,39,0.25)]"
         >
-          <!-- Icon -->
-          <div
-            :class="['flex items-center justify-center w-10 h-10 rounded-full shrink-0', iconWrapClasses[toast.type]]"
-          >
-            <component :is="icons[toast.type]" class="w-5 h-5" />
-          </div>
-
-          <!-- Message -->
-          <p class="flex-1 text-base font-semibold text-gray-900 leading-snug">
-            {{ toast.message }}
-          </p>
-
-          <!-- Dismiss -->
+          <span :class="['w-5.5 h-5.5 shrink-0 rounded-full flex items-center justify-center text-white', discClasses[toast.type]]">
+            <component :is="icons[toast.type]" class="w-3 h-3" stroke-width="3" />
+          </span>
+          <p class="flex-1 text-[13.5px] leading-5">{{ toast.message }}</p>
           <button
-            class="shrink-0 p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            type="button"
+            :aria-label="t('common.close')"
+            class="shrink-0 w-7 h-7 rounded-md text-sidebar-icon hover:text-white hover:bg-white/10 flex items-center justify-center"
             @click="ui.dismissToast(toast.id)"
           >
-            <X class="w-5 h-5" />
+            <X class="w-3.5 h-3.5" />
           </button>
         </div>
       </TransitionGroup>

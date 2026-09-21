@@ -78,7 +78,7 @@ export const useUsersStore = defineStore('users', () => {
     try {
       const { data } = await usersApi.update(id, payload)
       current.value = data
-      const idx = list.value.findIndex((u) => u.id === id)
+      const idx = list.value.findIndex((u) => String(u.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -93,8 +93,8 @@ export const useUsersStore = defineStore('users', () => {
     loading.action = true
     try {
       await usersApi.remove(id)
-      list.value = list.value.filter((u) => u.id !== id)
-      if (current.value?.id === id) current.value = null
+      list.value = list.value.filter((u) => String(u.id) !== String(id))
+      if (String(current.value?.id) === String(id)) current.value = null
     } catch (e) {
       errors.value = e
       throw e
@@ -107,8 +107,8 @@ export const useUsersStore = defineStore('users', () => {
     loading.action = true
     try {
       const { data } = await usersApi.assignRole(id, role)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((u) => u.id === id)
+      if (String(current.value?.id) === String(id)) current.value = data
+      const idx = list.value.findIndex((u) => String(u.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -123,8 +123,8 @@ export const useUsersStore = defineStore('users', () => {
     loading.action = true
     try {
       const { data } = await usersApi.toggleStatus(id, isActive)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((u) => u.id === id)
+      if (String(current.value?.id) === String(id)) current.value = data
+      const idx = list.value.findIndex((u) => String(u.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -139,8 +139,8 @@ export const useUsersStore = defineStore('users', () => {
     loading.action = true
     try {
       const { data } = await usersApi.resetPassword(id, payload)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((u) => u.id === id)
+      if (String(current.value?.id) === String(id)) current.value = data
+      const idx = list.value.findIndex((u) => String(u.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -13,6 +14,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['page-change', 'per-page-change'])
+const { t } = useI18n()
 
 // Page numbers to display (max 7 buttons)
 const pages = computed(() => {
@@ -41,20 +43,21 @@ const displayItems = computed(() => {
 </script>
 
 <template>
-  <div class="flex items-center justify-between px-1 mt-4 pb-3 flex-wrap gap-3">
+  <div class="flex items-center justify-between px-1 py-2.5 flex-wrap gap-3">
     <!-- Count summary -->
-    <p class="text-sm text-gray-500">
+    <p class="text-[13px] text-gray-600">
       <template v-if="total > 0">
-        Showing <span class="font-medium text-gray-900">{{ from }}</span>–<span class="font-medium text-gray-900">{{ to }}</span>
-        of <span class="font-medium text-gray-900">{{ total }}</span>
+        <span class="font-mono text-gray-900">{{ from }}–{{ to }}</span>
+        {{ t('pagination.of') }}
+        <span class="font-mono text-gray-900">{{ total }}</span>
       </template>
-      <template v-else>No results</template>
+      <template v-else>{{ t('pagination.noResults') }}</template>
     </p>
 
     <div class="flex items-center gap-3">
       <!-- Per-page selector -->
       <div class="flex items-center gap-2 text-sm text-gray-500">
-        <span>Show</span>
+        <span>{{ t('pagination.perPage') }}</span>
         <select
           :value="perPage"
           class="h-8 px-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700
@@ -77,7 +80,7 @@ const displayItems = computed(() => {
           <ChevronLeft class="w-4 h-4" />
         </button>
 
-        <template v-for="item in displayItems" :key="item">
+        <template v-for="(item, idx) in displayItems" :key="item === '...' ? 'gap-' + idx : item">
           <span v-if="item === '...'" class="w-8 h-8 flex items-center justify-center text-gray-400 text-sm">
             ···
           </span>

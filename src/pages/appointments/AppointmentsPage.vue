@@ -2,19 +2,18 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Filter, X, Calendar, Pencil, Trash2 } from 'lucide-vue-next'
+import { Calendar, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
+import AppFilterChip from '@/components/base/AppFilterChip.vue'
+import AppSearchInput from '@/components/base/AppSearchInput.vue'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
-import AppSearchInput from '@/components/base/AppSearchInput.vue'
-import AppSelect from '@/components/base/AppSelect.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
-import AppInput from '@/components/base/AppInput.vue'
+import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
@@ -33,7 +32,9 @@ function isOverdue(row) {
   return new Date(row.scheduled_at) < new Date()
 }
 
-const showFilters = ref(false)
+function leadName(row) {
+  return [row.lead?.first_name, row.lead?.last_name].filter(Boolean).join(' ') || row.lead?.reference || '—'
+}
 
 const COLUMNS = computed(() => [
   { key: 'lead', label: t('appointments.lead') },
@@ -41,11 +42,50 @@ const COLUMNS = computed(() => [
   { key: 'status', label: t('appointments.status') },
   { key: 'assigned_to', label: t('appointments.agent') },
   { key: 'insurance_type', label: t('appointments.insuranceType') },
-  { key: 'actions', label: '', align: 'right', width: '100px' },
+  { key: 'actions', label: '', align: 'right', width: '90px' },
 ])
 
 const aptStatusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
-const statusOptions = computed(() => [{ value: '', label: t('appointments.allStatuses') }, ...aptStatusOptions.value])
+
+/* ── "Date" chip: presets mapped onto the API's from / to (scheduled_at) ── */
+const datePreset = ref('')
+const dateOptions = computed(() => [
+  { value: 'today', label: t('appointments.presets.today') },
+  { value: 'week', label: t('appointments.presets.week') },
+  { value: 'next7', label: t('appointments.presets.next7') },
+  { value: 'past30', label: t('appointments.presets.past30') },
+])
+function isoDay(d) {
+  const p = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}
+function setDatePreset(key) {
+  datePreset.value = key
+  const n = new Date()
+  const day = (offset) => new Date(n.getFullYear(), n.getMonth(), n.getDate() + offset)
+  let range = ['', '']
+  if (key === 'today') range = [isoDay(n), isoDay(n)]
+  else if (key === 'week') {
+    const monday = day(-((n.getDay() + 6) % 7))
+    range = [isoDay(monday), isoDay(new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6))]
+  } else if (key === 'next7') range = [isoDay(n), isoDay(day(7))]
+  else if (key === 'past30') range = [isoDay(day(-30)), isoDay(n)]
+  store.filters.from = range[0]
+  // "to" compares a datetime: include the whole last day
+  store.setFilter('to', range[1] ? `${range[1]} 23:59:59` : '')
+}
+function clearFilters() {
+  datePreset.value = ''
+  store.resetFilters()
+}
+const hasFilters = computed(() => !!(store.filters.status || store.filters.from || store.filters.to || store.filters.search))
+
+const kpis = computed(() => [
+  { label: t('appointments.statsTotal'), value: String(store.stats?.total ?? '—') },
+  { label: t('appointments.statsScheduled'), value: String(store.stats?.by_status?.PLANIFIE ?? '—') },
+  { label: t('appointments.statsCompleted'), value: String(store.stats?.by_status?.REALISE ?? '—'), tone: 'success' },
+  { label: t('appointments.statsCancelled'), value: String(store.stats?.by_status?.ANNULE ?? '—'), tone: 'danger' },
+])
 
 const from = computed(() =>
   store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1,
@@ -60,113 +100,57 @@ onMounted(() => {
 })
 
 async function handleDelete(row) {
-  const ok = await ui.confirm(t('appointments.deleteTitle'), t('appointments.deleteConfirm'))
+  const ok = await ui.confirm(t('appointments.deleteTitle'), t('appointments.deleteConfirm'), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.remove(row.id)
     toast.showSuccess(t('appointments.deleteSuccess'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to delete appointment')
+    toast.showError(e?.message ?? t('leadDetail.errors.appointmentDelete'))
   }
 }
-
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('appointments.title') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('appointments.total') }}</p>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <AppButton variant="secondary" size="sm" @click="showFilters = !showFilters">
-            <template #icon><Filter class="w-4 h-4" /></template>
-            {{ t('common.filter') }}
-            <span
-              v-if="store.activeFiltersCount"
-              class="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold"
-            >{{ store.activeFiltersCount }}</span>
-          </AppButton>
-        </div>
-      </div>
-    </div>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('appointments.title')" :count="store.meta.total">
+      <template #actions>
+        <RouterLink
+          to="/calendar"
+          class="h-9 inline-flex items-center gap-2 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
+        ><Calendar class="w-4 h-4" />{{ t('nav.calendar') }}</RouterLink>
+      </template>
+    </AppPageHeader>
 
-    <!-- Stats cards -->
-    <div v-if="store.stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-      <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-gray-900">{{ store.stats.total ?? 0 }}</p>
-        <p class="text-xs text-gray-500 mt-0.5">{{ t('appointments.statsTotal') }}</p>
-      </AppCard>
-      <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-info">{{ store.stats.by_status.PLANIFIE ?? 0 }}</p>
-        <p class="text-xs text-gray-500 mt-0.5">{{ t('appointments.statsScheduled') }}</p>
-      </AppCard>
-      <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-success">{{ store.stats.by_status.REALISE ?? 0 }}</p>
-        <p class="text-xs text-gray-500 mt-0.5">{{ t('appointments.statsCompleted') }}</p>
-      </AppCard>
-      <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-danger">{{ store.stats.by_status.ANNULE ?? 0 }}</p>
-        <p class="text-xs text-gray-500 mt-0.5">{{ t('appointments.statsCancelled') }}</p>
-      </AppCard>
-    </div>
+    <ReportKpis v-if="store.stats || store.loading.stats" :items="kpis" :loading="store.loading.stats && !store.stats" />
 
-    <!-- Search + Filters -->
-    <AppCard padding="sm" class="space-y-3">
+    <div class="flex flex-wrap items-center gap-2">
       <AppSearchInput
         :model-value="store.filters.search"
         :placeholder="t('appointments.searchPlaceholder')"
+        class="w-full sm:w-[280px]"
         @update:model-value="store.setFilter('search', $event)"
       />
-      <Transition
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="opacity-0 -translate-y-2"
-        enter-to-class="opacity-100 translate-y-0"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-from-class="opacity-100 translate-y-0"
-        leave-to-class="opacity-0 -translate-y-2"
-      >
-        <div v-if="showFilters" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <AppSelect
-            :model-value="store.filters.status"
-            :options="statusOptions"
-            @update:model-value="store.setFilter('status', $event)"
-          />
-          <AppInput
-            :model-value="store.filters.from"
-            type="date"
-            :placeholder="t('appointments.fromDate')"
-            @update:model-value="store.setFilter('from', $event)"
-          />
-          <AppInput
-            :model-value="store.filters.to"
-            type="date"
-            :placeholder="t('appointments.toDate')"
-            @update:model-value="store.setFilter('to', $event)"
-          />
-          <div class="flex items-end">
-            <AppButton
-              v-if="store.activeFiltersCount"
-              variant="danger"
-              size="sm"
-              class="w-full"
-              @click="store.resetFilters()"
-            >
-              <template #icon><X class="w-3.5 h-3.5" /></template>
-              {{ t('common.clear') }}
-            </AppButton>
-          </div>
-        </div>
-      </Transition>
-    </AppCard>
+      <AppFilterChip
+        :label="t('appointments.status')"
+        :model-value="store.filters.status"
+        :options="aptStatusOptions"
+        :searchable="false"
+        @update:model-value="store.setFilter('status', $event)"
+      />
+      <AppFilterChip
+        :label="t('appointments.date')"
+        :model-value="store.filters.from ? datePreset : ''"
+        :options="dateOptions"
+        :searchable="false"
+        @update:model-value="setDatePreset"
+      />
+      <button v-if="hasFilters" type="button" class="h-9 px-2 text-[13px] text-gray-600 hover:text-gray-900" @click="clearFilters">
+        {{ t('common.clear') }}
+      </button>
+    </div>
 
-    <!-- Table -->
-    <AppCard padding="none">
+    <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <AppTable
         :columns="COLUMNS"
         :rows="store.list"
@@ -174,34 +158,24 @@ async function handleDelete(row) {
         :sort-key="store.filters.sort_by"
         :sort-dir="store.filters.sort_dir"
         row-key="id"
-        :row-class="(row) => isOverdue(row) ? 'bg-red-50/60' : ''"
+        class="[&_tbody_tr]:cursor-pointer"
+        :row-class="(row) => (isOverdue(row) ? 'bg-danger-bg/30' : '')"
         :empty-title="t('appointments.noAppointments')"
         :empty-description="t('appointments.noAppointmentsDesc')"
         @sort="({ key, dir }) => { store.filters.sort_by = key; store.filters.sort_dir = dir; store.fetchList() }"
         @row-click="(row) => router.push({ name: 'appointments.detail', params: { id: row.id } })"
       >
         <template #cell-lead="{ row }">
-          <div v-if="row.lead" class="flex items-center gap-2">
-            <AppAvatar :name="`${row.lead.first_name ?? ''} ${row.lead.last_name ?? ''}`" size="sm" />
-            <span class="font-medium text-gray-900 text-sm">
-              {{ [row.lead.first_name, row.lead.last_name].filter(Boolean).join(' ') || '—' }}
-            </span>
+          <div v-if="row.lead" class="flex items-center gap-2.5 min-w-0">
+            <AppAvatar :name="leadName(row)" size="sm" tone="soft" />
+            <span class="font-medium truncate">{{ leadName(row) }}</span>
           </div>
-          <span v-else class="text-gray-400 text-sm">—</span>
+          <span v-else class="text-gray-400">—</span>
         </template>
 
         <template #cell-scheduled_at="{ row, value }">
-          <div class="flex items-center gap-1.5">
-            <Calendar :class="['w-3.5 h-3.5 shrink-0', isOverdue(row) ? 'text-red-500' : 'text-gray-400']" />
-            <div>
-              <span :class="['text-sm whitespace-nowrap', isOverdue(row) ? 'text-red-600 font-medium' : 'text-gray-700']">
-                {{ formatDateTime(value) }}
-              </span>
-              <span v-if="isOverdue(row)" class="ml-1.5 text-[10px] font-semibold uppercase text-red-500">
-                {{ t('appointments.overdue') }}
-              </span>
-            </div>
-          </div>
+          <span :class="['font-mono text-[12.5px] whitespace-nowrap', isOverdue(row) ? 'text-danger-text font-medium' : '']">{{ formatDateTime(value) }}</span>
+          <span v-if="isOverdue(row)" class="ml-2 text-[11px] font-semibold uppercase text-danger-text">{{ t('appointments.overdue') }}</span>
         </template>
 
         <template #cell-status="{ row }">
@@ -209,35 +183,37 @@ async function handleDelete(row) {
         </template>
 
         <template #cell-assigned_to="{ row }">
-          <div v-if="row.agent" class="flex items-center gap-1.5">
+          <div v-if="row.agent" class="flex items-center gap-2 min-w-0">
             <AppAvatar :name="row.agent.name" size="xs" />
-            <span class="text-sm text-gray-700">{{ row.agent.name }}</span>
+            <span class="truncate">{{ row.agent.name }}</span>
           </div>
-          <span v-else class="text-gray-400 text-sm">—</span>
+          <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
         </template>
 
         <template #cell-insurance_type="{ row }">
-          <span class="text-xs text-gray-600">{{ row.lead.insurance_type ? row.lead.insurance_type : '—' }}</span>
+          <span
+            v-if="row.lead?.insurance_type"
+            class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700"
+            :title="t('insuranceTypes.' + row.lead.insurance_type, row.lead.insurance_type)"
+          >{{ t('insuranceTypesShort.' + row.lead.insurance_type, row.lead.insurance_type) }}</span>
+          <span v-else class="text-gray-400">—</span>
         </template>
 
         <template #cell-actions="{ row }">
-          <div class="flex items-center justify-end gap-1" @click.stop>
-            <button
+          <div class="flex items-center justify-end gap-0.5" @click.stop>
+            <RouterLink
               v-if="auth.can('APPOINTMENTS_UPDATE')"
-              :title="t('common.edit')"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
-              @click="router.push({ name: 'appointments.edit', params: { id: row.id } })"
-            >
-              <Pencil class="w-3.5 h-3.5" />
-            </button>
+              :to="{ name: 'appointments.edit', params: { id: row.id } }"
+              :aria-label="t('common.edit')"
+              class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
+            ><Pencil class="w-3.5 h-3.5" /></RouterLink>
             <button
               v-if="auth.can('APPOINTMENTS_DELETE')"
-              :title="t('common.delete')"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors"
+              type="button"
+              :aria-label="t('common.delete')"
+              class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-danger-text hover:bg-danger-bg"
               @click="handleDelete(row)"
-            >
-              <Trash2 class="w-3.5 h-3.5" />
-            </button>
+            ><Trash2 class="w-3.5 h-3.5" /></button>
           </div>
         </template>
       </AppTable>
@@ -254,6 +230,6 @@ async function handleDelete(row) {
           @per-page-change="store.setFilter('per_page', $event)"
         />
       </div>
-    </AppCard>
+    </section>
   </div>
 </template>

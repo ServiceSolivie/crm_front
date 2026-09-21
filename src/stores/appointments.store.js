@@ -103,7 +103,7 @@ export const useAppointmentsStore = defineStore('appointments', () => {
     try {
       const { data } = await appointmentsApi.update(id, payload)
       current.value = data
-      const idx = list.value.findIndex((a) => a.id === id)
+      const idx = list.value.findIndex((a) => String(a.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -118,8 +118,8 @@ export const useAppointmentsStore = defineStore('appointments', () => {
     loading.action = true
     try {
       await appointmentsApi.remove(id)
-      list.value = list.value.filter((a) => a.id !== id)
-      if (current.value?.id === id) current.value = null
+      list.value = list.value.filter((a) => String(a.id) !== String(id))
+      if (String(current.value?.id) === String(id)) current.value = null
     } catch (e) {
       errors.value = e
       throw e
@@ -132,8 +132,8 @@ export const useAppointmentsStore = defineStore('appointments', () => {
     loading.action = true
     try {
       const { data } = await appointmentsApi.reschedule(id, scheduledAt)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((a) => a.id === id)
+      if (String(current.value?.id) === String(id)) current.value = data
+      const idx = list.value.findIndex((a) => String(a.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -148,8 +148,8 @@ export const useAppointmentsStore = defineStore('appointments', () => {
     loading.action = true
     try {
       const { data } = await appointmentsApi.updateStatus(id, status)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((a) => a.id === id)
+      if (String(current.value?.id) === String(id)) current.value = data
+      const idx = list.value.findIndex((a) => String(a.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {

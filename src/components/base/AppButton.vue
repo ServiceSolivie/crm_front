@@ -1,7 +1,7 @@
 <script setup>
 import AppSpinner from './AppSpinner.vue'
 
-const props = defineProps({
+defineProps({
   variant: {
     type: String,
     default: 'primary',
@@ -20,21 +20,21 @@ const props = defineProps({
 
 const variantClasses = {
   primary:
-    'bg-primary hover:bg-primary-hover text-white border-transparent shadow-sm',
+    'bg-primary hover:bg-primary-hover text-white border-transparent',
   secondary:
-    'bg-white hover:bg-gray-50 text-primary border-primary',
+    'bg-white hover:bg-gray-50 text-gray-900 border-gray-300',
   ghost:
-    'bg-transparent hover:bg-gray-100 text-gray-500 border-transparent',
+    'bg-transparent hover:bg-gray-100 text-gray-600 hover:text-gray-900 border-transparent',
   danger:
-    'bg-danger hover:bg-red-600 text-white border-transparent shadow-sm',
+    'bg-urgent hover:bg-red-700 text-white border-transparent',
   icon:
     'bg-transparent hover:bg-gray-100 text-gray-500 border-gray-200',
 }
 
 const sizeClasses = {
-  sm: 'h-8 px-3 text-xs gap-1.5 rounded-lg',
-  md: 'h-10 px-4 text-sm gap-2 rounded-xl',
-  lg: 'h-12 px-6 text-base gap-2 rounded-2xl',
+  sm: 'h-8 px-3 text-[13px] gap-1.5 rounded-lg',
+  md: 'h-9 px-3.5 text-[13px] gap-2 rounded-lg',
+  lg: 'h-11 px-5 text-sm gap-2 rounded-lg',
 }
 </script>
 

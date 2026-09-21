@@ -1,251 +1,86 @@
 <script setup>
-import { reactive, ref, watch, onMounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ArrowLeft } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { ChevronRight } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
-import { useLeadSourcesStore } from '@/stores/leadSources.store'
-import { useUsersStore } from '@/stores/users.store'
 import { useToast } from '@/composables/useToast'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
-import AppInput from '@/components/base/AppInput.vue'
-import AppSelect from '@/components/base/AppSelect.vue'
-import AppTextarea from '@/components/base/AppTextarea.vue'
-import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
-import { useEnumOptions } from '@/composables/useEnumOptions'
+import LeadForm from '@/components/modules/leads/LeadForm.vue'
 import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
 const leadsStore = useLeadsStore()
-const sourcesStore = useLeadSourcesStore()
-const usersStore = useUsersStore()
 const toast = useToast()
+const { t } = useI18n()
 
-const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
-const clientTypeOptions = useEnumOptions(CLIENT_TYPE, 'clientTypes')
+const formRef = ref(null)
+const serverErrors = ref({})
+const createAnother = ref(false)
 
-const form = reactive({
-  first_name: '',
-  last_name: '',
-  email: '',
-  phone: '',
-  insurance_type: '',
-  client_type: '',
-  source_id: '',
-  assigned_to: '',
-  notes: '',
-  address: '',
-  company_name: '',
-  company_legal_form: '',
-  company_sector: '',
-  company_employee_count: '',
-  company_annual_revenue: '',
-  company_status: '',
-})
-
-const errors = ref({})
-
-const agentOptions = ref([{ value: '', label: 'Unassigned' }])
-const sourceOptions = ref([{ value: '', label: 'No Source' }])
-
-const showClientType = (type) => ['AUTO', 'MOTO'].includes(type)
-const showCompanyFields = (type) => type === 'DECENNALE'
-
-watch(
-  () => form.insurance_type,
-  (val) => {
-    if (showClientType(val) && !form.client_type) {
-      form.client_type = 'INDIVIDUAL'
-    }
-    if (!showClientType(val)) {
-      form.client_type = ''
-    }
-  },
-)
-
-onMounted(async () => {
-  await Promise.all([sourcesStore.fetchList(), usersStore.fetchList({ role: 'agent', per_page: 100 })])
-  sourceOptions.value = [
-    { value: '', label: 'No Source' },
-    ...sourcesStore.list.map((s) => ({ value: s.id, label: s.name })),
-  ]
-  agentOptions.value = [
-    { value: '', label: 'Unassigned' },
-    ...usersStore.list.map((u) => ({ value: u.id, label: u.name })),
-  ]
-})
-
-function validate() {
-  errors.value = {}
-  if (!form.first_name.trim()) errors.value.first_name = 'First name is required'
-  if (!form.last_name.trim()) errors.value.last_name = 'Last name is required'
-  if (!form.phone.trim()) errors.value.phone = 'Phone is required'
-  if (!form.insurance_type) errors.value.insurance_type = 'Insurance type is required'
-  return Object.keys(errors.value).length === 0
-}
-
-async function submit() {
-  if (!validate()) return
+async function onSubmit(payload) {
+  serverErrors.value = {}
   try {
-    const payload = {
-      first_name: form.first_name,
-      last_name: form.last_name,
-      phone: form.phone,
-      email: form.email || undefined,
-      insurance_type: form.insurance_type,
-    }
-    if (form.client_type) payload.client_type = form.client_type
-    if (form.source_id) payload.source_id = form.source_id
-    if (form.assigned_to) payload.assigned_to = form.assigned_to
-    if (form.notes) payload.notes = form.notes
-    if (showCompanyFields(form.insurance_type)) {
-      if (form.address) payload.address = form.address
-      if (form.company_name) payload.company_name = form.company_name
-      if (form.company_legal_form) payload.company_legal_form = form.company_legal_form
-      if (form.company_sector) payload.company_sector = form.company_sector
-      if (form.company_employee_count) payload.company_employee_count = form.company_employee_count
-      if (form.company_annual_revenue) payload.company_annual_revenue = form.company_annual_revenue
-      if (form.company_status) payload.company_status = form.company_status
-    }
     const lead = await leadsStore.create(payload)
-    toast.showSuccess('Lead created successfully')
-    router.push({ name: 'leads.detail', params: { id: lead.id } })
+    toast.showSuccess(t('leads.createSuccess'))
+    if (createAnother.value) {
+      formRef.value?.reset()
+      window.scrollTo({ top: 0 })
+    } else {
+      router.push({ name: 'leads.detail', params: { id: lead.id } })
+    }
   } catch (e) {
     if (e?.errors) {
-      errors.value = Object.fromEntries(
+      serverErrors.value = Object.fromEntries(
         Object.entries(e.errors).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
       )
     }
-    toast.showError(firstErrorMessage(e, 'Failed to create lead'))
+    toast.showError(firstErrorMessage(e, t('leadForm.errors.create')))
   }
 }
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto space-y-5">
-    <!-- Header -->
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.back()">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        Back
-      </AppButton>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <nav :aria-label="t('leadDetail.breadcrumb')" class="flex items-center gap-1.5 text-[13px] text-gray-500">
+      <RouterLink :to="{ name: 'leads' }" class="text-gray-600 hover:text-gray-900">{{ t('leads.title') }}</RouterLink>
+      <ChevronRight class="w-3.5 h-3.5" />
+      <span class="text-gray-900">{{ t('leads.newLead') }}</span>
+    </nav>
+
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-semibold text-gray-900">New Lead</h1>
-        <p class="text-sm text-gray-500">Fill in the lead details below.</p>
+        <h1 class="font-display text-[28px] leading-[34px] font-semibold tracking-tight text-gray-900">{{ t('leads.newLead') }}</h1>
+        <p class="text-[13px] text-gray-500 mt-0.5">{{ t('leadForm.requiredHint') }}</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="h-9 px-3.5 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
+          @click="router.back()"
+        >{{ t('common.cancel') }}</button>
+        <button
+          type="submit"
+          form="lead-form"
+          :disabled="leadsStore.loading.form"
+          class="h-9 px-4 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover disabled:opacity-50"
+        >{{ t('leadForm.create') }}</button>
       </div>
     </div>
 
-    <AppCard>
-      <form class="space-y-5" @submit.prevent="submit">
-        <!-- Personal info -->
-        <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">Personal Information</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <AppInput
-              v-model="form.first_name"
-              label="First Name"
-              placeholder="Jean"
-              :error="errors.first_name"
-              required
-            />
-            <AppInput
-              v-model="form.last_name"
-              label="Last Name"
-              placeholder="Dupont"
-              :error="errors.last_name"
-              required
-            />
-            <AppInput
-              v-model="form.phone"
-              label="Phone"
-              type="tel"
-              placeholder="+33 6 12 34 56 78"
-              :error="errors.phone"
-              required
-            />
-            <AppInput
-              v-model="form.email"
-              label="Email"
-              type="email"
-              placeholder="jean@example.com"
-              :error="errors.email"
-            />
-          </div>
-        </div>
-
-        <div class="border-t border-gray-100" />
-
-        <!-- Insurance + Source -->
-        <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">Lead Details</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <AppSelect
-              v-model="form.insurance_type"
-              label="Insurance Type"
-              :options="insuranceTypeOptions"
-              placeholder="Select type…"
-              :error="errors.insurance_type"
-              required
-            />
-            <AppSelect
-              v-if="showClientType(form.insurance_type)"
-              v-model="form.client_type"
-              label="Type de client"
-              :options="clientTypeOptions"
-              :error="errors.client_type"
-            />
-            <AppSelect
-              v-model="form.source_id"
-              label="Lead Source"
-              :options="sourceOptions"
-              placeholder="Select source…"
-            />
-            <AppSelect
-              v-model="form.assigned_to"
-              label="Assign To"
-              :options="agentOptions"
-              placeholder="Unassigned"
-              class="sm:col-span-2"
-            />
-          </div>
-        </div>
-
-        <template v-if="showCompanyFields(form.insurance_type)">
-          <div class="border-t border-gray-100" />
-
-          <!-- Company info -->
-          <div>
-            <h2 class="text-sm font-semibold text-gray-700 mb-3">Company Information</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <AppInput v-model="form.company_name" label="Company Name" class="sm:col-span-2" />
-              <AppInput v-model="form.address" label="Address" class="sm:col-span-2" />
-              <AppInput v-model="form.company_legal_form" label="Legal Form" />
-              <AppInput v-model="form.company_sector" label="Business Sector" />
-              <AppInput v-model="form.company_employee_count" label="Number of Employees" />
-              <AppInput v-model="form.company_annual_revenue" label="Estimated Annual Revenue" />
-              <AppInput v-model="form.company_status" label="Applicant Status" class="sm:col-span-2" />
-            </div>
-          </div>
-        </template>
-
-        <div class="border-t border-gray-100" />
-
-        <!-- Notes -->
-        <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">Notes (optional)</h2>
-          <AppTextarea
-            v-model="form.notes"
-            placeholder="Add any initial notes about this lead…"
-            :rows="3"
-          />
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-end gap-3 pt-2">
-          <AppButton variant="ghost" type="button" @click="router.back()">Cancel</AppButton>
-          <AppButton type="submit" :loading="leadsStore.loading.form">Create Lead</AppButton>
-        </div>
-      </form>
-    </AppCard>
+    <LeadForm ref="formRef" mode="create" :server-errors="serverErrors" @submit="onSubmit">
+      <template #aside>
+        <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">
+          <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('leadForm.afterCreate') }}</h2>
+          <label class="flex items-center gap-2.5 text-[13px] text-gray-900">
+            <input v-model="createAnother" type="radio" :value="false" class="w-4 h-4 accent-primary">
+            {{ t('leadForm.openLead') }}
+          </label>
+          <label class="flex items-center gap-2.5 text-[13px] text-gray-900">
+            <input v-model="createAnother" type="radio" :value="true" class="w-4 h-4 accent-primary">
+            {{ t('leadForm.createAnother') }}
+          </label>
+        </section>
+      </template>
+    </LeadForm>
   </div>
 </template>

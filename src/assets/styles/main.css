@@ -2,32 +2,45 @@
 
 /* ─── Design Token Theme ──────────────────────────────────────── */
 @theme {
-  /* Typeface */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Typefaces: UI text, page/section titles, figures (numbers, phones, refs) */
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-display: 'Schibsted Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-  /* Brand / Primary (indigo-500 / indigo-600) */
-  --color-primary: #6366f1;
-  --color-primary-hover: #4f46e5;
+  /* Brand / Primary — indigo-600 for fills so white text passes contrast;
+     indigo-500 stays for logo, charts and small accents */
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
   --color-primary-light: #eef2ff;
+  --color-primary-soft: #6366f1;
 
   /* Sidebar */
   --color-sidebar: #1e1b4b;
   --color-sidebar-icon: #a5b4fc;
+  --color-sidebar-label: #818cf8;
 
   /* Surfaces */
   --color-page: #f3f4f6;
 
-  /* Status semantic */
+  /* Status semantic — base (dots, bars, icons), -bg (tints), -text (text on tints) */
   --color-success: #10b981;
   --color-success-bg: #d1fae5;
+  --color-success-text: #047857;
   --color-danger: #ef4444;
   --color-danger-bg: #fee2e2;
+  --color-danger-text: #b91c1c;
   --color-warning: #f59e0b;
   --color-warning-bg: #fef3c7;
+  --color-warning-text: #b45309;
   --color-info: #3b82f6;
   --color-info-bg: #dbeafe;
+  --color-info-text: #1d4ed8;
   --color-neutral: #6b7280;
   --color-neutral-bg: #f3f4f6;
+  --color-neutral-text: #4b5563;
+
+  /* Overdue / needs action (counters, notification dot, overdue rows) */
+  --color-urgent: #dc2626;
 }
 
 /* ─── Base Reset ──────────────────────────────────────────────── */
@@ -82,9 +95,9 @@
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
   }
 
-  /* Card elevation */
+  /* Card edge — flat 1px outline instead of a drop shadow */
   .shadow-card {
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 0 0 1px #e5e7eb;
   }
 
   .shadow-dropdown {

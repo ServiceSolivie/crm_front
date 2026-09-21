@@ -10,11 +10,11 @@ defineProps({
 })
 
 const variantClasses = {
-  success: 'bg-success-bg text-success',
-  danger: 'bg-danger-bg text-danger',
-  warning: 'bg-warning-bg text-warning',
-  info: 'bg-info-bg text-info',
-  neutral: 'bg-neutral-bg text-neutral',
+  success: 'bg-success-bg text-success-text',
+  danger: 'bg-danger-bg text-danger-text',
+  warning: 'bg-warning-bg text-warning-text',
+  info: 'bg-info-bg text-info-text',
+  neutral: 'bg-neutral-bg text-neutral-text',
 }
 
 const dotColors = {
