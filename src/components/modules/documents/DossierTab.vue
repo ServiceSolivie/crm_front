@@ -25,13 +25,6 @@ const emit = defineEmits(['upload', 'delete', 'download', 'preview', 'set-client
     <AppSkeleton v-for="n in 4" :key="n" height="72px" class="rounded-xl" />
   </div>
 
-  <!-- Needs client type -->
-  <ClientTypePrompt
-    v-else-if="dossier?.requires_client_type"
-    :loading="updatingClientType"
-    @select="(type) => emit('set-client-type', type)"
-  />
-
   <!-- No required documents for this product -->
   <div v-else-if="dossier && dossier.total_required === 0" class="text-center py-10">
     <FolderOpen class="w-10 h-10 text-gray-300 mx-auto mb-2" />
@@ -40,6 +33,14 @@ const emit = defineEmits(['upload', 'delete', 'download', 'preview', 'set-client
 
   <!-- Dossier content -->
   <div v-else-if="dossier">
+    <!-- Needs client type: the product's documents come after; the DVC can already be added -->
+    <ClientTypePrompt
+      v-if="dossier.requires_client_type"
+      class="mb-5"
+      :loading="updatingClientType"
+      @select="(type) => emit('set-client-type', type)"
+    />
+
     <!-- Progress header -->
     <div class="mb-5">
       <div class="flex items-center justify-between mb-2">

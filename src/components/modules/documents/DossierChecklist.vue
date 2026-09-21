@@ -73,7 +73,7 @@ function formatDate(iso) {
           doc.status === 'uploaded' ? 'bg-success-bg' : 'bg-neutral-bg',
         ]"
       >
-        <FileCheck v-if="doc.status === 'uploaded'" class="w-4 h-4 text-success" />
+        <FileCheck v-if="doc.status === 'uploaded'" class="w-4 h-4 text-success-text" />
         <FileMinus v-else class="w-4 h-4 text-neutral" />
       </div>
 
@@ -121,7 +121,7 @@ function formatDate(iso) {
             v-if="auth.can('DOCUMENTS_DELETE')"
             :title="t('documents.delete')"
             :disabled="actionId === doc.document.id"
-            class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-50"
+            class="p-1.5 rounded-lg text-gray-400 hover:text-danger-text hover:bg-danger-bg transition-colors disabled:opacity-50"
             @click="onDelete(doc)"
           >
             <AppSpinner v-if="actionId === doc.document.id" :size="14" />

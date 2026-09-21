@@ -87,7 +87,7 @@ export const useTeamsStore = defineStore('teams', () => {
     try {
       const { data } = await teamsApi.update(id, payload)
       current.value = data
-      const idx = list.value.findIndex((t) => t.id === id)
+      const idx = list.value.findIndex((t) => String(t.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -102,8 +102,8 @@ export const useTeamsStore = defineStore('teams', () => {
     loading.action = true
     try {
       await teamsApi.remove(id)
-      list.value = list.value.filter((t) => t.id !== id)
-      if (current.value?.id === id) current.value = null
+      list.value = list.value.filter((t) => String(t.id) !== String(id))
+      if (String(current.value?.id) === String(id)) current.value = null
     } catch (e) {
       errors.value = e
       throw e

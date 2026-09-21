@@ -1,5 +1,8 @@
 import { i18n } from '@/i18n'
 
+// Dates and numbers follow the language chosen in the app (FR / EN)
+const uiLocale = () => (i18n.global.locale.value === 'fr' ? 'fr-FR' : 'en-GB')
+
 /**
  * Convert a UTC ISO string from the backend into the local-wall-clock
  * string a <input type="datetime-local"> expects (YYYY-MM-DDTHH:mm).
@@ -32,7 +35,7 @@ export function formatDate(value, options = {}) {
   if (!value) return '—'
   const date = new Date(value)
   if (isNaN(date)) return '—'
-  return date.toLocaleDateString('en-GB', {
+  return date.toLocaleDateString(uiLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -47,7 +50,7 @@ export function formatDateTime(value) {
   if (!value) return '—'
   const date = new Date(value)
   if (isNaN(date)) return '—'
-  return date.toLocaleDateString('en-GB', {
+  return date.toLocaleDateString(uiLocale(), {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -71,7 +74,7 @@ export function formatCurrency(value, currency = 'EUR') {
  */
 export function formatNumber(value) {
   if (value === null || value === undefined) return '—'
-  return new Intl.NumberFormat('en-US').format(value)
+  return new Intl.NumberFormat(uiLocale()).format(value)
 }
 
 /**

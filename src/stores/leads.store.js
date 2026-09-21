@@ -18,12 +18,19 @@ export const useLeadsStore = defineStore('leads', () => {
 
   const meta = ref({ total: 0, per_page: 15, current_page: 1, last_page: 1 })
 
+  // status / insurance_type / source_id hold arrays (multi-select chips)
   const filters = reactive({
     search: '',
-    status: '',
-    insurance_type: '',
-    source_id: '',
+    status: [],
+    stage: '',
+    insurance_type: [],
+    source_id: [],
     assigned_to: '',
+    unassigned: '',
+    is_doublon: '',
+    due: '',
+    dvc_status: [],
+    payment_status: [],
     from: '',
     to: '',
     page: 1,
@@ -46,11 +53,13 @@ export const useLeadsStore = defineStore('leads', () => {
   })
 
   const errors = ref(null)
+  const counts = ref(null) // { all, mine, unassigned, doublons, due_today }
   let _listGen = 0  // incremented on every fetchList call; stale responses are dropped
 
   const activeFiltersCount = computed(() => {
-    const { search, status, insurance_type, source_id, assigned_to, from, to } = filters
-    return [search, status, insurance_type, source_id, assigned_to, from, to].filter(Boolean).length
+    const { search, status, stage, insurance_type, source_id, assigned_to, from, to } = filters
+    return [search, status, stage, insurance_type, source_id, assigned_to, from, to]
+      .filter((v) => (Array.isArray(v) ? v.length : Boolean(v))).length
   })
 
   async function fetchList() {
@@ -66,6 +75,24 @@ export const useLeadsStore = defineStore('leads', () => {
       if (gen === _listGen) errors.value = e
     } finally {
       if (gen === _listGen) loading.list = false
+    }
+  }
+
+  async function fetchCounts() {
+    try {
+      counts.value = (await leadsApi.counts()).data
+    } catch {
+      // the tabs still work without their counts
+    }
+  }
+
+  /** One action on several leads (POST /leads/bulk) → { done, failed, results } */
+  async function bulk(payload) {
+    loading.action = true
+    try {
+      return (await leadsApi.bulk(payload)).data
+    } finally {
+      loading.action = false
     }
   }
 
@@ -104,7 +131,7 @@ export const useLeadsStore = defineStore('leads', () => {
     try {
       const { data } = await leadsApi.update(id, payload)
       current.value = data
-      const idx = list.value.findIndex((l) => l.id === id)
+      const idx = list.value.findIndex((l) => String(l.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       return data
     } catch (e) {
@@ -119,8 +146,8 @@ export const useLeadsStore = defineStore('leads', () => {
     loading.action = true
     try {
       await leadsApi.remove(id)
-      list.value = list.value.filter((l) => l.id !== id)
-      if (current.value?.id === id) current.value = null
+      list.value = list.value.filter((l) => String(l.id) !== String(id))
+      if (String(current.value?.id) === String(id)) current.value = null
     } catch (e) {
       errors.value = e
       throw e
@@ -150,9 +177,12 @@ export const useLeadsStore = defineStore('leads', () => {
     loading.action = true
     try {
       const { data } = await leadsApi.updateStatus(id, payload)
-      if (current.value?.id === id) current.value = data
-      const idx = list.value.findIndex((l) => l.id === id)
-      if (idx !== -1) list.value[idx] = data
+      // Route params are strings, ids from the API numbers: compare as strings.
+      // Merge rather than replace: the status response omits some fields
+      // (last_flag, next_action, counts) that the page still needs.
+      if (current.value && String(current.value.id) === String(id)) current.value = { ...current.value, ...data }
+      const idx = list.value.findIndex((l) => String(l.id) === String(id))
+      if (idx !== -1) list.value[idx] = { ...list.value[idx], ...data }
       return data
     } catch (e) {
       errors.value = e
@@ -299,6 +329,23 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
+  /** Move one payment to another status (received, failed, cancelled, refunded) */
+  async function changePaymentStatus(leadId, paymentId, status, reason = null) {
+    loading.action = true
+    try {
+      const { data } = await paymentsApi.updateStatus(leadId, paymentId, { status, reason })
+      const idx = payments.value.findIndex((p) => p.id === paymentId)
+      if (idx !== -1) payments.value.splice(idx, 1, data)
+      await fetchOne(leadId)
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
   async function removePayment(leadId, paymentId) {
     loading.action = true
     try {
@@ -384,6 +431,20 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
+  async function crossSell(leadId, payload) {
+    loading.action = true
+    try {
+      const { data } = await leadsApi.crossSell(leadId, payload)
+      list.value.unshift(data)
+      return data
+    } catch (e) {
+      errors.value = e
+      throw e
+    } finally {
+      loading.action = false
+    }
+  }
+
   async function flagIssue(leadId, payload) {
     loading.action = true
     try {
@@ -410,10 +471,16 @@ export const useLeadsStore = defineStore('leads', () => {
   function resetFilters() {
     Object.assign(filters, {
       search: '',
-      status: '',
-      insurance_type: '',
-      source_id: '',
+      status: [],
+      stage: '',
+      insurance_type: [],
+      source_id: [],
       assigned_to: '',
+      unassigned: '',
+      is_doublon: '',
+      due: '',
+      dvc_status: [],
+      payment_status: [],
       from: '',
       to: '',
       page: 1,
@@ -426,7 +493,7 @@ export const useLeadsStore = defineStore('leads', () => {
   function _buildParams() {
     const p = {}
     Object.entries(filters).forEach(([k, v]) => {
-      if (v !== '' && v !== null && v !== undefined) p[k] = v
+      if (Array.isArray(v) ? v.length : v !== '' && v !== null && v !== undefined) p[k] = v
     })
     return p
   }
@@ -445,13 +512,17 @@ export const useLeadsStore = defineStore('leads', () => {
     filters,
     loading,
     errors,
+    counts,
     activeFiltersCount,
     fetchList,
+    fetchCounts,
+    bulk,
     fetchOne,
     create,
     update,
     remove,
     assign,
+    crossSell,
     updateStatus,
     fetchNotes,
     addNote,
@@ -464,6 +535,7 @@ export const useLeadsStore = defineStore('leads', () => {
     fetchPayments,
     addPayment,
     removePayment,
+    changePaymentStatus,
     setClientType,
     flagIssue,
     fetchDossier,

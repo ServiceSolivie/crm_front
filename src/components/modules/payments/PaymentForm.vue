@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { reactive, ref, computed, watch } from 'vue'
 import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
@@ -8,17 +9,29 @@ import { PAYMENT_METHOD } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatCurrency } from '@/utils/formatters'
 
+const { t } = useI18n()
+
 const paymentMethodOptions = useEnumOptions(PAYMENT_METHOD, 'paymentMethods')
 
 const props = defineProps({
   open: { type: Boolean, default: false },
   remainingAmount: { type: [String, Number], default: 0 },
+  // First payment: the contract total is not known yet and is asked here
+  needsTotal: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['close', 'submit'])
 
+// By hand a payment is either received or still pending (transfer announced…)
+const statusOptions = computed(() => [
+  { value: 'REUSSI', label: t('statuses.paymentRecord.REUSSI') },
+  { value: 'EN_ATTENTE', label: t('statuses.paymentRecord.EN_ATTENTE') },
+])
+
 const form = reactive({
+  expected_revenue: '',
+  status: 'REUSSI',
   amount: '',
   payment_date: new Date().toISOString().slice(0, 10),
   payment_method: '',
@@ -34,6 +47,8 @@ const showCustomMethod = computed(() => form.payment_method === 'AUTRE')
 watch(() => props.open, (val) => {
   if (val) {
     Object.assign(form, {
+      expected_revenue: '',
+      status: 'REUSSI',
       amount: '',
       payment_date: new Date().toISOString().slice(0, 10),
       payment_method: '',
@@ -47,12 +62,16 @@ watch(() => props.open, (val) => {
 
 function validate() {
   const e = {}
-  if (!form.amount || Number(form.amount) <= 0) e.amount = 'Le montant doit être supérieur à 0.'
-  if (Number(form.amount) > Number(props.remainingAmount)) e.amount = `Le montant dépasse le solde restant (${formatCurrency(props.remainingAmount)}).`
-  if (!form.payment_date) e.payment_date = 'La date est obligatoire.'
-  if (!form.payment_method) e.payment_method = 'La méthode de paiement est obligatoire.'
+  const ceiling = props.needsTotal ? Number(form.expected_revenue) : Number(props.remainingAmount)
+  if (props.needsTotal && (!form.expected_revenue || Number(form.expected_revenue) <= 0)) {
+    e.expected_revenue = t('paymentForm.errors.total')
+  }
+  if (!form.amount || Number(form.amount) <= 0) e.amount = t('paymentForm.errors.amount')
+  else if (ceiling > 0 && Number(form.amount) > ceiling) e.amount = t('paymentForm.errors.overRemaining', { amount: formatCurrency(ceiling) })
+  if (!form.payment_date) e.payment_date = t('paymentForm.errors.date')
+  if (!form.payment_method) e.payment_method = t('paymentForm.errors.method')
   if (form.payment_method === 'AUTRE' && !form.custom_payment_method.trim()) {
-    e.custom_payment_method = 'Veuillez préciser la méthode de paiement.'
+    e.custom_payment_method = t('paymentForm.errors.customMethod')
   }
   errors.value = e
   return Object.keys(e).length === 0
@@ -61,6 +80,8 @@ function validate() {
 function onSubmit() {
   if (!validate()) return
   const payload = {
+    ...(props.needsTotal ? { expected_revenue: Number(form.expected_revenue) } : {}),
+    status: form.status,
     amount: Number(form.amount),
     payment_date: form.payment_date,
     payment_method: form.payment_method,
@@ -85,16 +106,32 @@ defineExpose({ setServerErrors })
 </script>
 
 <template>
-  <AppModal :open="open" title="Enregistrer un paiement" size="md" @close="emit('close')">
-    <div class="mb-5 p-3 rounded-lg bg-indigo-50 text-sm text-indigo-700 font-medium">
-      Solde restant : {{ formatCurrency(remainingAmount) }}
+  <AppModal :open="open" :title="t('paymentForm.title')" size="md" @close="emit('close')">
+    <div v-if="!needsTotal" class="mb-5 p-3 rounded-lg bg-indigo-50 text-sm text-indigo-700 font-medium">
+      {{ t('paymentForm.remaining', { amount: formatCurrency(remainingAmount) }) }}
     </div>
 
     <form class="space-y-4" @submit.prevent="onSubmit">
+      <AppInput
+        v-if="needsTotal"
+        v-model="form.expected_revenue"
+        :label="t('paymentForm.total')"
+        :hint="t('paymentForm.totalHint')"
+        type="number"
+        placeholder="0.00"
+        :error="errors.expected_revenue"
+        required
+      />
+      <AppSelect
+        v-model="form.status"
+        :label="t('paymentForm.status')"
+        :options="statusOptions"
+        :error="errors.status"
+      />
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <AppInput
           v-model="form.amount"
-          label="Montant"
+          :label="t('paymentForm.amount')"
           type="number"
           placeholder="0.00"
           :error="errors.amount"
@@ -102,7 +139,7 @@ defineExpose({ setServerErrors })
         />
         <AppInput
           v-model="form.payment_date"
-          label="Date de paiement"
+          :label="t('paymentForm.date')"
           type="date"
           :error="errors.payment_date"
           required
@@ -111,9 +148,9 @@ defineExpose({ setServerErrors })
 
       <AppSelect
         v-model="form.payment_method"
-        label="Méthode de paiement"
+        :label="t('paymentForm.method')"
         :options="paymentMethodOptions"
-        placeholder="Sélectionner…"
+        :placeholder="t('paymentForm.select')"
         :error="errors.payment_method"
         required
       />
@@ -121,30 +158,30 @@ defineExpose({ setServerErrors })
       <AppInput
         v-if="showCustomMethod"
         v-model="form.custom_payment_method"
-        label="Préciser la méthode"
-        placeholder="Ex: Chèque, Espèces, PayPal…"
+        :label="t('paymentForm.customMethod')"
+        :placeholder="t('paymentForm.customPlaceholder')"
         :error="errors.custom_payment_method"
         required
       />
 
       <AppInput
         v-model="form.reference_number"
-        label="Numéro de référence"
-        placeholder="Optionnel"
+        :label="t('paymentForm.reference')"
+        :placeholder="t('common.optional')"
         :error="errors.reference_number"
       />
 
       <AppInput
         v-model="form.notes"
-        label="Notes"
-        placeholder="Optionnel"
+        :label="t('appointments.notes')"
+        :placeholder="t('common.optional')"
         :error="errors.notes"
       />
     </form>
 
     <template #footer>
-      <AppButton variant="ghost" @click="emit('close')">Annuler</AppButton>
-      <AppButton :loading="loading" @click="onSubmit">Enregistrer</AppButton>
+      <AppButton variant="secondary" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
+      <AppButton :loading="loading" @click="onSubmit">{{ t('common.save') }}</AppButton>
     </template>
   </AppModal>
 </template>

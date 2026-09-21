@@ -2,6 +2,8 @@ import client from './client'
 
 export const reportsApi = {
   leads: (params) => client.get('/reports/leads', { params }).then((r) => r.data),
+  leadsSummary: (params) => client.get('/reports/leads/summary', { params }).then((r) => r.data),
+  appointmentsSummary: (params) => client.get('/reports/appointments/summary', { params }).then((r) => r.data),
   appointments: (params) =>
     client.get('/reports/appointments', { params }).then((r) => r.data),
   teams: (params) => client.get('/reports/teams', { params }).then((r) => r.data),

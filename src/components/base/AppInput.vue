@@ -1,13 +1,15 @@
 <script setup>
 import { useId } from 'vue'
 
-const props = defineProps({
+defineProps({
   modelValue: { type: [String, Number], default: '' },
   label: { type: String, default: '' },
   type: { type: String, default: 'text' },
   placeholder: { type: String, default: '' },
   error: { type: String, default: '' },
   hint: { type: String, default: '' },
+  // Non-blocking notice (amber), e.g. a possible duplicate
+  warning: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
   required: { type: Boolean, default: false },
   autocomplete: { type: String, default: 'off' },
@@ -28,10 +30,10 @@ function onInput(e) {
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-gray-700 select-none"
+      class="text-[12.5px] font-medium text-gray-600 select-none"
     >
       {{ label }}
-      <span v-if="required" class="text-danger ml-0.5">*</span>
+      <span v-if="required" class="text-danger-text ml-0.5">*</span>
     </label>
 
     <!-- Input wrapper -->
@@ -53,13 +55,13 @@ function onInput(e) {
         :required="required"
         :autocomplete="autocomplete"
         :class="[
-          'w-full h-11 rounded-lg border bg-gray-50 text-sm text-gray-900',
+          'w-full h-10 rounded-lg border bg-white text-[13.5px] text-gray-900',
           'placeholder:text-gray-400 transition-colors duration-150',
-          'focus:outline-none focus:bg-white focus:border-primary focus-ring',
+          'focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary-soft/20',
           'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100',
           $slots.prefix ? 'pl-9' : 'pl-3',
           $slots.suffix ? 'pr-9' : 'pr-3',
-          error ? 'border-danger focus:border-danger' : 'border-gray-300',
+          error ? 'border-danger focus:border-danger' : warning ? 'border-warning' : 'border-gray-300',
         ]"
         @input="onInput"
         @blur="emit('blur', $event)"
@@ -76,7 +78,9 @@ function onInput(e) {
     </div>
 
     <!-- Error message -->
-    <p v-if="error" class="text-xs text-danger">{{ error }}</p>
+    <p v-if="error" class="text-xs text-danger-text">{{ error }}</p>
+
+    <p v-else-if="warning" class="text-xs text-warning-text">{{ warning }}</p>
 
     <!-- Hint -->
     <p v-else-if="hint" class="text-xs text-gray-500">{{ hint }}</p>

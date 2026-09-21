@@ -1,9 +1,11 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
+import { Menu } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
 import TheSidebar from './TheSidebar.vue'
-import TheTopbar from './TheTopbar.vue'
 
 const ui = useUiStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -17,15 +19,22 @@ const ui = useUiStore()
       />
     </Transition>
 
-    <!-- Sidebar -->
     <TheSidebar />
 
-    <!-- Main area -->
     <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-      <TheTopbar />
+      <!-- Mobile-only bar: the sidebar is a drawer below lg -->
+      <header class="lg:hidden h-14 shrink-0 flex items-center gap-3 px-4 bg-sidebar text-white">
+        <button
+          class="p-2 -ml-2 rounded-lg text-sidebar-icon hover:bg-white/10 hover:text-white"
+          :aria-label="t('nav.openMenu')"
+          @click="ui.toggleSidebar()"
+        >
+          <Menu class="w-5 h-5" />
+        </button>
+        <span class="font-display font-semibold">BrandNova</span>
+      </header>
 
-      <!-- Page content -->
-      <main class="flex-1 overflow-y-auto p-6">
+      <main class="flex-1 overflow-y-auto px-4 py-5 sm:px-8 sm:py-7">
         <slot />
       </main>
     </div>

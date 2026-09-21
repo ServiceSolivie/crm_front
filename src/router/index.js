@@ -12,12 +12,6 @@ const router = createRouter({
       component: () => import('@/pages/auth/LoginPage.vue'),
       meta: { layout: 'auth' },
     },
-    {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/pages/auth/RegisterPage.vue'),
-      meta: { layout: 'auth' },
-    },
 
     /* ── Redirect root ───────────────────────────────────────── */
     {

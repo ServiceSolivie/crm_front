@@ -2,7 +2,7 @@
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, Edit2, Trash2, Mail, Shield, Users } from 'lucide-vue-next'
+import { ChevronRight, Edit2, Trash2, Mail, Users } from 'lucide-vue-next'
 import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useToast } from '@/composables/useToast'
@@ -41,7 +41,7 @@ async function toggleActive() {
 }
 
 async function handleDelete() {
-  const ok = await ui.confirm(t('users.deleteTitle'), t('users.deleteConfirm'))
+  const ok = await ui.confirm(t('users.deleteTitle'), t('users.deleteConfirm'), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.remove(id)
@@ -54,13 +54,12 @@ async function handleDelete() {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto space-y-5">
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.back()">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        {{ t('common.back') }}
-      </AppButton>
-    </div>
+  <div class="max-w-3xl mx-auto flex flex-col gap-4">
+    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-[13px] text-gray-500">
+      <RouterLink to="/users" class="text-gray-600 hover:text-gray-900">{{ t('users.title') }}</RouterLink>
+      <ChevronRight class="w-3.5 h-3.5" />
+      <span class="text-gray-900 truncate">{{ store.current?.name ?? '…' }}</span>
+    </nav>
 
     <AppCard v-if="store.loading.detail">
       <div class="flex items-start gap-4">
@@ -79,7 +78,7 @@ async function handleDelete() {
           <AppAvatar :name="store.current.name" size="lg" />
           <div>
             <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-xl font-semibold text-gray-900">{{ store.current.name }}</h1>
+              <h1 class="font-display text-2xl font-semibold tracking-tight text-gray-900">{{ store.current.name }}</h1>
               <AppBadge
                 :variant="!store.current.is_active ? 'neutral' : 'success'"
                 :label="store.current.is_active ? t('common.active') : t('common.inactive')"

@@ -1,39 +1,53 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Edit2, Trash2, Clock, Calendar } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import { Clock, Pencil, Trash2, Phone, Check, X } from 'lucide-vue-next'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
+import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import AppointmentRescheduleModal from '@/components/modules/appointments/AppointmentRescheduleModal.vue'
 import AppointmentRemindersPanel from '@/components/modules/appointments/AppointmentRemindersPanel.vue'
 import { formatDateTime } from '@/utils/formatters'
+import { firstErrorMessage } from '@/utils/errors'
 
 const route = useRoute()
 const router = useRouter()
 const store = useAppointmentsStore()
 const ui = useUiStore()
+const auth = useAuthStore()
 const toast = useToast()
+const { t, locale } = useI18n()
 
 const id = route.params.id
 const showReschedule = ref(false)
-const activeTab = ref('reminders')
+const busy = ref(false)
 
-const leadFullName = computed(() => {
-  const lead = store.current?.lead
-  if (!lead) return 'Appointment'
-  return [lead.first_name, lead.last_name].filter(Boolean).join(' ') || 'Appointment'
+const canUpdate = computed(() => auth.can('APPOINTMENTS_UPDATE'))
+// Only this appointment, never another one still in the store
+const apt = computed(() => (store.current && String(store.current.id) === String(id) ? store.current : null))
+
+const leadName = computed(() => {
+  const lead = apt.value?.lead
+  return [lead?.first_name, lead?.last_name].filter(Boolean).join(' ') || lead?.reference || t('appointments.title')
 })
 
-const TABS = [
-  { key: 'reminders', label: 'Reminders' },
-  { key: 'info', label: 'Details' },
-]
+const whenLabel = computed(() => {
+  if (!apt.value?.scheduled_at) return ''
+  const d = new Date(apt.value.scheduled_at)
+  const loc = locale.value === 'fr' ? 'fr-FR' : 'en-GB'
+  const day = d.toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  return `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit' })}`
+})
+
+const isOverdue = computed(() =>
+  apt.value?.status === 'PLANIFIE' && new Date(apt.value.scheduled_at) < new Date(),
+)
 
 onMounted(async () => {
   try {
@@ -44,183 +58,191 @@ onMounted(async () => {
   }
 })
 
+async function setStatus(status) {
+  busy.value = true
+  try {
+    await store.updateStatus(id, status)
+    toast.showSuccess(t('appointments.statusUpdated'))
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, t('calendar.updateError')))
+  } finally {
+    busy.value = false
+  }
+}
+
 async function onReschedule(scheduledAt) {
   try {
     await store.reschedule(id, scheduledAt)
-    toast.showSuccess('Appointment rescheduled')
+    toast.showSuccess(t('appointments.rescheduled'))
     showReschedule.value = false
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to reschedule')
+    toast.showError(firstErrorMessage(e, t('calendar.updateError')))
   }
 }
 
 async function onAddReminder(payload) {
   try {
     await store.addReminder(id, payload)
-    toast.showSuccess('Reminder added')
+    toast.showSuccess(t('reminders.added'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to add reminder')
+    toast.showError(firstErrorMessage(e, t('reminders.addError')))
   }
 }
 
 async function onRemoveReminder(reminderId) {
-  const ok = await ui.confirm('Remove Reminder', 'Remove this reminder?')
+  const ok = await ui.confirm(t('reminders.removeTitle'), t('reminders.removeConfirm'), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.removeReminder(id, reminderId)
-    toast.showSuccess('Reminder removed')
+    toast.showSuccess(t('reminders.removed'))
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to remove reminder')
+    toast.showError(firstErrorMessage(e, t('reminders.removeError')))
   }
 }
 
 async function handleDelete() {
-  const ok = await ui.confirm('Delete Appointment', 'Delete this appointment? Cannot be undone.')
+  const ok = await ui.confirm(t('appointments.deleteTitle'), t('appointments.deleteConfirm'), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.remove(id)
-    toast.showSuccess('Appointment deleted')
+    toast.showSuccess(t('appointments.deleteSuccess'))
     router.replace({ name: 'appointments' })
   } catch (e) {
-    toast.showError(e?.message ?? 'Failed to delete')
+    toast.showError(firstErrorMessage(e, t('leadDetail.errors.appointmentDelete')))
   }
 }
 </script>
 
 <template>
-  <div class="max-w-3xl mx-auto space-y-5">
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.back()">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        Back
-      </AppButton>
-      <AppButton
-        v-if="store.current?.lead?.id"
-        variant="ghost"
-        size="sm"
-        @click="router.push({ name: 'leads.detail', params: { id: store.current.lead.id } })"
-      >
-        View Lead
-      </AppButton>
+  <div class="flex flex-col gap-4 max-w-[1100px] mx-auto">
+    <AppPageHeader
+      :title="apt ? leadName : '…'"
+      :breadcrumb="[{ label: t('appointments.title'), to: '/appointments' }, { label: apt ? leadName : '…' }]"
+    >
+      <template #meta>
+        <div v-if="apt" class="flex flex-wrap items-center gap-2.5 mt-1.5">
+          <AppointmentStatusBadge :status="apt.status" dot />
+          <span :class="['text-[13px]', isOverdue ? 'text-danger-text font-medium' : 'text-gray-600']">{{ whenLabel }}</span>
+          <span v-if="isOverdue" class="text-[11px] font-semibold uppercase text-danger-text">{{ t('appointments.overdue') }}</span>
+        </div>
+      </template>
+      <template v-if="apt && canUpdate" #actions>
+        <button
+          v-if="apt.status === 'PLANIFIE'"
+          type="button"
+          :disabled="busy"
+          class="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover disabled:opacity-50"
+          @click="setStatus('REALISE')"
+        ><Check class="w-4 h-4" />{{ t('calendar.markDone') }}</button>
+        <button
+          type="button"
+          class="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
+          @click="showReschedule = true"
+        ><Clock class="w-4 h-4" />{{ t('calendar.reschedule') }}</button>
+        <RouterLink
+          :to="{ name: 'appointments.edit', params: { id } }"
+          class="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
+        ><Pencil class="w-4 h-4" />{{ t('common.edit') }}</RouterLink>
+        <button
+          v-if="apt.status === 'PLANIFIE'"
+          type="button"
+          :disabled="busy"
+          class="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-danger-text hover:bg-danger-bg/40 disabled:opacity-50"
+          @click="setStatus('ANNULE')"
+        ><X class="w-4 h-4" />{{ t('calendar.cancelApt') }}</button>
+        <button
+          v-if="auth.can('APPOINTMENTS_DELETE')"
+          type="button"
+          :aria-label="t('common.delete')"
+          class="w-9 h-9 rounded-lg border border-gray-300 bg-white text-gray-500 flex items-center justify-center hover:text-danger-text hover:bg-danger-bg/40"
+          @click="handleDelete"
+        ><Trash2 class="w-4 h-4" /></button>
+      </template>
+    </AppPageHeader>
+
+    <div v-if="!apt" class="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
+      <AppSkeleton height="18px" width="40%" /><AppSkeleton height="14px" width="60%" /><AppSkeleton height="14px" width="30%" />
     </div>
 
-    <!-- Loading -->
-    <AppCard v-if="store.loading.detail">
-      <div class="space-y-3">
-        <AppSkeleton height="24px" width="40%" />
-        <AppSkeleton height="16px" width="60%" />
-        <AppSkeleton height="16px" width="30%" />
-      </div>
-    </AppCard>
-
-    <!-- Header card -->
-    <AppCard v-else-if="store.current">
-      <div class="flex items-start justify-between gap-4 flex-wrap">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-primary-light flex items-center justify-center shrink-0">
-            <Calendar class="w-6 h-6 text-primary" />
+    <div v-else class="flex flex-col lg:flex-row gap-5 items-start">
+      <div class="flex-1 min-w-0 w-full flex flex-col gap-4">
+        <section class="bg-white border border-gray-200 rounded-xl px-5 py-4.5 flex flex-col gap-3.5">
+          <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('appointments.details') }}</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5">
+            <div>
+              <dt class="text-xs text-gray-500">{{ t('appointments.dateTime') }}</dt>
+              <dd class="mt-0.5 font-mono text-[12.5px] text-gray-900">{{ formatDateTime(apt.scheduled_at) }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-gray-500">{{ t('appointments.agent') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900 flex items-center gap-1.5">
+                <template v-if="apt.agent"><AppAvatar :name="apt.agent.name" size="xs" />{{ apt.agent.name }}</template>
+                <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
+              </dd>
+            </div>
+            <div v-if="apt.location">
+              <dt class="text-xs text-gray-500">{{ t('appointments.location') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900">{{ apt.location }}</dd>
+            </div>
+            <div>
+              <dt class="text-xs text-gray-500">{{ t('appointments.createdBy') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900">
+                {{ apt.created_by?.name ?? '—' }} · <span class="font-mono text-[12.5px]">{{ formatDateTime(apt.created_at) }}</span>
+              </dd>
+            </div>
+          </dl>
+          <div v-if="apt.notes" class="pt-3 border-t border-gray-100">
+            <p class="text-xs text-gray-500 mb-1">{{ t('appointments.notes') }}</p>
+            <p class="text-[13px] leading-[19px] text-gray-900 whitespace-pre-wrap break-words">{{ apt.notes }}</p>
           </div>
-          <div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <h1 class="text-xl font-semibold text-gray-900">{{ leadFullName }}</h1>
-              <AppointmentStatusBadge :status="store.current.status" dot />
-            </div>
-            <div class="flex items-center gap-1.5 mt-1 text-sm text-gray-500">
-              <Clock class="w-4 h-4" />
-              <span>{{ formatDateTime(store.current.scheduled_at) }}</span>
-            </div>
-            <div v-if="store.current.agent" class="flex items-center gap-1.5 mt-1.5">
-              <AppAvatar :name="store.current.agent.name" size="xs" />
-              <span class="text-sm text-gray-600">{{ store.current.agent.name }}</span>
-            </div>
-          </div>
-        </div>
+        </section>
 
-        <div class="flex items-center gap-2 shrink-0">
-          <AppButton variant="ghost" size="sm" @click="showReschedule = true">
-            <template #icon><Clock class="w-4 h-4" /></template>
-            Reschedule
-          </AppButton>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            @click="router.push({ name: 'appointments.edit', params: { id } })"
-          >
-            <template #icon><Edit2 class="w-4 h-4" /></template>
-            Edit
-          </AppButton>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            class="!text-danger"
-            @click="handleDelete"
-          >
-            <template #icon><Trash2 class="w-4 h-4" /></template>
-          </AppButton>
-        </div>
-      </div>
-
-      <div v-if="store.current.notes" class="mt-4 pt-4 border-t border-gray-100">
-        <p class="text-xs text-gray-400 mb-1">Notes</p>
-        <p class="text-sm text-gray-700">{{ store.current.notes }}</p>
-      </div>
-    </AppCard>
-
-    <!-- Tabs -->
-    <AppCard v-if="store.current" padding="none">
-      <div class="border-b border-gray-100 px-5">
-        <div class="flex gap-0">
-          <button
-            v-for="tab in TABS"
-            :key="tab.key"
-            :class="[
-              'px-4 py-3.5 text-sm font-medium border-b-2 -mb-px transition-colors',
-              activeTab === tab.key
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700',
-            ]"
-            @click="activeTab = tab.key"
-          >
-            {{ tab.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="p-5">
         <AppointmentRemindersPanel
-          v-if="activeTab === 'reminders'"
           :reminders="store.reminders"
           :loading="store.loading.reminders"
           :submitting="store.loading.action"
+          :can-edit="canUpdate"
           @add="onAddReminder"
           @remove="onRemoveReminder"
         />
-
-        <div v-else-if="activeTab === 'info'" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-          <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Lead</p>
-            <p class="text-sm text-gray-900">{{ leadFullName !== 'Appointment' ? leadFullName : '—' }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Phone</p>
-            <p class="text-sm text-gray-900">{{ store.current.lead?.phone ?? '—' }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Insurance Type</p>
-            <p class="text-sm text-gray-900">{{ store.current.insurance_type?.replace(/_/g, ' ') ?? '—' }}</p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Created At</p>
-            <p class="text-sm text-gray-900">{{ formatDateTime(store.current.created_at) }}</p>
-          </div>
-        </div>
       </div>
-    </AppCard>
 
-    <!-- Reschedule modal -->
+      <!-- Lead -->
+      <aside v-if="apt.lead" class="w-full lg:w-[320px] shrink-0">
+        <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-3">
+          <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('appointments.lead') }}</h2>
+          <RouterLink :to="{ name: 'leads.detail', params: { id: apt.lead.id } }" class="flex items-center gap-2.5 min-w-0 hover:text-primary">
+            <AppAvatar :name="leadName" size="md" tone="soft" />
+            <span class="min-w-0">
+              <span class="block text-[14px] font-medium truncate">{{ leadName }}</span>
+              <span v-if="apt.lead.reference" class="block font-mono text-xs text-gray-500">{{ apt.lead.reference }}</span>
+            </span>
+          </RouterLink>
+          <dl class="flex flex-col gap-2.5">
+            <div v-if="apt.lead.phone">
+              <dt class="text-xs text-gray-500">{{ t('leads.phone') }}</dt>
+              <dd class="mt-0.5">
+                <a :href="`tel:${apt.lead.phone}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
+                  <Phone class="w-3.5 h-3.5" />{{ apt.lead.phone }}
+                </a>
+              </dd>
+            </div>
+            <div v-if="apt.lead.insurance_type">
+              <dt class="text-xs text-gray-500">{{ t('leads.filterInsurance') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900">{{ t('insuranceTypes.' + apt.lead.insurance_type, apt.lead.insurance_type) }}</dd>
+            </div>
+          </dl>
+          <RouterLink
+            :to="{ name: 'leads.detail', params: { id: apt.lead.id } }"
+            class="h-8 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50 flex items-center justify-center"
+          >{{ t('calendar.viewLead') }}</RouterLink>
+        </section>
+      </aside>
+    </div>
+
     <AppointmentRescheduleModal
       :open="showReschedule"
-      :current-date="store.current?.scheduled_at ?? ''"
+      :current-date="apt?.scheduled_at ?? ''"
       :loading="store.loading.action"
       @close="showReschedule = false"
       @reschedule="onReschedule"

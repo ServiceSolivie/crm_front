@@ -1,11 +1,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, FileText, UserSearch, X, Sparkles } from 'lucide-vue-next'
+import { FileText, UserSearch, X, Sparkles } from 'lucide-vue-next'
+import { useRoute } from 'vue-router'
 import { useContractsStore } from '@/stores/contracts.store'
+import { leadsApi } from '@/api/leads'
 import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
@@ -14,7 +16,6 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadPickerModal from '@/components/modules/contracts/LeadPickerModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
 
-const router = useRouter()
 const { t } = useI18n()
 const store = useContractsStore()
 const toast = useToast()
@@ -33,13 +34,21 @@ const templateOptions = computed(() =>
   store.templates.map((tpl) => ({ value: tpl.key, label: tpl.label })),
 )
 
+const route = useRoute()
+
 onMounted(async () => {
   try {
     await store.fetchTemplates()
+    // Opened from a lead ("Générer le DVC"): pick its product's template and link the lead
+    const lead = route.query.lead_id ? (await leadsApi.get(route.query.lead_id).catch(() => null))?.data : null
     if (store.templates.length) {
-      templateKey.value = store.templates[0].key
+      const forProduct = lead?.insurance_type
+        ? store.templates.find((tpl) => tpl.key.startsWith(lead.insurance_type.toLowerCase()))
+        : null
+      templateKey.value = (forProduct ?? store.templates[0]).key
       await selectTemplate(templateKey.value)
     }
+    if (lead) await onLeadSelected(lead)
   } catch {
     toast.showError(t('contracts.loadFailed'))
   }
@@ -149,18 +158,12 @@ function downloadFromPreview() {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto space-y-5 pb-24">
-    <!-- Header -->
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.push({ name: 'contracts' })">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        {{ t('common.back') }}
-      </AppButton>
-      <div>
-        <h1 class="text-xl font-semibold text-gray-900">{{ t('contracts.newContract') }}</h1>
-        <p class="text-sm text-gray-500">{{ t('contracts.newContractSub') }}</p>
-      </div>
-    </div>
+  <div class="max-w-4xl mx-auto flex flex-col gap-4 pb-24">
+    <AppPageHeader
+      :title="t('contracts.newContract')"
+      :subtitle="t('contracts.newContractSub')"
+      :breadcrumb="[{ label: t('contracts.title'), to: '/contracts' }, { label: t('contracts.newContract') }]"
+    />
 
     <!-- Template + lead selection -->
     <AppCard>
@@ -205,7 +208,7 @@ function downloadFromPreview() {
     <!-- Dynamic sections -->
     <template v-else-if="template">
       <AppCard v-for="section in template.schema" :key="section.key">
-        <h2 class="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+        <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <FileText class="w-4 h-4 text-primary" />
           {{ section.title }}
         </h2>

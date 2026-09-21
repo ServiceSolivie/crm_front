@@ -1,19 +1,26 @@
 <script setup>
-import { onMounted, computed, ref } from 'vue'
-import { Download, X } from 'lucide-vue-next'
+import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useReportsStore } from '@/stores/reports.store'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
-import AppInput from '@/components/base/AppInput.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
-import { formatDate } from '@/utils/formatters'
+import ReportShell from '@/components/modules/reports/ReportShell.vue'
+import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
+import { useReportFormat } from '@/composables/useReportFormat'
 
 const { t } = useI18n()
 const store = useReportsStore()
+const { num, pct, dateTime } = useReportFormat()
+
+const summary = computed(() => store.leadsSummary)
+const kpis = computed(() => [
+  { label: t('reports.kpi.leads'), value: num(summary.value?.total) },
+  { label: t('reports.kpi.validated'), value: num(summary.value?.validated), tone: 'success' },
+  { label: t('reports.kpi.conversion'), value: pct(summary.value?.conversion_rate) },
+  { label: t('reports.kpi.unassigned'), value: num(summary.value?.unassigned), tone: summary.value?.unassigned ? 'danger' : undefined },
+])
 
 const COLUMNS = computed(() => [
   { key: 'name', label: t('reports.colName') },
@@ -22,130 +29,90 @@ const COLUMNS = computed(() => [
   { key: 'insurance_type', label: t('reports.colType') },
   { key: 'source', label: t('reports.colSource') },
   { key: 'assigned_to', label: t('reports.colAgent') },
-  { key: 'created_at', label: t('reports.colCreated') },
+  { key: 'created_at', label: t('leads.receivedAt') },
 ])
 
+const fullName = (r) => [r.first_name, r.last_name].filter(Boolean).join(' ') || r.reference || '—'
+
 const CSV_COLUMNS = [
-  { key: 'name', label: 'Name' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'email', label: 'Email' },
-  { key: 'status', label: 'Status' },
-  { key: 'insurance_type', label: 'Insurance Type' },
-  { key: 'created_at', label: 'Created At' },
+  { key: 'reference', label: 'Référence' },
+  { key: 'name', label: 'Nom', value: fullName },
+  { key: 'phone', label: 'Téléphone' },
+  { key: 'email', label: 'E-mail' },
+  { key: 'status', label: 'Statut', value: (r) => t('statuses.lead.' + r.status, r.status) },
+  { key: 'insurance_type', label: 'Assurance', value: (r) => (r.insurance_type ? t('insuranceTypes.' + r.insurance_type, r.insurance_type) : '') },
+  { key: 'source', label: 'Source', value: (r) => r.lead_source?.name },
+  { key: 'agent', label: 'Agent', value: (r) => r.assigned_agent?.name },
+  { key: 'created_at', label: 'Reçu le' },
 ]
 
 const exporting = ref(false)
-
-const from = computed(() =>
-  store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1,
-)
-const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page, store.meta.total))
-
-onMounted(() => store.fetchLeads())
-
 async function exportCsv() {
   exporting.value = true
   try {
-    await store.exportAllLeads(
-      CSV_COLUMNS,
-      'leads-report.csv',
-      (row) => ({ ...row, name: [row.first_name, row.last_name].filter(Boolean).join(' ') }),
-    )
+    await store.exportAllLeads(CSV_COLUMNS, 'rapport-leads.csv')
   } finally {
     exporting.value = false
   }
 }
+
+const from = computed(() => (store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1))
+const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page, store.meta.total))
+
+onMounted(() => store.fetchLeads())
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('reports.leads') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('reports.records') }}</p>
-        </div>
-        <AppButton size="sm" class="!bg-white !text-primary hover:!bg-indigo-50" :disabled="exporting" @click="exportCsv">
-          <template #icon><Download class="w-4 h-4" /></template>
-          {{ exporting ? t('common.loading') : t('reports.exportCsv') }}
-        </AppButton>
-      </div>
-    </div>
+  <ReportShell
+    team-filter
+    :title="t('reports.titles.leads')"
+    :subtitle="t('reports.recordsCount', { n: num(store.meta.total) })"
+    :exporting="exporting"
+    @refresh="store.fetchLeads()"
+    @export="exportCsv"
+  >
+    <ReportKpis :items="kpis" :loading="store.loading.leads && !summary" />
 
-    <!-- Date range controls -->
-    <AppCard padding="sm">
-      <div class="flex items-center gap-2 flex-wrap justify-between">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-sm text-gray-500">{{ t('reports.dateRange') }}</span>
-          <AppInput
-            :model-value="store.filters.from"
-            type="date"
-            class="w-36"
-            @update:model-value="(v) => { store.setFilter('from', v); store.fetchLeads() }"
-          />
-          <span class="text-gray-400 text-sm">–</span>
-          <AppInput
-            :model-value="store.filters.to"
-            type="date"
-            class="w-36"
-            @update:model-value="(v) => { store.setFilter('to', v); store.fetchLeads() }"
-          />
-        </div>
-        <AppButton
-          v-if="store.activeFiltersCount"
-          variant="danger"
-          size="sm"
-          @click="store.resetFilters(); store.fetchLeads()"
-        >
-          <template #icon><X class="w-3.5 h-3.5" /></template>
-          {{ t('common.clear') }}
-        </AppButton>
-      </div>
-    </AppCard>
-
-    <AppCard padding="none">
+    <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <AppTable
         :columns="COLUMNS"
         :rows="store.leadsData"
         :loading="store.loading.leads"
-        row-key="id"
         :empty-title="t('reports.noLeadData')"
         :empty-description="t('reports.adjustDate')"
       >
         <template #cell-name="{ row }">
-          <span class="text-sm font-medium text-gray-900">
-            {{ [row.first_name, row.last_name].filter(Boolean).join(' ') || '—' }}
-          </span>
+          <RouterLink :to="{ name: 'leads.detail', params: { id: row.id } }" class="flex items-center gap-2.5 min-w-0 hover:text-primary">
+            <AppAvatar :name="fullName(row)" size="xs" tone="soft" />
+            <span class="font-medium truncate">{{ fullName(row) }}</span>
+          </RouterLink>
         </template>
-
+        <template #cell-phone="{ value }">
+          <span class="font-mono text-[12.5px]">{{ value || '—' }}</span>
+        </template>
         <template #cell-status="{ value }">
           <LeadStatusBadge :status="value" />
         </template>
-
         <template #cell-insurance_type="{ value }">
-          <span class="text-xs text-gray-600">{{ value?.replace(/_/g, ' ') ?? '—' }}</span>
+          <span v-if="value" class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700" :title="t('insuranceTypes.' + value, value)">
+            {{ t('insuranceTypesShort.' + value, value) }}
+          </span>
+          <span v-else class="text-gray-400">—</span>
         </template>
-
         <template #cell-source="{ row }">
-          <span class="text-sm text-gray-600">{{ row.lead_source?.name ?? '—' }}</span>
+          <span class="text-gray-600">{{ row.lead_source?.name ?? '—' }}</span>
         </template>
-
         <template #cell-assigned_to="{ row }">
-          <div v-if="row.assigned_agent" class="flex items-center gap-1.5">
+          <span v-if="row.assigned_agent" class="flex items-center gap-2">
             <AppAvatar :name="row.assigned_agent.name" size="xs" />
-            <span class="text-sm text-gray-700">{{ row.assigned_agent.name }}</span>
-          </div>
-          <span v-else class="text-gray-400 text-sm">—</span>
+            <span class="truncate">{{ row.assigned_agent.name }}</span>
+          </span>
+          <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
         </template>
-
         <template #cell-created_at="{ value }">
-          <span class="text-sm text-gray-500">{{ formatDate(value) }}</span>
+          <span class="font-mono text-[12.5px] whitespace-nowrap">{{ dateTime(value) }}</span>
         </template>
       </AppTable>
-
       <div class="border-t border-gray-100 px-4">
         <AppPagination
           :current-page="store.meta.current_page"
@@ -154,10 +121,11 @@ async function exportCsv() {
           :from="from"
           :to="to"
           :per-page="store.meta.per_page"
+          :per-page-options="[25, 50, 100]"
           @page-change="(p) => { store.setFilter('page', p); store.fetchLeads() }"
           @per-page-change="(p) => { store.setFilter('per_page', p); store.fetchLeads() }"
         />
       </div>
-    </AppCard>
-  </div>
+    </section>
+  </ReportShell>
 </template>

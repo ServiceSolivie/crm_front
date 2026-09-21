@@ -1,286 +1,173 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Download, X, Banknote, CircleDollarSign, Receipt, CheckCircle2 } from 'lucide-vue-next'
 import { useReportsStore } from '@/stores/reports.store'
 import { useAuthStore } from '@/stores/auth.store'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
-import AppInput from '@/components/base/AppInput.vue'
-import AppSelect from '@/components/base/AppSelect.vue'
+import AppPagination from '@/components/base/AppPagination.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
-import AppPagination from '@/components/base/AppPagination.vue'
-import AppProgressBar from '@/components/base/AppProgressBar.vue'
-import KpiCard from '@/components/modules/dashboard/KpiCard.vue'
+import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import PaymentStatusBadge from '@/components/modules/payments/PaymentStatusBadge.vue'
+import ReportShell from '@/components/modules/reports/ReportShell.vue'
+import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { PAYMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
-import { formatCurrency, formatDate } from '@/utils/formatters'
+import { useReportFormat } from '@/composables/useReportFormat'
 
 const { t } = useI18n()
 const store = useReportsStore()
 const auth = useAuthStore()
+const { num, money, date } = useReportFormat()
 
 const paymentStatusOptions = useEnumOptions(PAYMENT_STATUS, 'statuses.payment')
-const canViewAll = computed(() => auth.can('REVENUE_VIEW_ALL'))
-const canViewTeam = computed(() => auth.can('REVENUE_VIEW_TEAM'))
+const showAgent = computed(() => auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM'))
 
 const summary = computed(() => store.revenueSummary)
-
 const collectionRate = computed(() => {
-  if (!summary.value || !summary.value.total_expected) return 0
-  return Math.min(100, (summary.value.total_received / summary.value.total_expected) * 100)
+  if (!summary.value || !Number(summary.value.total_expected)) return 0
+  return Math.min(100, (Number(summary.value.total_received) / Number(summary.value.total_expected)) * 100)
 })
 
+const kpis = computed(() => [
+  { label: t('revenue.expectedRevenue'), value: money(summary.value?.total_expected) },
+  { label: t('revenue.receivedRevenue'), value: money(summary.value?.total_received), tone: 'success' },
+  { label: t('revenue.remainingRevenue'), value: money(summary.value?.total_remaining) },
+  {
+    label: t('revenue.fullyPaid'),
+    value: summary.value ? `${num(summary.value.fully_paid)} / ${num(summary.value.leads_count)}` : '—',
+    hint: t('revenue.validatedLeads'),
+  },
+])
+
+const fullName = (r) => [r.first_name, r.last_name].filter(Boolean).join(' ') || r.reference || '—'
+
 const CSV_COLUMNS = computed(() => [
-  { key: 'name', label: t('revenue.csvLead') },
+  { key: 'name', label: t('revenue.csvLead'), value: fullName },
   { key: 'expected_revenue', label: t('revenue.csvExpected') },
   { key: 'total_received', label: t('revenue.csvReceived') },
   { key: 'remaining_amount', label: t('revenue.csvRemaining') },
-  { key: 'payment_status_label', label: t('revenue.csvStatus') },
+  { key: 'payment_status', label: t('revenue.csvStatus'), value: (r) => r.payment_status_label ?? r.payment_status },
   { key: 'payments_count', label: t('revenue.csvPayments') },
   { key: 'validated_at', label: t('revenue.csvValidatedAt') },
+  ...(showAgent.value ? [{ key: 'agent', label: t('revenue.agentCol'), value: (r) => r.agent?.name }] : []),
 ])
-
-function csvRows() {
-  return store.revenueData.map((r) => ({
-    name: [r.first_name, r.last_name].filter(Boolean).join(' '),
-    expected_revenue: r.expected_revenue,
-    total_received: r.total_received,
-    remaining_amount: r.remaining_amount,
-    payment_status_label: r.payment_status_label ?? r.payment_status,
-    payments_count: r.payments_count,
-    validated_at: r.validated_at,
-  }))
-}
 
 function refresh() {
   store.fetchRevenue()
 }
-
 function onFilter(key, value) {
   store.setFilter(key, value)
   refresh()
 }
 
-function onPageChange(page) {
-  store.setFilter('page', page)
-  refresh()
-}
+const from = computed(() => (store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1))
+const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page, store.meta.total))
 
-onMounted(() => refresh())
+const GRID = computed(() =>
+  showAgent.value
+    ? 'grid-cols-[minmax(180px,1.6fr)_110px_110px_110px_150px_70px_90px_minmax(140px,1fr)]'
+    : 'grid-cols-[minmax(180px,1.6fr)_110px_110px_110px_150px_70px_90px]',
+)
+
+onMounted(refresh)
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('revenue.title') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ t('revenue.subtitle') }}</p>
-        </div>
-        <AppButton
-          size="sm"
-          class="!bg-white !text-primary hover:!bg-indigo-50"
-          @click="store.exportCsv(csvRows(), CSV_COLUMNS, 'revenue-report.csv')"
-        >
-          <template #icon><Download class="w-4 h-4" /></template>
-          {{ t('common.export') }}
-        </AppButton>
-      </div>
-    </div>
-
-    <!-- Summary KPI cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-      <KpiCard
-        :title="t('revenue.expectedRevenue')"
-        :value="summary?.total_expected"
-        format="currency"
-        :loading="store.loading.revenue"
-        :icon="Banknote"
-        accent="indigo"
+  <ReportShell
+    team-filter
+    :title="t('revenue.title')"
+    :subtitle="t('revenue.subtitle')"
+    @refresh="refresh"
+    @export="store.exportCsv(store.revenueData, CSV_COLUMNS, 'rapport-chiffre-affaires.csv')"
+  >
+    <template #filters>
+      <AppFilterChip
+        :label="t('revenue.statusCol')"
+        :model-value="store.filters.payment_status ?? ''"
+        :options="paymentStatusOptions"
+        :searchable="false"
+        @update:model-value="(v) => onFilter('payment_status', v || null)"
       />
-      <KpiCard
-        :title="t('revenue.receivedRevenue')"
-        :value="summary?.total_received"
-        format="currency"
-        :loading="store.loading.revenue"
-        :icon="CircleDollarSign"
-        accent="emerald"
-      />
-      <KpiCard
-        :title="t('revenue.remainingRevenue')"
-        :value="summary?.total_remaining"
-        format="currency"
-        :loading="store.loading.revenue"
-        :icon="Receipt"
-        accent="amber"
-      />
-      <KpiCard
-        :title="t('revenue.fullyPaid')"
-        :value="summary?.fully_paid"
-        :sub-value="summary ? `${summary.leads_count} ${t('revenue.validatedLeads')}` : null"
-        :loading="store.loading.revenue"
-        :icon="CheckCircle2"
-        accent="emerald"
-      />
-    </div>
+    </template>
 
-    <!-- Collection rate -->
-    <AppCard v-if="summary" padding="sm">
-      <div class="flex items-center gap-4">
-        <span class="text-sm font-medium text-gray-700 shrink-0">{{ t('revenue.collectionRate') }}</span>
-        <div class="flex-1">
-          <AppProgressBar
-            :value="collectionRate"
-            :color="collectionRate >= 80 ? 'bg-success' : collectionRate >= 40 ? 'bg-warning' : 'bg-danger'"
-            height="h-2.5"
-            show-label
-          />
-        </div>
-      </div>
-    </AppCard>
+    <ReportKpis :items="kpis" :loading="store.loading.revenue && !summary" />
 
-    <!-- Filters -->
-    <AppCard padding="sm">
-      <div class="flex items-center gap-2 flex-wrap justify-between">
-        <div class="flex items-center gap-2 flex-wrap">
-          <AppInput
-            :model-value="store.filters.from"
-            type="date"
-            class="w-36"
-            @update:model-value="(v) => onFilter('from', v)"
-          />
-          <span class="text-gray-400 text-sm">–</span>
-          <AppInput
-            :model-value="store.filters.to"
-            type="date"
-            class="w-36"
-            @update:model-value="(v) => onFilter('to', v)"
-          />
-          <AppSelect
-            :model-value="store.filters.payment_status ?? ''"
-            :options="[{ value: '', label: t('revenue.allStatuses') }, ...paymentStatusOptions]"
-            class="w-48"
-            @update:model-value="(v) => onFilter('payment_status', v || null)"
-          />
-        </div>
-        <AppButton
-          v-if="store.activeFiltersCount"
-          variant="danger"
-          size="sm"
-          @click="store.resetFilters(); refresh()"
-        >
-          <template #icon><X class="w-3.5 h-3.5" /></template>
-          {{ t('revenue.clearFilters') }}
-        </AppButton>
-      </div>
-    </AppCard>
+    <section v-if="summary" class="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-center gap-4">
+      <span class="text-[13px] font-medium text-gray-700 shrink-0">{{ t('revenue.collectionRate') }}</span>
+      <span class="flex-1 h-2.5 rounded-full bg-gray-100 overflow-hidden">
+        <span
+          :class="['block h-full rounded-full', collectionRate >= 80 ? 'bg-success' : collectionRate >= 40 ? 'bg-warning' : 'bg-danger']"
+          :style="{ width: `${collectionRate}%` }"
+        />
+      </span>
+      <span class="w-16 text-right font-mono text-[13px] font-medium">{{ Math.round(collectionRate) }} %</span>
+    </section>
 
-    <!-- Table -->
-    <AppCard padding="none">
+    <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-gray-100">
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.leadCol') }}</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.expectedCol') }}</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.receivedCol') }}</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.remainingCol') }}</th>
-              <th class="px-5 py-3 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.statusCol') }}</th>
-              <th class="px-5 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.paymentsCol') }}</th>
-              <th class="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.validatedAtCol') }}</th>
-              <th v-if="canViewAll || canViewTeam" class="px-5 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">{{ t('revenue.agentCol') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Skeleton -->
-            <template v-if="store.loading.revenue">
-              <tr v-for="n in 8" :key="`sk-${n}`" class="border-b border-gray-50">
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="140px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="80px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="80px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="80px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="100px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="40px" /></td>
-                <td class="px-5 py-3.5"><AppSkeleton height="14px" width="90px" /></td>
-                <td v-if="canViewAll || canViewTeam" class="px-5 py-3.5"><AppSkeleton height="14px" width="100px" /></td>
-              </tr>
-            </template>
+        <div :class="['min-w-[900px] text-[13px]', showAgent ? 'min-w-[1040px]' : '']" role="table">
+          <div role="row" :class="['grid gap-x-3 items-center h-10 px-5 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600', GRID]">
+            <span role="columnheader">{{ t('revenue.leadCol') }}</span>
+            <span role="columnheader" class="text-right">{{ t('revenue.expectedCol') }}</span>
+            <span role="columnheader" class="text-right">{{ t('revenue.receivedCol') }}</span>
+            <span role="columnheader" class="text-right">{{ t('revenue.remainingCol') }}</span>
+            <span role="columnheader">{{ t('revenue.statusCol') }}</span>
+            <span role="columnheader" class="text-right">{{ t('revenue.paymentsCol') }}</span>
+            <span role="columnheader">{{ t('revenue.validatedAtCol') }}</span>
+            <span v-if="showAgent" role="columnheader">{{ t('revenue.agentCol') }}</span>
+          </div>
 
-            <!-- Empty state -->
-            <tr v-else-if="store.revenueData.length === 0">
-              <td :colspan="canViewAll || canViewTeam ? 8 : 7" class="px-5 py-12 text-center text-sm text-gray-400">
-                {{ t('revenue.noLeadsForPeriod') }}
-              </td>
-            </tr>
+          <template v-if="store.loading.revenue">
+            <div v-for="n in 8" :key="n" :class="['grid gap-x-3 items-center h-[50px] px-5 border-b border-gray-100', GRID]">
+              <AppSkeleton height="12px" width="70%" />
+              <AppSkeleton v-for="c in (showAgent ? 7 : 6)" :key="c" height="10px" />
+            </div>
+          </template>
 
-            <!-- Data -->
-            <template v-else>
-              <tr
-                v-for="row in store.revenueData"
-                :key="row.id"
-                class="border-b border-gray-50 hover:bg-gray-50/70 transition-colors"
-              >
-                <td class="px-5 py-3.5">
-                  <div>
-                    <p class="font-medium text-gray-900">
-                      {{ [row.first_name, row.last_name].filter(Boolean).join(' ') }}
-                    </p>
-                    <p v-if="row.phone" class="text-xs text-gray-400">{{ row.phone }}</p>
-                  </div>
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums font-medium text-gray-900">
-                  {{ formatCurrency(row.expected_revenue) }}
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums font-medium text-success">
-                  {{ formatCurrency(row.total_received) }}
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums font-medium text-warning">
-                  {{ formatCurrency(row.remaining_amount) }}
-                </td>
-                <td class="px-5 py-3.5 text-center">
-                  <PaymentStatusBadge :status="row.payment_status" />
-                </td>
-                <td class="px-5 py-3.5 text-right tabular-nums text-gray-700">
-                  {{ row.payments_count }}
-                </td>
-                <td class="px-5 py-3.5 text-gray-500">
-                  {{ formatDate(row.validated_at) }}
-                </td>
-                <td v-if="canViewAll || canViewTeam" class="px-5 py-3.5">
-                  <div v-if="row.agent" class="flex items-center gap-2">
-                    <AppAvatar :name="row.agent.name" size="xs" />
-                    <div>
-                      <p class="text-xs font-medium text-gray-700">{{ row.agent.name }}</p>
-                      <p v-if="row.team" class="text-xs text-gray-400">{{ row.team.name }}</p>
-                    </div>
-                  </div>
-                  <span v-else class="text-xs text-gray-400">—</span>
-                </td>
-              </tr>
-            </template>
-          </tbody>
-        </table>
+          <p v-else-if="!store.revenueData.length" class="px-5 py-12 text-center text-sm text-gray-500">{{ t('revenue.noLeadsForPeriod') }}</p>
+
+          <template v-else>
+            <div
+              v-for="row in store.revenueData"
+              :key="row.id"
+              role="row"
+              :class="['grid gap-x-3 items-center h-[54px] px-5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50', GRID]"
+            >
+              <RouterLink role="cell" :to="{ name: 'leads.detail', params: { id: row.id } }" class="min-w-0 hover:text-primary">
+                <p class="font-medium truncate">{{ fullName(row) }}</p>
+                <p v-if="row.phone" class="font-mono text-[11.5px] text-gray-500 truncate">{{ row.phone }}</p>
+              </RouterLink>
+              <span role="cell" class="text-right font-mono">{{ money(row.expected_revenue) }}</span>
+              <span role="cell" class="text-right font-mono text-success-text">{{ money(row.total_received) }}</span>
+              <span role="cell" class="text-right font-mono">{{ money(row.remaining_amount) }}</span>
+              <span role="cell"><PaymentStatusBadge :status="row.payment_status" /></span>
+              <span role="cell" class="text-right font-mono">{{ num(row.payments_count) }}</span>
+              <span role="cell" class="font-mono text-[12.5px]">{{ date(row.validated_at) }}</span>
+              <span v-if="showAgent" role="cell" class="min-w-0">
+                <span v-if="row.agent" class="flex items-center gap-2">
+                  <AppAvatar :name="row.agent.name" size="xs" />
+                  <span class="truncate">{{ row.agent.name }}</span>
+                </span>
+                <span v-else class="text-gray-500">—</span>
+                <span v-if="row.team" class="block text-xs text-gray-500 truncate">{{ row.team.name }}</span>
+              </span>
+            </div>
+          </template>
+        </div>
       </div>
-
-      <!-- Pagination -->
       <div v-if="store.revenueData.length" class="border-t border-gray-100 px-4">
         <AppPagination
           :current-page="store.meta.current_page"
           :last-page="store.meta.last_page"
           :total="store.meta.total"
-          :from="store.meta.total === 0 ? 0 : (store.meta.current_page - 1) * store.meta.per_page + 1"
-          :to="Math.min(store.meta.current_page * store.meta.per_page, store.meta.total)"
+          :from="from"
+          :to="to"
           :per-page="store.meta.per_page"
-          @page-change="onPageChange"
+          :per-page-options="[25, 50, 100]"
+          @page-change="(p) => onFilter('page', p)"
           @per-page-change="(v) => onFilter('per_page', v)"
         />
       </div>
-    </AppCard>
-  </div>
+    </section>
+  </ReportShell>
 </template>

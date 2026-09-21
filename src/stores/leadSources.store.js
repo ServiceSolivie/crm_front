@@ -59,7 +59,7 @@ export const useLeadSourcesStore = defineStore('leadSources', () => {
     errors.value = null
     try {
       const { data } = await leadSourcesApi.update(id, payload)
-      const idx = list.value.findIndex((s) => s.id === id)
+      const idx = list.value.findIndex((s) => String(s.id) === String(id))
       if (idx !== -1) list.value[idx] = data
       current.value = data
       return data
@@ -75,7 +75,7 @@ export const useLeadSourcesStore = defineStore('leadSources', () => {
     loading.action = true
     try {
       await leadSourcesApi.remove(id)
-      list.value = list.value.filter((s) => s.id !== id)
+      list.value = list.value.filter((s) => String(s.id) !== String(id))
     } catch (e) {
       errors.value = e
       throw e

@@ -2,11 +2,11 @@
 import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft } from 'lucide-vue-next'
 import { useUsersStore } from '@/stores/users.store'
 import { useTeamsStore } from '@/stores/teams.store'
 import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
@@ -73,22 +73,17 @@ async function submit() {
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto space-y-5">
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.back()">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        {{ t('common.back') }}
-      </AppButton>
-      <div>
-        <h1 class="text-xl font-semibold text-gray-900">{{ t('users.newUser') }}</h1>
-        <p class="text-sm text-gray-500">{{ t('users.createDesc') }}</p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-4 max-w-2xl mx-auto">
+    <AppPageHeader
+      :title="t('users.newUser')"
+      :subtitle="t('users.createDesc')"
+      :breadcrumb="[{ label: t('users.title'), to: '/users' }, { label: t('users.newUser') }]"
+    />
 
     <AppCard>
       <form class="space-y-5" @submit.prevent="submit">
         <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">{{ t('users.accountDetails') }}</h2>
+          <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-3">{{ t('users.accountDetails') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AppInput
               v-model="form.name"
@@ -127,7 +122,7 @@ async function submit() {
         <div class="border-t border-gray-100" />
 
         <div>
-          <h2 class="text-sm font-semibold text-gray-700 mb-3">{{ t('users.roleAndTeam') }}</h2>
+          <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-3">{{ t('users.roleAndTeam') }}</h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <AppSelect
               v-model="form.role"
@@ -145,7 +140,7 @@ async function submit() {
         </div>
 
         <div class="flex items-center justify-end gap-3">
-          <AppButton variant="ghost" type="button" @click="router.back()">{{ t('common.cancel') }}</AppButton>
+          <AppButton variant="secondary" type="button" @click="router.back()">{{ t('common.cancel') }}</AppButton>
           <AppButton type="submit" :loading="store.loading.form">{{ t('users.createUser') }}</AppButton>
         </div>
       </form>

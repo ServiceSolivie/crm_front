@@ -1,22 +1,29 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { SearchX } from 'lucide-vue-next'
-import AppButton from '@/components/base/AppButton.vue'
+import { useAuthStore } from '@/stores/auth.store'
+import AppErrorState from '@/components/base/AppErrorState.vue'
 
+const auth = useAuthStore()
 const router = useRouter()
+const { t } = useI18n()
+
+// Signed-in users go back to their landing page, others to the login screen
+function goHome() {
+  if (!auth.isAuthenticated) return router.push({ name: 'login' })
+  router.push(auth.hasRole('gestion') ? '/gestion-dashboard' : '/dashboard')
+}
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center py-20 text-center px-4">
-    <div class="w-20 h-20 rounded-3xl bg-gray-100 flex items-center justify-center mb-6">
-      <SearchX class="w-10 h-10 text-gray-400" />
-    </div>
-    <h1 class="text-3xl font-bold text-gray-900 mb-2">Page not found</h1>
-    <p class="text-gray-500 text-sm max-w-xs mb-8">
-      The page you are looking for doesn't exist or has been moved.
-    </p>
-    <AppButton variant="primary" @click="router.push('/dashboard')">
-      Back to Dashboard
-    </AppButton>
-  </div>
+  <AppErrorState
+    :icon="SearchX"
+    tone="neutral"
+    code="404"
+    :title="t('errors.404')"
+    :description="t('errors.404desc')"
+    :action-label="auth.isAuthenticated ? t('errors.backHome') : t('auth.login')"
+    @action="goHome"
+  />
 </template>

@@ -1,6 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -8,87 +7,106 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import frLocale from '@fullcalendar/core/locales/fr'
-import { Calendar, X, Clock, User, FileText, ExternalLink, Edit2, Loader2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, X, Phone, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUsersStore } from '@/stores/users.store'
+import { useAppointmentsStore } from '@/stores/appointments.store'
 import { appointmentsApi } from '@/api/appointments'
 import { useToast } from '@/composables/useToast'
 import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
-import { formatDateTime } from '@/utils/formatters'
-import AppCard from '@/components/base/AppCard.vue'
-import AppButton from '@/components/base/AppButton.vue'
-import AppSelect from '@/components/base/AppSelect.vue'
-import AppSearchInput from '@/components/base/AppSearchInput.vue'
+import { firstErrorMessage } from '@/utils/errors'
+import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
+import AppSearchInput from '@/components/base/AppSearchInput.vue'
+import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
+import AppointmentRescheduleModal from '@/components/modules/appointments/AppointmentRescheduleModal.vue'
 
-const router = useRouter()
 const { t, locale } = useI18n()
 const auth = useAuthStore()
 const usersStore = useUsersStore()
+const appointmentsStore = useAppointmentsStore()
 const toast = useToast()
 
 const calendarRef = ref(null)
-
-// Role guards
 const isAgent = computed(() => auth.hasRole('agent'))
+const canUpdate = computed(() => auth.can('APPOINTMENTS_UPDATE'))
 
-// Filters
-const search = ref('')
+/* ── Filters ───────────────────────────────────────────────── */
 const filterStatus = ref('')
 const filterAgentId = ref('')
+const filterSearch = ref('')
+const statusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
+const agentOptions = computed(() => usersStore.list.map((u) => ({ value: u.id, label: u.name })))
+watch([filterStatus, filterAgentId, filterSearch], () => calendarRef.value?.getApi().refetchEvents())
 
-// UI state
+/* ── View + visible range ──────────────────────────────────── */
+const VIEWS = [
+  { key: 'dayGridMonth', label: 'month' },
+  { key: 'timeGridWeek', label: 'week' },
+  { key: 'timeGridDay', label: 'day' },
+  { key: 'listWeek', label: 'list' },
+]
+function savedView() {
+  try {
+    const v = localStorage.getItem('crm_calendar_view')
+    return VIEWS.some((x) => x.key === v) ? v : 'timeGridWeek'
+  } catch {
+    return 'timeGridWeek'
+  }
+}
+const initialView = savedView() // read once: the options object must not change when the view does
+const currentView = ref(initialView)
+const rangeTitle = ref('')
+
+function changeView(key) {
+  currentView.value = key
+  try { localStorage.setItem('crm_calendar_view', key) } catch { /* private mode */ }
+  calendarRef.value?.getApi().changeView(key)
+}
+function go(dir) {
+  const api = calendarRef.value?.getApi()
+  if (!api) return
+  if (dir === 'prev') api.prev()
+  else if (dir === 'next') api.next()
+  else api.today()
+}
+function onDatesSet(info) {
+  rangeTitle.value = info.view.title
+}
+
+/* ── Events ────────────────────────────────────────────────── */
 const loading = ref(false)
-const selectedApt = ref(null)
-const showModal = ref(false)
 
-// Agent options for non-agents
-const agentOptions = computed(() => [
-  { value: '', label: t('calendar.allAgents') },
-  ...usersStore.list.map((u) => ({ value: u.id, label: u.name })),
-])
-
-const aptStatusOptions = useEnumOptions(APPOINTMENT_STATUS, 'statuses.appointment')
-const statusOptions = computed(() => [
-  { value: '', label: t('appointments.allStatuses') },
-  ...aptStatusOptions.value,
-])
-
-const activeFilterCount = computed(() =>
-  [search.value, filterStatus.value, filterAgentId.value].filter(Boolean).length,
-)
-
-// Color map per status
-const STATUS_COLORS = {
-  PLANIFIE: { bg: '#6366f1', border: '#4f46e5' },
-  REALISE:  { bg: '#10b981', border: '#059669' },
-  ANNULE:   { bg: '#ef4444', border: '#dc2626' },
-  REPORTE:  { bg: '#f59e0b', border: '#d97706' },
+// Tinted blocks, dark text — same status colours as the badges
+const STATUS_STYLE = {
+  PLANIFIE: { bg: '#dbeafe', fg: '#1d4ed8' },
+  REALISE: { bg: '#d1fae5', fg: '#047857' },
+  REPORTE: { bg: '#fef3c7', fg: '#b45309' },
+  ANNULE: { bg: '#fee2e2', fg: '#b91c1c' },
 }
 
-// Lead full name helper
 function leadName(apt) {
-  if (!apt?.lead) return t('nav.appointments')
-  return [apt.lead.first_name, apt.lead.last_name].filter(Boolean).join(' ') || t('nav.appointments')
+  return [apt?.lead?.first_name, apt?.lead?.last_name].filter(Boolean).join(' ') || apt?.lead?.reference || t('nav.appointments')
 }
 
-// Transform backend appointment → FullCalendar event object
 function toFcEvent(apt) {
-  const colors = STATUS_COLORS[apt.status] ?? { bg: '#6366f1', border: '#4f46e5' }
+  const s = STATUS_STYLE[apt.status] ?? STATUS_STYLE.PLANIFIE
   return {
     id: String(apt.id),
     title: leadName(apt),
     start: apt.scheduled_at,
-    backgroundColor: colors.bg,
-    borderColor: colors.border,
-    textColor: '#ffffff',
+    // Appointments carry their own length (duration_minutes → ends_at)
+    ...(apt.ends_at ? { end: apt.ends_at } : {}),
+    backgroundColor: s.bg,
+    borderColor: s.bg,
+    textColor: s.fg,
+    classNames: [`apt-${apt.status}`],
     extendedProps: { apt },
   }
 }
 
-// FullCalendar event source — called on every date range change and refetch
 async function fetchEvents(fetchInfo, successCallback, failureCallback) {
   loading.value = true
   try {
@@ -97,401 +115,394 @@ async function fetchEvents(fetchInfo, successCallback, failureCallback) {
       to: fetchInfo.endStr.slice(0, 10),
       per_page: 500,
     }
-    if (isAgent.value) {
-      params.assigned_to = auth.user?.id
-    } else if (filterAgentId.value) {
-      params.assigned_to = filterAgentId.value
-    }
+    // The API filters appointments by `agent_id`; agents are already scoped to their own
+    if (!isAgent.value && filterAgentId.value) params.agent_id = filterAgentId.value
     if (filterStatus.value) params.status = filterStatus.value
-    if (search.value)       params.search = search.value
-
+    if (filterSearch.value.trim()) params.search = filterSearch.value.trim()
     const { data } = await appointmentsApi.list(params)
     successCallback(data.map(toFcEvent))
   } catch (e) {
     failureCallback(e)
-    toast.showError('Failed to load calendar events')
+    toast.showError(t('calendar.loadError'))
   } finally {
     loading.value = false
   }
 }
 
-function applyFilters() {
+// Time, then lead name — built with text nodes (lead names are user data)
+function eventContent(arg) {
+  const wrap = document.createElement('div')
+  wrap.className = 'apt-content'
+  if (arg.timeText) {
+    const time = document.createElement('span')
+    time.className = 'apt-time'
+    time.textContent = arg.timeText
+    wrap.appendChild(time)
+  }
+  const name = document.createElement('span')
+  name.className = 'apt-name'
+  name.textContent = arg.event.title
+  wrap.appendChild(name)
+  return { domNodes: [wrap] }
+}
+
+/* ── Selection (side panel) ────────────────────────────────── */
+const selectedApt = ref(null)
+let selectedEl = null
+
+function onEventClick({ event, el, jsEvent }) {
+  jsEvent.preventDefault()
+  selectedEl?.classList.remove('apt-selected')
+  selectedEl = el
+  el.classList.add('apt-selected')
+  selectedApt.value = event.extendedProps.apt
+}
+function clearSelection() {
+  selectedEl?.classList.remove('apt-selected')
+  selectedEl = null
+  selectedApt.value = null
+}
+// Keep the highlight when the calendar re-renders (refetch, view change)
+function onEventDidMount({ event, el }) {
+  if (selectedApt.value && String(selectedApt.value.id) === event.id) {
+    el.classList.add('apt-selected')
+    selectedEl = el
+  }
+}
+
+const selectedWhen = computed(() => {
+  if (!selectedApt.value) return ''
+  const d = new Date(selectedApt.value.scheduled_at)
+  const loc = locale.value === 'fr' ? 'fr-FR' : 'en-GB'
+  const day = d.toLocaleDateString(loc, { weekday: 'long', day: 'numeric', month: 'long' })
+  const hm = { hour: '2-digit', minute: '2-digit' }
+  const time = d.toLocaleTimeString(loc, hm)
+  const end = selectedApt.value.ends_at ? new Date(selectedApt.value.ends_at).toLocaleTimeString(loc, hm) : null
+  return `${day.charAt(0).toUpperCase()}${day.slice(1)} · ${time}${end ? `–${end}` : ''}`
+})
+
+/* ── Actions on the selected appointment ───────────────────── */
+const actionBusy = ref(false)
+const showReschedule = ref(false)
+
+async function refreshAfter(updated) {
+  if (updated) selectedApt.value = { ...selectedApt.value, ...updated }
   calendarRef.value?.getApi().refetchEvents()
 }
 
-function clearFilters() {
-  search.value = ''
-  filterStatus.value = ''
-  filterAgentId.value = ''
-  applyFilters()
-}
-
-// Event click → open modal
-function onEventClick({ event }) {
-  selectedApt.value = event.extendedProps.apt
-  showModal.value = true
-}
-
-function closeModal() {
-  showModal.value = false
-  selectedApt.value = null
-}
-
-function goToDetail() {
+async function setStatus(status) {
   if (!selectedApt.value) return
-  router.push({ name: 'appointments.detail', params: { id: selectedApt.value.id } })
-  closeModal()
+  actionBusy.value = true
+  try {
+    const updated = await appointmentsStore.updateStatus(selectedApt.value.id, status)
+    toast.showSuccess(t('calendar.updated'))
+    await refreshAfter(updated)
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, t('calendar.updateError')))
+  } finally {
+    actionBusy.value = false
+  }
 }
 
-function goToEdit() {
-  if (!selectedApt.value) return
-  router.push({ name: 'appointments.edit', params: { id: selectedApt.value.id } })
-  closeModal()
+async function onReschedule(scheduledAt) {
+  actionBusy.value = true
+  try {
+    const updated = await appointmentsStore.reschedule(selectedApt.value.id, scheduledAt)
+    showReschedule.value = false
+    toast.showSuccess(t('calendar.updated'))
+    await refreshAfter(updated)
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, t('calendar.updateError')))
+  } finally {
+    actionBusy.value = false
+  }
 }
 
-function goToLead() {
-  if (!selectedApt.value?.lead?.id) return
-  router.push({ name: 'leads.detail', params: { id: selectedApt.value.lead.id } })
-  closeModal()
-}
-
-// Reactive FullCalendar options — locale switches when the app locale changes
+/* ── FullCalendar options ──────────────────────────────────── */
 const calendarOptions = computed(() => ({
   plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
   locale: locale.value === 'fr' ? frLocale : 'en',
-  initialView: 'dayGridMonth',
-  headerToolbar: {
-    left:   'prev,next today',
-    center: 'title',
-    right:  'dayGridMonth,timeGridWeek,timeGridDay,listWeek',
-  },
+  initialView,
+  headerToolbar: false,
   events: fetchEvents,
   eventClick: onEventClick,
+  eventContent,
+  eventDidMount: onEventDidMount,
+  datesSet: onDatesSet,
   height: 'auto',
   dayMaxEvents: 4,
   eventDisplay: 'block',
   nowIndicator: true,
   eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
-  slotMinTime: '00:00:00',
-  slotMaxTime: '24:00:00',
+  slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+  defaultTimedEventDuration: '00:30',
+  slotMinTime: '07:00:00',
+  slotMaxTime: '21:00:00',
+  scrollTime: '08:00:00',
   allDaySlot: false,
+  expandRows: true,
   noEventsText: t('calendar.noEvents'),
   listDaySideFormat: false,
 }))
 
 onMounted(async () => {
-  if (!isAgent.value) {
-    await usersStore.fetchList({ role: 'agent', per_page: 100 })
-  }
+  if (!isAgent.value) await usersStore.fetchList({ role: 'agent', per_page: 100 })
 })
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('nav.calendar') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">
-            {{ isAgent ? t('calendar.agentSubtitle') : t('calendar.adminSubtitle') }}
-          </p>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="font-display text-[28px] leading-[34px] font-semibold tracking-tight text-gray-900 flex items-center gap-2.5">
+          {{ t('nav.calendar') }}
+          <Loader2 v-if="loading" class="w-4 h-4 text-gray-400 animate-spin" />
+        </h1>
+        <p class="text-[13px] text-gray-500 mt-0.5 first-letter:uppercase">{{ rangeTitle }}</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2.5">
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            :aria-label="t('calendar.previous')"
+            class="w-8.5 h-8.5 rounded-lg border border-gray-300 bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50"
+            @click="go('prev')"
+          ><ChevronLeft class="w-4 h-4" /></button>
+          <button
+            type="button"
+            class="h-8.5 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
+            @click="go('today')"
+          >{{ t('calendar.today') }}</button>
+          <button
+            type="button"
+            :aria-label="t('calendar.next')"
+            class="w-8.5 h-8.5 rounded-lg border border-gray-300 bg-white text-gray-600 flex items-center justify-center hover:bg-gray-50"
+            @click="go('next')"
+          ><ChevronRight class="w-4 h-4" /></button>
         </div>
-        <Loader2 v-if="loading" class="w-5 h-5 text-white/70 animate-spin shrink-0" />
+        <div role="group" :aria-label="t('calendar.view')" class="flex gap-0.5 p-[3px] bg-gray-200 rounded-[9px]">
+          <button
+            v-for="v in VIEWS"
+            :key="v.key"
+            type="button"
+            :aria-pressed="currentView === v.key"
+            :class="[
+              'h-7 px-3 rounded-[7px] text-[13px] transition-colors',
+              currentView === v.key ? 'bg-white text-gray-900 font-medium shadow-[0_1px_2px_rgba(17,24,39,0.08)]' : 'text-gray-600 hover:text-gray-900',
+            ]"
+            @click="changeView(v.key)"
+          >{{ t('calendar.views.' + v.label) }}</button>
+        </div>
+        <AppFilterChip v-if="!isAgent" v-model="filterAgentId" :label="t('calendar.agent')" :options="agentOptions" />
+        <AppFilterChip v-model="filterStatus" :label="t('calendar.status')" :options="statusOptions" :searchable="false" />
+        <AppSearchInput v-model="filterSearch" :placeholder="t('calendar.searchPlaceholder')" class="w-full sm:w-56" />
       </div>
     </div>
 
-    <!-- Filters -->
-    <AppCard padding="sm">
-      <div class="flex items-center gap-3 flex-wrap">
-        <AppSearchInput
-          :model-value="search"
-          :placeholder="t('calendar.searchPlaceholder')"
-          class="flex-1 min-w-[180px]"
-          @update:model-value="search = $event; applyFilters()"
-        />
-        <AppSelect
-          :model-value="filterStatus"
-          :options="statusOptions"
-          class="w-44"
-          @update:model-value="filterStatus = $event; applyFilters()"
-        />
-        <AppSelect
-          v-if="!isAgent"
-          :model-value="filterAgentId"
-          :options="agentOptions"
-          class="w-44"
-          @update:model-value="filterAgentId = $event; applyFilters()"
-        />
-        <AppButton
-          v-if="activeFilterCount"
-          variant="ghost"
-          size="sm"
-          @click="clearFilters"
-        >
-          <template #icon><X class="w-3.5 h-3.5" /></template>
-          {{ t('common.clear') }}
-        </AppButton>
-      </div>
+    <div class="flex flex-col xl:flex-row gap-5 items-start">
 
-      <!-- Status legend -->
-      <div class="flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 flex-wrap">
-        <span class="text-xs text-gray-400 font-medium">{{ t('calendar.legend') }} :</span>
-        <div
-          v-for="(val, key) in APPOINTMENT_STATUS"
-          :key="key"
-          class="flex items-center gap-1.5"
-        >
-          <span
-            class="inline-block w-2.5 h-2.5 rounded-sm shrink-0"
-            :style="{ backgroundColor: STATUS_COLORS[key]?.bg }"
-          />
-          <span class="text-xs text-gray-600">{{ t('statuses.appointment.' + key, val.label) }}</span>
-        </div>
-      </div>
-    </AppCard>
-
-    <!-- Calendar -->
-    <AppCard padding="none" class="overflow-hidden">
-      <div class="p-4">
+      <!-- Calendar -->
+      <section class="flex-1 min-w-0 w-full bg-white border border-gray-200 rounded-xl overflow-hidden crm-calendar">
         <FullCalendar ref="calendarRef" :options="calendarOptions" />
-      </div>
-    </AppCard>
+      </section>
 
-    <!-- Event detail modal -->
-    <Teleport to="body">
-      <Transition
-        enter-active-class="transition-all duration-200 ease-out"
-        enter-from-class="opacity-0 scale-95"
-        enter-to-class="opacity-100 scale-100"
-        leave-active-class="transition-all duration-150 ease-in"
-        leave-from-class="opacity-100 scale-100"
-        leave-to-class="opacity-0 scale-95"
-      >
-        <div
-          v-if="showModal && selectedApt"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4"
-        >
-          <!-- Backdrop -->
-          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="closeModal" />
-
-          <!-- Panel -->
-          <div class="relative z-10 w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <!-- Status color strip -->
-            <div
-              class="h-1.5 w-full"
-              :style="{ backgroundColor: STATUS_COLORS[selectedApt.status]?.bg ?? '#6366f1' }"
-            />
-
-            <div class="p-5">
-              <!-- Header row -->
-              <div class="flex items-start justify-between gap-3 mb-4">
-                <div class="flex items-start gap-3 min-w-0">
-                  <div
-                    class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    :style="{ backgroundColor: (STATUS_COLORS[selectedApt.status]?.bg ?? '#6366f1') + '18' }"
-                  >
-                    <Calendar
-                      class="w-5 h-5"
-                      :style="{ color: STATUS_COLORS[selectedApt.status]?.bg ?? '#6366f1' }"
-                    />
-                  </div>
-                  <div class="min-w-0">
-                    <button
-                      class="text-base font-semibold text-gray-900 hover:text-primary transition-colors text-left leading-tight"
-                      @click="goToLead"
-                    >
-                      {{ leadName(selectedApt) }}
-                    </button>
-                    <AppointmentStatusBadge :status="selectedApt.status" class="mt-1" />
-                  </div>
-                </div>
-                <button
-                  class="text-gray-400 hover:text-gray-600 transition-colors p-1 shrink-0"
-                  @click="closeModal"
-                >
-                  <X class="w-4 h-4" />
-                </button>
-              </div>
-
-              <!-- Detail rows -->
-              <div class="space-y-3 text-sm">
-                <div class="flex items-center gap-2.5 text-gray-700">
-                  <Clock class="w-4 h-4 text-gray-400 shrink-0" />
-                  <span class="font-medium">{{ formatDateTime(selectedApt.scheduled_at) }}</span>
-                </div>
-
-                <div v-if="selectedApt.agent" class="flex items-center gap-2.5">
-                  <User class="w-4 h-4 text-gray-400 shrink-0" />
+      <!-- Side panel -->
+      <aside class="w-full xl:w-[300px] shrink-0 flex flex-col gap-4 xl:sticky xl:top-0">
+        <section v-if="selectedApt" class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <AppointmentStatusBadge :status="selectedApt.status" />
+            <button
+              type="button"
+              :aria-label="t('calendar.close')"
+              class="w-7 h-7 rounded-md text-gray-500 flex items-center justify-center hover:bg-gray-100"
+              @click="clearSelection"
+            ><X class="w-3.5 h-3.5" /></button>
+          </div>
+          <div>
+            <RouterLink
+              v-if="selectedApt.lead?.id"
+              :to="{ name: 'leads.detail', params: { id: selectedApt.lead.id } }"
+              class="font-display text-lg font-semibold text-gray-900 hover:text-primary"
+            >{{ leadName(selectedApt) }}</RouterLink>
+            <p v-else class="font-display text-lg font-semibold text-gray-900">{{ leadName(selectedApt) }}</p>
+            <p class="text-[13px] text-gray-600 mt-0.5">{{ selectedWhen }}</p>
+          </div>
+          <dl class="grid grid-cols-2 gap-x-3 gap-y-2.5">
+            <div v-if="selectedApt.lead?.status" class="min-w-0 col-span-2">
+              <dt class="text-xs text-gray-500">{{ t('calendar.leadStatus') }}</dt>
+              <dd class="mt-1"><LeadStatusBadge :status="selectedApt.lead.status" /></dd>
+            </div>
+            <div v-if="selectedApt.lead?.insurance_type" class="min-w-0">
+              <dt class="text-xs text-gray-500">{{ t('calendar.insurance') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900 truncate">{{ t('insuranceTypesShort.' + selectedApt.lead.insurance_type, selectedApt.lead.insurance_type) }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs text-gray-500">{{ t('calendar.agent') }}</dt>
+              <dd class="mt-0.5 text-[13px] text-gray-900 flex items-center gap-1.5 min-w-0">
+                <template v-if="selectedApt.agent">
                   <AppAvatar :name="selectedApt.agent.name" size="xs" />
-                  <span class="text-gray-700">{{ selectedApt.agent.name }}</span>
-                </div>
-                <div v-else class="flex items-center gap-2.5 text-gray-400">
-                  <User class="w-4 h-4 shrink-0" />
-                  <span class="text-sm italic">{{ t('common.unassigned') }}</span>
-                </div>
+                  <span class="truncate">{{ selectedApt.agent.name }}</span>
+                </template>
+                <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
+              </dd>
+            </div>
+            <div v-if="selectedApt.lead?.phone" class="min-w-0 col-span-2">
+              <dt class="text-xs text-gray-500">{{ t('calendar.phone') }}</dt>
+              <dd class="mt-0.5">
+                <a :href="`tel:${selectedApt.lead.phone}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
+                  <Phone class="w-3.5 h-3.5" />{{ selectedApt.lead.phone }}
+                </a>
+              </dd>
+            </div>
+          </dl>
+          <p
+            v-if="selectedApt.notes"
+            class="text-[13px] leading-[19px] text-gray-900 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 whitespace-pre-wrap break-words"
+          >{{ selectedApt.notes }}</p>
 
-                <div v-if="selectedApt.lead?.phone" class="flex items-center gap-2.5 text-gray-600">
-                  <span class="w-4 h-4 text-gray-400 shrink-0 text-center text-xs">📞</span>
-                  <span>{{ selectedApt.lead.phone }}</span>
-                </div>
+          <div v-if="canUpdate && selectedApt.status === 'PLANIFIE'" class="flex gap-2">
+            <button
+              type="button"
+              :disabled="actionBusy"
+              class="flex-1 h-8.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover disabled:opacity-50"
+              @click="setStatus('REALISE')"
+            >{{ t('calendar.markDone') }}</button>
+            <button
+              type="button"
+              :disabled="actionBusy"
+              class="h-8.5 px-3 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+              @click="showReschedule = true"
+            >{{ t('calendar.reschedule') }}</button>
+          </div>
+          <div class="flex items-center gap-3 pt-1 border-t border-gray-100 text-[13px]">
+            <RouterLink :to="{ name: 'appointments.detail', params: { id: selectedApt.id } }" class="font-medium text-primary hover:text-primary-hover">
+              {{ t('calendar.viewDetails') }}
+            </RouterLink>
+            <RouterLink v-if="canUpdate" :to="{ name: 'appointments.edit', params: { id: selectedApt.id } }" class="text-gray-600 hover:text-gray-900">
+              {{ t('common.edit') }}
+            </RouterLink>
+            <button
+              v-if="canUpdate && selectedApt.status === 'PLANIFIE'"
+              type="button"
+              :disabled="actionBusy"
+              class="ml-auto text-danger-text hover:underline disabled:opacity-50"
+              @click="setStatus('ANNULE')"
+            >{{ t('calendar.cancelApt') }}</button>
+          </div>
+        </section>
 
-                <div v-if="selectedApt.notes" class="flex items-start gap-2.5 text-gray-600">
-                  <FileText class="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
-                  <p class="text-xs leading-relaxed line-clamp-3">{{ selectedApt.notes }}</p>
-                </div>
-              </div>
+        <p v-else class="bg-white border border-dashed border-gray-300 rounded-xl px-4.5 py-4 text-[13px] text-gray-500">
+          {{ t('calendar.selectHint') }}
+        </p>
 
-              <!-- Actions -->
-              <div class="flex items-center gap-2 mt-5 pt-4 border-t border-gray-100">
-                <AppButton size="sm" class="flex-1" @click="goToDetail">
-                  <template #icon><ExternalLink class="w-3.5 h-3.5" /></template>
-                  {{ t('calendar.viewDetails') }}
-                </AppButton>
-                <AppButton variant="secondary" size="sm" @click="goToEdit">
-                  <template #icon><Edit2 class="w-3.5 h-3.5" /></template>
-                  {{ t('common.edit') }}
-                </AppButton>
-                <button
-                  v-if="selectedApt.lead?.id"
-                  class="text-xs text-primary hover:underline px-2 py-1 shrink-0"
-                  @click="goToLead"
-                >
-                  {{ t('calendar.viewLead') }}
-                </button>
-              </div>
+        <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">
+          <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('calendar.legend') }}</h2>
+          <div class="flex flex-col gap-2 text-[13px]">
+            <div v-for="(style, key) in STATUS_STYLE" :key="key" class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded" :style="{ backgroundColor: style.bg }" />
+              <span :class="key === 'ANNULE' ? 'line-through' : ''">{{ t('statuses.appointment.' + key) }}</span>
             </div>
           </div>
-        </div>
-      </Transition>
-    </Teleport>
+        </section>
+      </aside>
+    </div>
+
+    <AppointmentRescheduleModal
+      :open="showReschedule"
+      :current-date="selectedApt?.scheduled_at ?? ''"
+      :loading="actionBusy"
+      @close="showReschedule = false"
+      @reschedule="onReschedule"
+    />
   </div>
 </template>
 
 <style>
-/* FullCalendar design-system overrides */
-.fc {
-  --fc-border-color: #e5e7eb;
-  --fc-button-bg-color: var(--color-primary, #6366f1);
-  --fc-button-border-color: var(--color-primary, #6366f1);
-  --fc-button-hover-bg-color: var(--color-primary-hover, #4f46e5);
-  --fc-button-hover-border-color: var(--color-primary-hover, #4f46e5);
-  --fc-button-active-bg-color: #4338ca;
-  --fc-button-active-border-color: #4338ca;
-  --fc-today-bg-color: rgba(99, 102, 241, 0.06);
+/* FullCalendar, restyled to the CRM design system */
+.crm-calendar .fc {
+  --fc-border-color: #f3f4f6;
+  --fc-today-bg-color: rgba(238, 242, 255, 0.55);
   --fc-neutral-bg-color: #f9fafb;
-  --fc-list-event-hover-bg-color: #f3f4f6;
+  --fc-list-event-hover-bg-color: #f9fafb;
   --fc-page-bg-color: #ffffff;
   --fc-highlight-color: rgba(99, 102, 241, 0.1);
-  --fc-now-indicator-color: #ef4444;
+  --fc-now-indicator-color: #dc2626;
   font-family: inherit;
+  font-size: 13px;
 }
-
-.fc .fc-toolbar-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.fc .fc-button {
-  font-size: 0.75rem;
+.crm-calendar .fc-theme-standard .fc-scrollgrid { border: 0; }
+.crm-calendar .fc .fc-col-header-cell {
+  padding: 8px 0;
+  font-size: 12px;
   font-weight: 500;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-  box-shadow: none !important;
-}
-
-.fc .fc-button:focus {
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25) !important;
-}
-
-.fc .fc-toolbar.fc-header-toolbar {
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.fc .fc-col-header-cell {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: #6b7280;
-  padding: 0.5rem 0;
+  border-bottom-color: #e5e7eb;
 }
-
-.fc .fc-daygrid-day-number {
-  font-size: 0.8125rem;
-  font-weight: 500;
+.crm-calendar .fc .fc-col-header-cell-cushion { color: inherit; text-decoration: none; }
+.crm-calendar .fc .fc-day-today .fc-col-header-cell-cushion {
+  color: #4f46e5;
+  font-weight: 600;
+}
+.crm-calendar .fc .fc-timegrid-slot { height: 2.75rem; }
+.crm-calendar .fc .fc-timegrid-slot-minor { border-top-style: none; }
+.crm-calendar .fc .fc-timegrid-slot-label-cushion {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: #6b7280;
+}
+.crm-calendar .fc .fc-daygrid-day-number {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12.5px;
   color: #374151;
-  padding: 4px 6px;
+  padding: 6px 8px;
+  text-decoration: none;
 }
-
-.fc .fc-day-today .fc-daygrid-day-number {
-  background-color: var(--color-primary, #6366f1);
+.crm-calendar .fc .fc-day-today .fc-daygrid-day-number {
+  background: #4f46e5;
   color: #fff;
   border-radius: 9999px;
-  width: 1.5rem;
-  height: 1.5rem;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  margin: 4px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+.crm-calendar .fc .fc-day-sat,
+.crm-calendar .fc .fc-day-sun { background-color: #fafafa; }
 
-.fc .fc-event {
-  border-radius: 5px;
-  font-size: 0.75rem;
-  font-weight: 500;
+/* Events: tinted blocks, dark text */
+.crm-calendar .fc .fc-event {
+  border-radius: 6px;
+  border: 0;
   cursor: pointer;
-  transition: opacity 0.15s;
-  padding: 1px 4px;
+  padding: 2px 6px;
+  box-shadow: none;
 }
+.crm-calendar .fc .fc-event:hover { filter: brightness(0.97); }
+.crm-calendar .fc .fc-event.apt-selected { box-shadow: 0 0 0 2px #4f46e5; }
+.crm-calendar .fc .apt-content { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.crm-calendar .fc-daygrid-event .apt-content { flex-direction: row; gap: 6px; }
+.crm-calendar .fc .apt-time { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; font-weight: 500; }
+.crm-calendar .fc .apt-name { font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crm-calendar .fc .apt-ANNULE .apt-name { text-decoration: line-through; }
+.crm-calendar .fc .fc-more-link { font-size: 12px; font-weight: 500; color: #4f46e5; }
 
-.fc .fc-event:hover {
-  opacity: 0.85;
-}
+/* List view */
+.crm-calendar .fc .fc-list { border: 0; }
+.crm-calendar .fc .fc-list-day-cushion { background: #f9fafb; font-size: 12.5px; font-weight: 600; color: #374151; }
+.crm-calendar .fc .fc-list-event-time { font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #4b5563; }
+.crm-calendar .fc .fc-list-event-title { color: #111827; }
+.crm-calendar .fc .fc-list-event-title a { color: inherit; text-decoration: none; }
+.crm-calendar .fc .fc-list-event.apt-selected td { background: #eef2ff; }
 
-.fc .fc-list-event:hover td {
-  background-color: var(--fc-list-event-hover-bg-color);
-}
-
-.fc .fc-list-event-title a {
-  color: #111827;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.fc .fc-list-day-cushion {
-  background-color: #f9fafb;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #374151;
-}
-
-.fc .fc-timegrid-slot-label {
-  font-size: 0.7rem;
-  color: #9ca3af;
-}
-
-.fc .fc-more-link {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--color-primary, #6366f1);
-}
-
-.fc .fc-popover {
-  border-radius: 0.75rem;
+.crm-calendar .fc .fc-popover {
+  border-radius: 10px;
   border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.12);
 }
-
-.fc .fc-popover-header {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  padding: 0.5rem 0.75rem;
-  background-color: #f9fafb;
-  border-radius: 0.75rem 0.75rem 0 0;
-}
+.crm-calendar .fc .fc-popover-header { background: #f9fafb; font-size: 12.5px; font-weight: 600; border-radius: 10px 10px 0 0; }
 </style>

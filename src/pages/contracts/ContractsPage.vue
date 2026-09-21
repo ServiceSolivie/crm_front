@@ -8,6 +8,8 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
+import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
@@ -94,7 +96,7 @@ async function onDownload(row) {
 }
 
 async function onDelete(row) {
-  const ok = await ui.confirm(t('contracts.deleteTitle'), t('contracts.deleteConfirm', { reference: row.reference }))
+  const ok = await ui.confirm(t('contracts.deleteTitle'), t('contracts.deleteConfirm', { reference: row.reference }), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
     await store.remove(row.id)
@@ -106,36 +108,32 @@ async function onDelete(row) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <h1 class="text-2xl font-bold text-white">{{ t('contracts.title') }}</h1>
-          <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('contracts.total') }}</p>
-        </div>
-        <AppButton
-          v-if="auth.can('CONTRACTS_GENERATE')"
-          size="sm"
-          class="!bg-white !text-primary hover:!bg-indigo-50"
-          @click="router.push({ name: 'contracts.create' })"
-        >
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('contracts.title')" :count="store.meta.total">
+      <template #actions>
+        <AppButton v-if="auth.can('CONTRACTS_GENERATE')" @click="router.push({ name: 'contracts.create' })">
           <template #icon><Plus class="w-4 h-4" /></template>
           {{ t('contracts.newContract') }}
         </AppButton>
-      </div>
-    </div>
+      </template>
+    </AppPageHeader>
 
-    <!-- Search -->
-    <AppCard padding="sm">
+    <div class="flex flex-wrap items-center gap-2">
       <AppSearchInput
         :model-value="store.filters.search"
         :placeholder="t('contracts.searchPlaceholder')"
+        class="w-full sm:w-[300px]"
         @update:model-value="store.setFilter('search', $event)"
       />
-    </AppCard>
+      <AppFilterChip
+        v-if="store.templates.length"
+        :label="t('contracts.template')"
+        :model-value="store.filters.template_key"
+        :options="store.templates.map((tpl) => ({ value: tpl.key, label: tpl.label }))"
+        :searchable="false"
+        @update:model-value="store.setFilter('template_key', $event)"
+      />
+    </div>
 
     <!-- Table -->
     <AppCard padding="none">
@@ -149,10 +147,10 @@ async function onDelete(row) {
       >
         <template #cell-reference="{ row }">
           <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg bg-primary-light flex items-center justify-center shrink-0">
-              <FileText class="w-4 h-4 text-primary" />
-            </div>
-            <span class="text-sm font-medium text-gray-900 whitespace-nowrap">{{ row.reference }}</span>
+            <span class="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center shrink-0">
+              <FileText class="w-4 h-4" />
+            </span>
+            <span class="font-mono text-[12.5px] font-medium text-gray-900 whitespace-nowrap">{{ row.reference }}</span>
           </div>
         </template>
 
@@ -171,13 +169,13 @@ async function onDelete(row) {
         </template>
 
         <template #cell-template_key="{ value }">
-          <span class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+          <span class="text-xs font-medium text-gray-700 bg-gray-100 px-2 leading-5 rounded whitespace-nowrap">
             {{ templateLabel(value) }}
           </span>
         </template>
 
         <template #cell-version="{ value }">
-          <span class="text-sm font-medium text-gray-700">v{{ value }}</span>
+          <span class="font-mono text-[12.5px] text-gray-700">v{{ value }}</span>
         </template>
 
         <template #cell-generated_by="{ row }">
@@ -188,21 +186,21 @@ async function onDelete(row) {
         </template>
 
         <template #cell-created_at="{ value }">
-          <span class="text-sm text-gray-500 whitespace-nowrap">{{ formatDateTime(value) }}</span>
+          <span class="font-mono text-[12.5px] text-gray-600 whitespace-nowrap">{{ formatDateTime(value) }}</span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1">
             <button
               :title="t('contracts.preview')"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
+              class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
               @click="onPreview(row)"
             >
               <Eye class="w-3.5 h-3.5" />
             </button>
             <button
               :title="t('common.download')"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-primary hover:bg-primary-light transition-colors"
+              class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
               @click="onDownload(row)"
             >
               <Download class="w-3.5 h-3.5" />
@@ -210,7 +208,7 @@ async function onDelete(row) {
             <button
               v-if="auth.can('CONTRACTS_DELETE')"
               :title="t('common.delete')"
-              class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors"
+              class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-danger-text hover:bg-danger-bg"
               @click="onDelete(row)"
             >
               <Trash2 class="w-3.5 h-3.5" />

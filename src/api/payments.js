@@ -5,6 +5,8 @@ export const paymentsApi = {
     client.get(`/leads/${leadId}/payments`, { params }).then((r) => r.data),
   create: (leadId, payload) =>
     client.post(`/leads/${leadId}/payments`, payload).then((r) => r.data),
+  updateStatus: (leadId, paymentId, payload) =>
+    client.patch(`/leads/${leadId}/payments/${paymentId}/status`, payload).then((r) => r.data),
   remove: (leadId, paymentId) =>
     client.delete(`/leads/${leadId}/payments/${paymentId}`),
 }

@@ -39,7 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
-   * Normalise login / register responses across common Laravel shapes:
+   * Normalise login responses across common Laravel shapes:
    *   { data: user, token }          ← our documented format
    *   { user, token }                ← alternative
    *   { data: { user, token } }      ← nested
@@ -63,16 +63,6 @@ export const useAuthStore = defineStore('auth', () => {
     const { authToken, userData } = _parseSessionResponse(response)
     if (!authToken) {
       throw { type: 'server', message: 'Login failed: server did not return a token. Check the console for the raw response.' }
-    }
-    _setSession(authToken, userData)
-    return userData
-  }
-
-  async function register(payload) {
-    const response = await authApi.register(payload)
-    const { authToken, userData } = _parseSessionResponse(response)
-    if (!authToken) {
-      throw { type: 'server', message: 'Registration failed: server did not return a token.' }
     }
     _setSession(authToken, userData)
     return userData
@@ -143,7 +133,6 @@ export const useAuthStore = defineStore('auth', () => {
     hasRole,
     canAny,
     login,
-    register,
     logout,
     boot,
     clearSession,

@@ -6,7 +6,8 @@
     "unknownLead": "Lead inconnu",
     "todayDigestTitle": "Vous avez {count} rendez-vous aujourd'hui | Vous avez {count} rendez-vous aujourd'hui",
     "reminderTitle": "Rendez-vous dans 30 minutes",
-    "leadReceivedTitle": "Vous avez reçu un nouveau lead"
+    "leadReceivedTitle": "Vous avez reçu un nouveau lead",
+    "markReadError": "Impossible de marquer comme lu"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -29,9 +30,15 @@
     "organization": "Organisation",
     "contracts": "Contrats",
     "credentialVault": "Coffre-fort",
+    "crmSettings": "Paramètres CRM",
+    "language": "Langue",
+    "mainNavigation": "Navigation principale",
+    "openMenu": "Ouvrir le menu",
     "vaultPartners": "Partenaires",
     "vaultCredentials": "Identifiants",
-    "vaultAuditLogs": "Journal d'audit"
+    "vaultAuditLogs": "Journal d'audit",
+    "overdueCount": "{n} rendez-vous en retard",
+    "todayCount": "{n} rendez-vous restant(s) aujourd’hui"
   },
   "common": {
     "save": "Enregistrer",
@@ -69,7 +76,12 @@
     "noSource": "Sans source",
     "saveChanges": "Enregistrer",
     "searchPlaceholder": "Rechercher…",
-    "nameRequired": "Le nom est obligatoire"
+    "nameRequired": "Le nom est obligatoire",
+    "retry": "Réessayer",
+    "close": "Fermer",
+    "noResults": "Aucun résultat",
+    "remove": "Retirer",
+    "refresh": "Actualiser"
   },
   "auth": {
     "login": "Se connecter",
@@ -78,9 +90,26 @@
     "password": "Mot de passe",
     "rememberMe": "Se souvenir de moi",
     "forgotPassword": "Mot de passe oublié ?",
-    "loginTitle": "Bienvenue",
-    "loginSubtitle": "Connectez-vous à votre compte CRM",
-    "invalidCredentials": "Identifiants invalides"
+    "loginTitle": "Connexion",
+    "loginSubtitle": "Accédez à votre espace BrandNova.",
+    "invalidCredentials": "E-mail ou mot de passe incorrect.",
+    "tagline": "Vos leads, rendez-vous et dossiers au même endroit.",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "fullName": "Nom complet",
+    "confirmPassword": "Confirmer le mot de passe",
+    "passwordHint": "8 caractères minimum",
+    "errors": {
+      "emailRequired": "L’e-mail est obligatoire",
+      "passwordRequired": "Le mot de passe est obligatoire",
+      "nameRequired": "Le nom est obligatoire",
+      "passwordShort": "8 caractères minimum",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "locked": "Trop de tentatives. Réessayez dans {n} secondes.",
+      "attemptsLeft": "Encore {n} essai avant blocage temporaire. | Encore {n} essais avant blocage temporaire."
+    },
+    "accountsByAdmin": "Les comptes sont créés par un administrateur. Contactez-le si vous n’avez pas d’accès.",
+    "lockedButton": "Réessayer dans {n} s"
   },
   "dashboard": {
     "title": "Tableau de bord",
@@ -133,7 +162,39 @@
     "validatedCol": "Validés",
     "conversionCol": "Conv.",
     "revenueTrend": "Tendance du chiffre d'affaires",
-    "monthlyEvolution": "Évolution mensuelle"
+    "monthlyEvolution": "Évolution mensuelle",
+    "hello": "Bonjour {name}",
+    "period": "Période",
+    "myDay": "Ma journée",
+    "todayAgenda": "Agenda du jour",
+    "myDayCount": "{n} rendez-vous · {late} en retard",
+    "myDayError": "Impossible de charger les rendez-vous.",
+    "nothingToday": "Rien de prévu aujourd’hui.",
+    "overdue": "En retard",
+    "upcoming": "À venir",
+    "appointmentShort": "Rendez-vous",
+    "callName": "Appeler {name}",
+    "pipeline": "Pipeline",
+    "viewLeads": "Voir les leads",
+    "leadsAndAppointments": "Leads et rendez-vous par jour",
+    "leadsSeries": "Leads",
+    "appointmentsSeries": "Rendez-vous",
+    "topAgents": "Meilleurs agents",
+    "validatedCount": "{n} validés",
+    "collectedOf": "{pct} % de {total} attendus",
+    "details": "Détails",
+    "revenueTitle": "Encaissements",
+    "newLead": "Nouveau lead",
+    "activeOf": "{n} au total",
+    "apptBreakdown": "{today} aujourd’hui · {upcoming} à venir",
+    "deltaPercent": "{v} % vs période préc.",
+    "deltaPoints": "{v} pt vs période préc.",
+    "unassignedCount": "{n} non assigné(s)",
+    "overdueCount": "{n} en retard",
+    "tasks": "Dossiers à compléter",
+    "tasksCount": "{n} dossier(s) à compléter",
+    "missingDocs": "Documents manquants : {docs}",
+    "dossierToFix": "Renvoyé par la gestion — dossier à corriger"
   },
   "leads": {
     "title": "Leads",
@@ -222,8 +283,70 @@
       "notesLabel": "Notes (optionnel)",
       "notesPlaceholder": "Notes sur ce rappel…",
       "confirm": "Planifier le rappel",
-      "success": "Rappel planifié avec succès"
-    }
+      "success": "Rappel planifié avec succès",
+      "descriptionNamed": "Le statut de {name} passera à « Rappel » et un rendez-vous sera créé.",
+      "quickPicks": "Choix rapides",
+      "inOneHour": "Dans 1 h",
+      "tomorrow": "Demain 10:00",
+      "nextMonday": "Lundi 09:00",
+      "date": "Date",
+      "time": "Heure",
+      "pastDate": "Choisissez une date dans le futur."
+    },
+    "views": {
+      "label": "Vues",
+      "all": "Tous",
+      "mine": "Mes leads",
+      "due": "À rappeler aujourd’hui",
+      "unassigned": "Non assignés",
+      "doublons": "Doublons"
+    },
+    "created": {
+      "today": "Aujourd’hui",
+      "last7": "7 derniers jours",
+      "last30": "30 derniers jours",
+      "thisMonth": "Ce mois-ci"
+    },
+    "bulk": {
+      "selected": "{n} sélectionné | {n} sélectionnés",
+      "done": "{n} lead(s) mis à jour",
+      "partial": "{ok} réussi(s), {fail} échec(s)",
+      "deleteConfirm": "Supprimer {n} lead(s) ? Cette action est irréversible.",
+      "deselect": "Annuler la sélection",
+      "changeStatus": "Changer le statut"
+    },
+    "errors": {
+      "rappel": "Échec de la planification du rappel",
+      "status": "Échec de la mise à jour du statut",
+      "delete": "Échec de la suppression"
+    },
+    "lead": "Lead",
+    "import": "Importer",
+    "searchPlaceholder": "Nom, téléphone, e-mail, référence",
+    "filterInsurance": "Assurance",
+    "filterSource": "Source",
+    "filterAgent": "Agent",
+    "noMatch": "Aucun lead ne correspond à ces filtres",
+    "noMatchDesc": "Essayez d’élargir la période ou de retirer un filtre.",
+    "clearFilters": "Effacer les filtres",
+    "selectAll": "Tout sélectionner",
+    "selectRow": "Sélectionner {name}",
+    "callName": "Appeler {name}",
+    "doublon": "Doublon",
+    "doublonOf": "Doublon de {ref}",
+    "deleteNamed": "{name} et tout son historique (notes, appels, rendez-vous, documents) seront supprimés. Cette action est irréversible.",
+    "receivedAt": "Reçu le",
+    "stage": "Étape",
+    "nextAction": "Prochaine action",
+    "next": {
+      "appointment": "RDV {when}",
+      "overdue": "En retard · {when}",
+      "yesterday": "hier",
+      "tomorrow": "demain {time}",
+      "missingDocument": "Document manquant"
+    },
+    "filterDvc": "DVC",
+    "filterPayment": "Paiement"
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -256,7 +379,18 @@
     "statsScheduled": "Planifiés",
     "statsCompleted": "Réalisés",
     "statsCancelled": "Annulés",
-    "overdue": "En retard"
+    "overdue": "En retard",
+    "date": "Date",
+    "presets": {
+      "today": "Aujourd’hui",
+      "week": "Cette semaine",
+      "next7": "7 prochains jours",
+      "past30": "30 derniers jours"
+    },
+    "details": "Détails du rendez-vous",
+    "location": "Lieu",
+    "createdBy": "Créé par",
+    "rescheduled": "Rendez-vous reporté"
   },
   "calendar": {
     "agentSubtitle": "Votre planning de rendez-vous",
@@ -266,7 +400,30 @@
     "viewDetails": "Voir les détails",
     "viewLead": "Voir le lead",
     "noEvents": "Aucun rendez-vous sur cette période",
-    "searchPlaceholder": "Rechercher un lead…"
+    "searchPlaceholder": "Rechercher un lead…",
+    "views": {
+      "month": "Mois",
+      "week": "Semaine",
+      "day": "Jour",
+      "list": "Liste"
+    },
+    "previous": "Période précédente",
+    "next": "Période suivante",
+    "today": "Aujourd’hui",
+    "view": "Vue",
+    "agent": "Agent",
+    "status": "Statut",
+    "selectHint": "Cliquez sur un rendez-vous pour voir son détail ici.",
+    "markDone": "Marquer réalisé",
+    "reschedule": "Reporter",
+    "cancelApt": "Annuler le RDV",
+    "leadStatus": "Statut du lead",
+    "phone": "Téléphone",
+    "insurance": "Assurance",
+    "loadError": "Impossible de charger le calendrier",
+    "updated": "Rendez-vous mis à jour",
+    "updateError": "Échec de la mise à jour du rendez-vous",
+    "close": "Fermer"
   },
   "teams": {
     "title": "Équipes",
@@ -341,7 +498,7 @@
     "roleAndTeam": "Rôle & Équipe",
     "accountDetails": "Détails du compte",
     "statusUpdateFailed": "Échec de la mise à jour du statut",
-    "deleteFailed": "Échec de la suppression de l'utilisateur",
+    "deleteFailed": "Échec de la suppression de l’utilisateur",
     "createDesc": "Créer un nouveau compte utilisateur CRM.",
     "createUser": "Créer l'utilisateur",
     "noTeam": "Sans équipe",
@@ -358,7 +515,12 @@
     "resetPasswordDesc": "Définir un nouveau mot de passe pour {name}.",
     "newPassword": "Nouveau mot de passe",
     "resetPasswordSuccess": "Mot de passe réinitialisé avec succès",
-    "resetPasswordFailed": "Échec de la réinitialisation du mot de passe"
+    "resetPasswordFailed": "Échec de la réinitialisation du mot de passe",
+    "loadFailed": "Impossible de charger l’utilisateur",
+    "updateFailed": "Échec de la mise à jour de l’utilisateur",
+    "statusFailed": "Échec du changement de statut",
+    "deleteNamed": "Supprimer « {name} » ? Cette action est irréversible.",
+    "searchPlaceholder": "Nom ou e-mail"
   },
   "leadSources": {
     "title": "Sources de leads",
@@ -378,7 +540,14 @@
     "descriptionOptional": "Description (optionnel)",
     "namePlaceholder": "ex. Google Ads, Facebook, Parrainage…",
     "code": "Code",
-    "codePlaceholder": "ex. google_ads"
+    "codePlaceholder": "ex. google_ads",
+    "subtitle": "D’où viennent les leads : chaque lead importé ou créé est rattaché à une source.",
+    "leads": "Leads",
+    "noMatch": "Aucune source ne correspond à la recherche.",
+    "editSource": "Modifier la source",
+    "codeHint": "Généré depuis le nom ; utilisé par les imports et le webhook. Il ne pourra plus être modifié.",
+    "codeLocked": "Le code ne peut pas être modifié (utilisé par les imports).",
+    "inactive": "Inactive"
   },
   "contracts": {
     "title": "Contrats",
@@ -429,7 +598,23 @@
     "csvOnly": "Fichiers CSV uniquement, max 10 Mo",
     "mapping": "Correspondance des colonnes",
     "submit": "Lancer l'import",
-    "processing": "Traitement en cours…"
+    "processing": "Traitement en cours…",
+    "createTitle": "Importer des leads",
+    "createSubtitle": "Téléversez un fichier CSV pour importer des leads en masse.",
+    "started": "Import lancé : le fichier va être traité.",
+    "format": {
+      "title": "Format du fichier CSV",
+      "required": "Colonnes obligatoires :",
+      "optional": "Colonnes facultatives :",
+      "header": "La première ligne doit contenir les noms de colonnes",
+      "size": "Taille maximale : 10 Mo"
+    },
+    "errors": {
+      "csvOnly": "Seuls les fichiers CSV sont acceptés.",
+      "tooBig": "Le fichier doit faire moins de 10 Mo.",
+      "noFile": "Choisissez un fichier CSV.",
+      "upload": "Échec du téléversement du fichier"
+    }
   },
   "reports": {
     "leads": "Rapport leads",
@@ -471,7 +656,41 @@
     "colAgent": "Agent",
     "colCreated": "Créé le",
     "colLead": "Lead",
-    "colScheduledAt": "Planifié le"
+    "colScheduledAt": "Planifié le",
+    "agentCol": "Agent",
+    "teamCol": "Équipe",
+    "recordsCount": "{n} enregistrement(s) sur la période",
+    "titles": {
+      "leads": "Leads",
+      "appointments": "Rendez-vous",
+      "teams": "Performance des équipes",
+      "agents": "Performance des agents",
+      "conversion": "Taux de conversion"
+    },
+    "period": {
+      "label": "Période",
+      "last7": "7 derniers jours",
+      "last30": "30 derniers jours",
+      "thisMonth": "Ce mois-ci",
+      "lastMonth": "Le mois dernier",
+      "thisYear": "Cette année",
+      "custom": "Dates personnalisées"
+    },
+    "kpi": {
+      "leads": "Leads traités",
+      "appointments": "Rendez-vous",
+      "validated": "Leads validés",
+      "conversion": "Conversion moyenne",
+      "agentsCount": "{n} agent(s)",
+      "teamsCount": "{n} équipe(s)",
+      "unassigned": "Non assignés",
+      "planned": "Planifiés",
+      "completed": "Réalisés",
+      "cancelled": "Annulés / absents",
+      "overdue": "{n} en retard"
+    },
+    "callsCol": "Appels",
+    "revenueCol": "CA encaissé"
   },
   "revenue": {
     "title": "Rapport Chiffre d'Affaires",
@@ -515,11 +734,15 @@
   },
   "errors": {
     "403": "Accès refusé",
-    "403desc": "Vous n'avez pas la permission de voir cette page.",
     "404": "Page introuvable",
+    "403desc": "Vous n'avez pas la permission de voir cette page.",
     "404desc": "La page que vous recherchez n'existe pas.",
     "network": "Erreur de connexion. Vérifiez votre connexion Internet.",
-    "session": "Votre session a expiré. Veuillez vous reconnecter."
+    "session": "Votre session a expiré. Veuillez vous reconnecter.",
+    "backHome": "Retour à l’accueil",
+    "backToLogin": "Retour à la connexion",
+    "deactivatedTitle": "Compte désactivé",
+    "deactivatedDesc": "Votre compte a été désactivé. Contactez votre administrateur pour retrouver l’accès."
   },
   "statuses": {
     "lead": {
@@ -552,13 +775,27 @@
     "payment": {
       "NON_PAYE": "Non payé",
       "PARTIELLEMENT_PAYE": "Partiellement payé",
-      "PAYE": "Payé"
+      "PAYE": "Payé",
+      "EN_ATTENTE": "Paiement en attente",
+      "REMBOURSE": "Remboursé"
     },
     "import": {
       "PENDING": "En attente",
       "PROCESSING": "En cours",
       "COMPLETED": "Terminé",
       "FAILED": "Échoué"
+    },
+    "dvc": {
+      "A_GENERER": "DVC à générer",
+      "EN_ATTENTE_SIGNATURE": "En attente de signature",
+      "SIGNE": "DVC signé"
+    },
+    "paymentRecord": {
+      "REUSSI": "Reçu",
+      "EN_ATTENTE": "En attente",
+      "ECHOUE": "Échoué",
+      "ANNULE": "Annulé",
+      "REMBOURSE": "Remboursé"
     }
   },
   "insuranceTypes": {
@@ -622,17 +859,17 @@
     "previewUnavailable": "L'aperçu n'est pas disponible pour ce type de fichier."
   },
   "documentRequirements": {
-    "title": "Exigences Documentaires",
-    "subtitle": "Gérer les types de documents et les exigences par produit d'assurance",
-    "documentTypes": "Types de Documents",
-    "requirementsMatrix": "Matrice des Exigences",
-    "newType": "Nouveau Type",
-    "editType": "Modifier le Type",
-    "typeName": "Nom de Code",
+    "title": "Documents du dossier",
+    "subtitle": "Les types de documents et ceux que chaque produit demande dans le dossier du lead.",
+    "documentTypes": "Types de documents",
+    "requirementsMatrix": "Documents par produit",
+    "newType": "Nouveau type",
+    "editType": "Modifier le type",
+    "typeName": "Code",
     "typeNamePlaceholder": "ex. ATTESTATION_RC",
     "typeLabel": "Libellé",
     "typeLabelPlaceholder": "ex. Attestation RC",
-    "sortOrder": "Ordre d'affichage",
+    "sortOrder": "Ordre d’affichage",
     "activeToggle": "Actif",
     "active": "Actif",
     "inactive": "Inactif",
@@ -644,12 +881,27 @@
     "typeCreated": "Type de document créé",
     "typeUpdated": "Type de document mis à jour",
     "typeDeleted": "Type de document supprimé",
-    "deleteTypeTitle": "Supprimer le Type de Document",
-    "deleteTypeConfirm": "Supprimer « {name} » ? Cette action est irréversible."
+    "deleteTypeTitle": "Supprimer le type de document",
+    "deleteTypeConfirm": "Supprimer « {name} » ? Cette action est irréversible.",
+    "document": "Document",
+    "order": "Ordre",
+    "requiredFor": "Demandé pour",
+    "status": "Statut",
+    "system": "Système",
+    "allProducts": "Tous les produits",
+    "usedIn": "{n} produit | {n} produits",
+    "unused": "Aucun produit",
+    "matrixHint": "Cochez les documents que chaque produit demande. Le DVC signé est demandé pour tous les produits : il débloque l’envoi en gestion et la validation, et ne peut pas être retiré.",
+    "lockedCell": "Toujours demandé",
+    "perProduct": "Documents demandés",
+    "codeHint": "Identifiant technique en majuscules, ex. ATTESTATION_RC. Il ne pourra plus être modifié.",
+    "codeLocked": "Le code ne peut pas être modifié.",
+    "sortHint": "Les documents s’affichent dans le dossier du plus petit au plus grand.",
+    "systemHint": "Document système : toujours demandé et toujours actif, car l’envoi en gestion et la validation en dépendent."
   },
   "gestion": {
     "dashboardTitle": "Tableau de bord gestion",
-    "dashboardSubtitle": "Votre file d'attente et vos dossiers en cours",
+    "dashboardSubtitle": "Les dossiers qui vous sont confiés, du plus ancien au plus récent.",
     "backlog": "En attente",
     "stuck": "Bloqués",
     "waitingOnAgent": "En attente de l'agent",
@@ -661,7 +913,46 @@
     "call2KoCount": "Call2 KO",
     "awaitingPdgCount": "En attente de PDG",
     "pdgKoCount": "PDG KO",
-    "pdgOkCount": "PDG OK (à valider)"
+    "pdgOkCount": "PDG OK (à valider)",
+    "queueTitle": "Dossiers en cours",
+    "queueSubtitle": "Triés par ancienneté dans leur statut : les plus anciens d’abord.",
+    "queueEmpty": "Aucun dossier en cours. Les leads envoyés en gestion apparaîtront ici.",
+    "queueEmptyTab": "Aucun dossier dans cette catégorie.",
+    "tabs": {
+      "all": "Tous",
+      "todo": "À traiter",
+      "control": "Call2 · PDG",
+      "blocked": "Bloqués",
+      "agent": "Attente agent"
+    },
+    "kpi": {
+      "todo": "À traiter",
+      "todoHint": "Nouveaux dossiers reçus",
+      "control": "Call2 · PDG en cours",
+      "readyToValidate": "{n} prêt(s) à valider",
+      "blocked": "Bloqués",
+      "blockedHint": "Call2 KO {call2} · PDG KO {pdg}",
+      "waitingAgent": "Attente agent",
+      "waitingAgentHint": "Renvoyés pour correction",
+      "validated": "Validés (7 jours)"
+    },
+    "since": {
+      "column": "Depuis",
+      "minutes": "{n} min",
+      "hours": "{n} h",
+      "days": "{n} j"
+    },
+    "next": {
+      "column": "Prochaine étape",
+      "review": "Vérifier le dossier, puis Call2",
+      "dvcMissing": "DVC signé manquant",
+      "pdg": "Contrôle PDG",
+      "validate": "Valider le lead",
+      "dvcToValidate": "DVC signé requis pour valider",
+      "call2Again": "Rappeler le client (Call2 KO)",
+      "pdgKo": "PDG KO : revoir avec l’agent",
+      "waitingAgent": "En attente de l’agent"
+    }
   },
   "teamLeader": {
     "title": "Tableau de bord équipe",
@@ -741,5 +1032,300 @@
       "to": "Au",
       "empty": "Aucune entrée trouvée."
     }
+  },
+  "stages": {
+    "new": "Nouveau",
+    "contact": "Contact",
+    "follow_up": "À relancer",
+    "quote": "Devis",
+    "won": "Validé",
+    "lost": "Perdu"
+  },
+  "pagination": {
+    "of": "sur",
+    "noResults": "Aucun résultat",
+    "perPage": "Afficher"
+  },
+  "insuranceTypesShort": {
+    "AUTO": "Auto",
+    "MOTO": "Moto",
+    "RC_PRO": "RC Pro",
+    "MUTUELLE_SANTE": "Santé",
+    "EMPRUNTEUR": "Emprunteur",
+    "CREDIT_CONSOMMATION": "Crédit conso",
+    "RACHAT_CREDIT": "Rachat crédit",
+    "CREDIT_IMMOBILIER": "Crédit immo",
+    "DECENNALE": "Décennale",
+    "TAXI_VTC": "Taxi/VTC",
+    "AUTRE": "Autre"
+  },
+  "leadDetail": {
+    "breadcrumb": "Fil d’Ariane",
+    "position": "{n} sur {total}",
+    "previous": "Lead précédent",
+    "next": "Lead suivant",
+    "call": "Appeler",
+    "moreActions": "Plus d’actions",
+    "reassign": "Réassigner",
+    "crossSell": "Proposer un autre produit",
+    "flagIssue": "Signaler un problème",
+    "editInfo": "Modifier les informations",
+    "deleteLead": "Supprimer le lead",
+    "plan": "Planifier",
+    "crossSellDone": "Nouveau lead créé pour ce produit",
+    "flagDone": "Le lead a été renvoyé à l’agent pour correction",
+    "steps": {
+      "label": "Étapes du lead",
+      "new": "Nouveau",
+      "contact": "Contact",
+      "quote": "Devis",
+      "won": "Validé",
+      "gestion": "Gestion",
+      "control": "Call 2 · PDG"
+    },
+    "flagged": {
+      "title": "Renvoyé par la gestion pour correction",
+      "missing": "Document(s) manquant(s) : {docs}.",
+      "generic": "Vérifiez le dossier et l’historique des statuts pour le détail.",
+      "by": "Signalé par {name} · {date}"
+    },
+    "composer": {
+      "addNote": "Ajouter une note",
+      "logCall": "Enregistrer un appel",
+      "scheduleAppointment": "Planifier un RDV",
+      "newNote": "Nouvelle note",
+      "notePlaceholder": "Écrire une note sur ce lead…",
+      "shortcut": "Ctrl + Entrée pour enregistrer",
+      "saveNote": "Enregistrer la note"
+    },
+    "activity": {
+      "title": "Activité",
+      "show": "Afficher",
+      "notes": "Notes",
+      "calls": "Appels",
+      "statuses": "Statuts",
+      "appointments": "RDV",
+      "payments": "Paiements",
+      "today": "Aujourd’hui",
+      "yesterday": "Hier",
+      "empty": "Aucune activité pour le moment.",
+      "emptyFiltered": "Aucune activité de ce type.",
+      "addedNote": "a ajouté une note",
+      "call": "Appel",
+      "changedStatus": "a changé le statut",
+      "assignedTo": "a assigné le lead à",
+      "appointmentFor": "Rendez-vous du {date}",
+      "paymentReceived": "Paiement enregistré",
+      "documents": "Documents",
+      "uploadedDocument": "a ajouté un document",
+      "loadFailed": "Impossible de charger l’activité.",
+      "loadMore": "Afficher plus ({n})",
+      "paymentRecorded": "Paiement"
+    },
+    "payments": {
+      "of": "sur",
+      "remaining": "Reste",
+      "add": "Ajouter un paiement",
+      "added": "Paiement enregistré",
+      "deleted": "Paiement supprimé",
+      "notYet": "Aucun paiement enregistré. Le montant total du contrat est demandé avec le premier paiement.",
+      "validate": "Valider le lead",
+      "sendToGestion": "Envoyer en gestion",
+      "inReview": "En revue par la gestion — elle validera le lead.",
+      "addFirst": "Enregistrer un paiement"
+    },
+    "dossier": {
+      "open": "Voir le dossier",
+      "manage": "Gérer le dossier",
+      "uploaded": "Document téléversé",
+      "deleted": "Document supprimé"
+    },
+    "info": {
+      "title": "Informations",
+      "clientType": "Type de client",
+      "city": "Ville",
+      "birthDate": "Date de naissance"
+    },
+    "errors": {
+      "assign": "Échec de l’assignation",
+      "note": "Échec de l’ajout de la note",
+      "call": "Échec de l’enregistrement de l’appel",
+      "appointmentDelete": "Échec de la suppression du rendez-vous",
+      "paymentAdd": "Échec de l’enregistrement du paiement",
+      "paymentDelete": "Échec de la suppression du paiement",
+      "upload": "Échec du téléversement",
+      "documentDelete": "Échec de la suppression",
+      "download": "Échec du téléchargement",
+      "update": "Échec de la mise à jour",
+      "preview": "Impossible d’afficher l’aperçu",
+      "crossSell": "Échec de la création du lead",
+      "flag": "Échec du signalement",
+      "paymentStatus": "Impossible de modifier le statut du paiement."
+    },
+    "dvc": {
+      "label": "DVC",
+      "open": "Ouvrir le dossier",
+      "generateHint": "Générez le DVC, faites-le signer au client puis ajoutez la copie signée au dossier.",
+      "waitingHint": "DVC généré : ajoutez la copie signée par le client au dossier pour pouvoir l’envoyer en gestion.",
+      "generate": "Générer le DVC",
+      "upload": "Ajouter le DVC signé",
+      "lockedHint": "Ajoutez d’abord le DVC signé au dossier",
+      "reviewHint": "Le DVC signé par le client n’est pas encore dans le dossier : le lead ne peut pas être validé. Demandez-le à l’agent (« Signaler un problème ») ou ajoutez-le vous-même."
+    }
+  },
+  "leadForm": {
+    "sections": {
+      "contact": "Contact",
+      "request": "Demande",
+      "company": "Entreprise",
+      "note": "Note initiale"
+    },
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "assignTo": "Assigner à",
+    "selectType": "Choisir un type…",
+    "companyHint": "Affiché pour la Décennale",
+    "addressPlaceholder": "Numéro, rue, code postal, ville",
+    "notePlaceholder": "Contexte de la demande, disponibilités du client…",
+    "requiredHint": "Les champs marqués * sont obligatoires.",
+    "create": "Créer le lead",
+    "afterCreate": "Après création",
+    "openLead": "Ouvrir la fiche du lead",
+    "createAnother": "Créer un autre lead",
+    "duplicateHint": "Numéro déjà utilisé par un autre lead",
+    "duplicateTitle": "Doublon possible",
+    "duplicateCreate": "Vous pouvez créer le lead quand même : il sera marqué « Doublon ».",
+    "duplicateEdit": "Un autre lead utilise déjà ce numéro.",
+    "errors": {
+      "firstName": "Le prénom est obligatoire",
+      "lastName": "Le nom est obligatoire",
+      "phone": "Le téléphone est obligatoire",
+      "phoneShort": "Numéro incomplet",
+      "email": "Adresse e-mail invalide",
+      "insuranceType": "Choisissez un type d’assurance",
+      "create": "Échec de la création du lead",
+      "update": "Échec de la mise à jour du lead",
+      "load": "Impossible de charger le lead"
+    },
+    "duplicateOtherScope": "Suivi par un autre agent — vous ne pouvez pas l’ouvrir."
+  },
+  "reschedule": {
+    "title": "Reporter le rendez-vous",
+    "description": "Choisissez la nouvelle date et heure du rendez-vous.",
+    "label": "Nouvelle date et heure",
+    "required": "Choisissez une date et une heure.",
+    "confirm": "Reporter"
+  },
+  "revenuePrompt": {
+    "title": "Valider le lead",
+    "description": "Indiquez le chiffre d’affaires prévu pour suivre les paiements.",
+    "label": "CA prévu",
+    "hint": "Montant total attendu sur le contrat.",
+    "amountRequired": "Le montant doit être supérieur à 0.",
+    "confirm": "Valider"
+  },
+  "appointmentForm": {
+    "forLead": "pour {name}",
+    "initialStatus": "Statut initial",
+    "assignedTo": "Assigné à :",
+    "notesPlaceholder": "Ce qu’il faut préparer ou aborder…",
+    "create": "Créer le rendez-vous",
+    "dateRequired": "La date et l’heure sont obligatoires",
+    "createError": "Échec de la création du rendez-vous",
+    "updateError": "Échec de la mise à jour du rendez-vous",
+    "loadError": "Impossible de charger le rendez-vous",
+    "duration": "Durée",
+    "minutes": "{n} min"
+  },
+  "reminders": {
+    "title": "Rappels automatiques",
+    "add": "Ajouter",
+    "channel": "Canal",
+    "remindAt": "Envoyer le",
+    "message": "Message personnalisé (optionnel)",
+    "messagePlaceholder": "Laisser vide pour le message par défaut…",
+    "save": "Enregistrer le rappel",
+    "empty": "Aucun rappel programmé.",
+    "sent": "Envoyé",
+    "dateRequired": "Choisissez une date d’envoi",
+    "channels": {
+      "in_app": "Dans le CRM",
+      "email": "E-mail",
+      "sms": "SMS"
+    },
+    "added": "Rappel ajouté",
+    "addError": "Échec de l’ajout du rappel",
+    "removeTitle": "Supprimer le rappel",
+    "removeConfirm": "Ce rappel ne sera pas envoyé.",
+    "removed": "Rappel supprimé",
+    "removeError": "Échec de la suppression du rappel"
+  },
+  "crossSell": {
+    "title": "Proposer un autre produit",
+    "product": "Nouveau produit",
+    "comment": "Commentaire (optionnel)",
+    "commentPlaceholder": "Contexte de la vente croisée…",
+    "productRequired": "Sélectionnez le produit souhaité"
+  },
+  "flagIssue": {
+    "title": "Signaler un problème",
+    "comment": "Commentaire",
+    "commentPlaceholder": "Précisez ce qui manque ou ce qui est incorrect…",
+    "submit": "Signaler",
+    "categoryRequired": "Sélectionnez au moins une catégorie",
+    "categories": {
+      "documents_manquants": "Documents manquants",
+      "information_manquante": "Information manquante",
+      "information_incorrecte": "Information incorrecte"
+    }
+  },
+  "paymentForm": {
+    "title": "Enregistrer un paiement",
+    "amount": "Montant",
+    "date": "Date de paiement",
+    "method": "Méthode de paiement",
+    "select": "Sélectionner…",
+    "customMethod": "Préciser la méthode",
+    "customPlaceholder": "Ex. : chèque, espèces, PayPal…",
+    "reference": "Numéro de référence",
+    "errors": {
+      "amount": "Le montant doit être supérieur à 0.",
+      "date": "La date est obligatoire.",
+      "method": "La méthode de paiement est obligatoire.",
+      "customMethod": "Précisez la méthode de paiement.",
+      "total": "Indiquez le montant total du contrat.",
+      "overRemaining": "Le montant dépasse le solde restant ({amount})."
+    },
+    "total": "Montant total du contrat",
+    "totalHint": "Demandé une seule fois, avec le premier paiement.",
+    "status": "Statut du paiement",
+    "remaining": "Solde restant : {amount}"
+  },
+  "paymentList": {
+    "empty": "Aucun paiement enregistré.",
+    "ref": "Réf.",
+    "deleteTitle": "Supprimer le paiement",
+    "deleteConfirm": "Supprimer ce paiement de {amount} ?",
+    "statusChanged": "Paiement : {status}",
+    "actions": {
+      "REUSSI": "Marquer reçu",
+      "ECHOUE": "Marquer échoué",
+      "ANNULE": "Annuler",
+      "REMBOURSE": "Rembourser"
+    },
+    "confirm": {
+      "ECHOUE": "Marquer ce paiement de {amount} comme échoué ? Il ne comptera plus dans l’encaissé.",
+      "REMBOURSE": "Marquer ce paiement de {amount} comme remboursé ? Il sera retiré de l’encaissé."
+    },
+    "sources": {
+      "HYPERSWITCH": "Hyperswitch"
+    }
+  },
+  "quickSearch": {
+    "placeholder": "Rechercher un lead…",
+    "inputPlaceholder": "Nom, téléphone, e-mail ou référence",
+    "title": "Recherche rapide",
+    "noResults": "Aucun lead trouvé.",
+    "hint": "Tapez au moins 2 caractères · ↑ ↓ pour choisir · Entrée pour ouvrir"
   }
 }

@@ -104,14 +104,14 @@ function close() {
         <p class="text-xs text-gray-400">{{ fileInfo.size }}</p>
       </div>
       <button
-        class="text-xs text-gray-400 hover:text-danger transition-colors"
+        class="text-xs text-gray-400 hover:text-danger-text transition-colors"
         @click.stop="file = null"
       >
         {{ t('documents.remove') }}
       </button>
     </div>
 
-    <p v-if="error" class="mt-3 text-sm text-danger">{{ error }}</p>
+    <p v-if="error" class="mt-3 text-sm text-danger-text">{{ error }}</p>
 
     <template #footer>
       <AppButton variant="ghost" @click="close">{{ t('documents.cancel') }}</AppButton>

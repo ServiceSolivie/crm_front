@@ -25,10 +25,10 @@ const charCount = computed(() => (props.modelValue ?? '').length)
     <label
       v-if="label"
       :for="id"
-      class="text-sm font-medium text-gray-700 select-none"
+      class="text-[12.5px] font-medium text-gray-600 select-none"
     >
       {{ label }}
-      <span v-if="required" class="text-danger ml-0.5">*</span>
+      <span v-if="required" class="text-danger-text ml-0.5">*</span>
     </label>
 
     <textarea
@@ -40,9 +40,9 @@ const charCount = computed(() => (props.modelValue ?? '').length)
       :rows="rows"
       :maxlength="maxlength"
       :class="[
-        'w-full rounded-lg border bg-gray-50 text-sm text-gray-900 p-3 resize-y',
+        'w-full rounded-lg border bg-white text-[13.5px] leading-5 text-gray-900 px-3 py-2.5 resize-y',
         'placeholder:text-gray-400 transition-colors duration-150',
-        'focus:outline-none focus:bg-white focus:border-primary focus-ring',
+        'focus:outline-none focus:border-primary focus:ring-3 focus:ring-primary-soft/20',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         error ? 'border-danger' : 'border-gray-300',
       ]"
@@ -50,7 +50,7 @@ const charCount = computed(() => (props.modelValue ?? '').length)
     />
 
     <div class="flex justify-between items-center">
-      <p v-if="error" class="text-xs text-danger">{{ error }}</p>
+      <p v-if="error" class="text-xs text-danger-text">{{ error }}</p>
       <p v-else-if="hint" class="text-xs text-gray-500">{{ hint }}</p>
       <p v-else class="text-xs text-transparent select-none">-</p>
 

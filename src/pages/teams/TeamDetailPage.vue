@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { ArrowLeft, UserPlus, Trash2, Users, Crown } from 'lucide-vue-next'
+import { ChevronRight, UserPlus, Trash2, Users, Crown } from 'lucide-vue-next'
 import { useTeamsStore } from '@/stores/teams.store'
 import { useUsersStore } from '@/stores/users.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -50,7 +50,7 @@ async function onAddMember() {
 }
 
 async function onRemoveMember(member) {
-  const ok = await ui.confirm(t('teams.removeMemberTitle'), t('teams.removeMemberConfirm', { name: member.name }))
+  const ok = await ui.confirm(t('teams.removeMemberTitle'), t('teams.removeMemberConfirm', { name: member.name }), { confirmLabel: t('common.remove') })
   if (!ok) return
   try {
     await store.removeMember(id, member.id)
@@ -62,13 +62,12 @@ async function onRemoveMember(member) {
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto space-y-5">
-    <div class="flex items-center gap-3">
-      <AppButton variant="ghost" size="sm" @click="router.back()">
-        <template #icon><ArrowLeft class="w-4 h-4" /></template>
-        {{ t('common.back') }}
-      </AppButton>
-    </div>
+  <div class="max-w-5xl mx-auto flex flex-col gap-4">
+    <nav aria-label="Breadcrumb" class="flex items-center gap-1.5 text-[13px] text-gray-500">
+      <RouterLink to="/teams" class="text-gray-600 hover:text-gray-900">{{ t('teams.title') }}</RouterLink>
+      <ChevronRight class="w-3.5 h-3.5" />
+      <span class="text-gray-900 truncate">{{ store.current?.name ?? '…' }}</span>
+    </nav>
 
     <!-- Loading -->
     <AppCard v-if="store.loading.detail">
@@ -82,11 +81,11 @@ async function onRemoveMember(member) {
     <AppCard v-else-if="store.current">
       <div class="flex items-start justify-between flex-wrap gap-4">
         <div class="flex items-start gap-4">
-          <div class="w-14 h-14 rounded-2xl bg-primary-light flex items-center justify-center shrink-0">
+          <div class="w-13 h-13 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
             <Users class="w-7 h-7 text-primary" />
           </div>
           <div>
-            <h1 class="text-xl font-semibold text-gray-900">{{ store.current.name }}</h1>
+            <h1 class="font-display text-2xl font-semibold tracking-tight text-gray-900">{{ store.current.name }}</h1>
             <p v-if="store.current.description" class="text-sm text-gray-500 mt-0.5">
               {{ store.current.description }}
             </p>
@@ -103,21 +102,21 @@ async function onRemoveMember(member) {
     <!-- Stats row -->
     <div v-if="store.stats" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-gray-900">{{ store.stats.leads.total  ?? 0 }}</p>
+        <p class="font-mono text-2xl font-medium tracking-tight text-gray-900">{{ store.stats.leads.total  ?? 0 }}</p>
         <p class="text-xs text-gray-500">{{ t('dashboard.totalLeads') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-success">{{ store.stats.leads.by_status.VALIDE ?? 0 }}</p>
+        <p class="font-mono text-2xl font-medium tracking-tight text-success-text">{{ store.stats.leads.by_status.VALIDE ?? 0 }}</p>
         <p class="text-xs text-gray-500">{{ t('teams.won') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-primary">
+        <p class="font-mono text-2xl font-medium tracking-tight text-primary">
           {{ store.stats.leads.conversion_rate ? `${store.stats.leads.conversion_rate.toFixed(1)}%` : '—' }}
         </p>
         <p class="text-xs text-gray-500">{{ t('teams.conversion') }}</p>
       </AppCard>
       <AppCard padding="sm" class="text-center">
-        <p class="text-2xl font-bold text-info">{{ store.stats.appointments.total ?? 0 }}</p>
+        <p class="font-mono text-2xl font-medium tracking-tight text-info-text">{{ store.stats.appointments.total ?? 0 }}</p>
         <p class="text-xs text-gray-500">{{ t('dashboard.appointments') }}</p>
       </AppCard>
     </div>
@@ -169,7 +168,7 @@ async function onRemoveMember(member) {
             {{ member.role }}
           </span>
           <button
-            class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors"
+            class="p-1.5 rounded-lg text-gray-400 hover:text-danger-text hover:bg-danger-bg transition-colors"
             @click="onRemoveMember(member)"
           >
             <Trash2 class="w-3.5 h-3.5" />

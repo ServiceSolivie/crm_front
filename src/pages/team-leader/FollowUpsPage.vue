@@ -9,6 +9,8 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
+import AppEmptyState from '@/components/base/AppEmptyState.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -24,15 +26,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="relative z-10">
-        <h1 class="text-2xl font-bold text-white">{{ t('teamLeader.followUpAlerts') }}</h1>
-        <p class="text-sm text-orange-100 mt-0.5">{{ t('teamLeader.pendingFollowUps') }}</p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('teamLeader.followUpAlerts')" :subtitle="t('teamLeader.pendingFollowUps')" />
 
     <!-- Summary badges -->
     <div class="flex flex-wrap gap-3">
@@ -55,11 +50,10 @@ onMounted(() => {
 
     <!-- Follow-up list -->
     <AppCard>
-      <AppSkeleton v-if="store.loading.followUps" :rows="5" />
-      <div v-else-if="store.followUps.items.length === 0" class="py-12 text-center">
-        <AlertCircle class="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <p class="text-gray-400">{{ t('teamLeader.noAlerts') }}</p>
+      <div v-if="store.loading.followUps" class="space-y-3">
+        <AppSkeleton v-for="n in 5" :key="n" height="44px" />
       </div>
+      <AppEmptyState v-else-if="store.followUps.items.length === 0" :icon="AlertCircle" :title="t('teamLeader.noAlerts')" />
       <div v-else class="divide-y divide-gray-100">
         <div
           v-for="item in store.followUps.items"

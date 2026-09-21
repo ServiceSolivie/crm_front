@@ -75,12 +75,13 @@ function fullName(lead) {
 
     <!-- Results -->
     <div class="space-y-1 max-h-64 overflow-y-auto -mx-1 px-1">
-      <div
-        v-if="loading"
-        v-for="n in 4"
-        :key="`sk-${n}`"
-        class="h-12 rounded-lg bg-gray-100 animate-pulse"
-      />
+      <template v-if="loading">
+        <div
+          v-for="n in 4"
+          :key="`sk-${n}`"
+          class="h-12 rounded-lg bg-gray-100 animate-pulse"
+        />
+      </template>
       <button
         v-else
         v-for="lead in results"

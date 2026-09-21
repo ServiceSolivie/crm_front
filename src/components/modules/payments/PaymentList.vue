@@ -1,14 +1,20 @@
 <script setup>
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Trash2, CreditCard, Banknote } from 'lucide-vue-next'
+import { Trash2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppSpinner from '@/components/base/AppSpinner.vue'
-import AppAvatar from '@/components/base/AppAvatar.vue'
+import PaymentRecordStatusBadge from './PaymentRecordStatusBadge.vue'
+import { PAYMENT_RECORD_STATUS } from '@/utils/enums'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 
+/**
+ * Payments of a lead with their status (Reçu, En attente, Échoué, Annulé,
+ * Remboursé). Pending payments can be marked received / failed / cancelled;
+ * received ones refunded (needs PAYMENTS_DELETE, like the backend).
+ */
 const { t } = useI18n()
 
 defineProps({
@@ -16,11 +22,15 @@ defineProps({
   loading: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['delete'])
+const emit = defineEmits(['delete', 'status'])
 
 const auth = useAuthStore()
 const ui = useUiStore()
 const deletingId = ref(null)
+const busyId = ref(null)
+
+// Money not (or no longer) received is shown struck through / greyed
+const NOT_COUNTED = ['ECHOUE', 'ANNULE', 'REMBOURSE']
 
 function methodLabel(payment) {
   if (payment.payment_method === 'AUTRE' && payment.custom_payment_method) {
@@ -29,74 +39,105 @@ function methodLabel(payment) {
   return t('paymentMethods.' + payment.payment_method, payment.payment_method)
 }
 
+function actionsFor(payment) {
+  if (!auth.can('PAYMENTS_CREATE')) return []
+  const next = PAYMENT_RECORD_STATUS[payment.status ?? 'REUSSI']?.next ?? []
+  return next.filter((s) => s !== 'REMBOURSE' || auth.can('PAYMENTS_DELETE'))
+}
+
+async function onStatus(payment, status) {
+  // Failures and refunds are final: ask before applying them
+  if (status === 'ECHOUE' || status === 'REMBOURSE') {
+    const ok = await ui.confirm(
+      t('paymentList.actions.' + status),
+      t('paymentList.confirm.' + status, { amount: formatCurrency(payment.amount) }),
+      { confirmLabel: t('paymentList.actions.' + status) },
+    )
+    if (!ok) return
+  }
+  busyId.value = payment.id
+  emit('status', payment, status)
+}
+
 async function onDelete(payment) {
   const ok = await ui.confirm(
-    'Supprimer le paiement',
-    `Voulez-vous vraiment supprimer ce paiement de ${formatCurrency(payment.amount)} ?`,
+    t('paymentList.deleteTitle'),
+    t('paymentList.deleteConfirm', { amount: formatCurrency(payment.amount) }),
+    { confirmLabel: t('common.delete') },
   )
   if (!ok) return
   deletingId.value = payment.id
   emit('delete', payment)
 }
 
-defineExpose({ clearDeleting: () => (deletingId.value = null) })
+defineExpose({
+  clearDeleting: () => (deletingId.value = null),
+  clearBusy: () => (busyId.value = null),
+})
 </script>
 
 <template>
   <div>
-    <div v-if="loading" class="space-y-3">
-      <AppSkeleton v-for="n in 3" :key="n" height="64px" class="rounded-xl" />
+    <div v-if="loading" class="space-y-2">
+      <AppSkeleton v-for="n in 2" :key="n" height="44px" />
     </div>
 
-    <div v-else-if="payments.length === 0" class="text-center py-10">
-      <Banknote class="w-10 h-10 text-gray-300 mx-auto mb-2" />
-      <p class="text-sm text-gray-500">Aucun paiement enregistré</p>
-    </div>
+    <p v-else-if="payments.length === 0" class="text-[13px] text-gray-500 py-1">{{ t('paymentList.empty') }}</p>
 
-    <div v-else class="space-y-3">
-      <div
+    <ul v-else class="flex flex-col">
+      <li
         v-for="payment in payments"
         :key="payment.id"
-        class="flex items-start gap-3 p-4 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors"
+        class="flex items-start gap-2.5 py-2 border-b border-gray-100 last:border-b-0"
       >
-        <div class="w-9 h-9 rounded-xl bg-success-bg flex items-center justify-center shrink-0">
-          <CreditCard class="w-4 h-4 text-success" />
-        </div>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-sm font-semibold text-gray-900">
-              {{ formatCurrency(payment.amount) }}
-            </span>
-            <span class="text-xs text-gray-400">•</span>
-            <span class="text-xs text-gray-500">{{ formatDate(payment.payment_date) }}</span>
-          </div>
-          <div class="flex items-center gap-2 mt-1 flex-wrap">
-            <span class="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
-              {{ methodLabel(payment) }}
-            </span>
-            <span v-if="payment.reference_number" class="text-xs text-gray-400">
-              Réf: {{ payment.reference_number }}
-            </span>
-          </div>
-          <p v-if="payment.notes" class="text-xs text-gray-400 mt-1 line-clamp-2">{{ payment.notes }}</p>
-          <div v-if="payment.created_by" class="flex items-center gap-1.5 mt-1.5">
-            <AppAvatar :name="payment.created_by.name" size="xs" />
-            <span class="text-xs text-gray-400">{{ payment.created_by.name }}</span>
+          <p class="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span
+              :class="[
+                'font-mono text-[13px] font-medium',
+                NOT_COUNTED.includes(payment.status) ? 'text-gray-400 line-through'
+                : payment.status === 'EN_ATTENTE' ? 'text-info-text' : 'text-success-text',
+              ]"
+            >{{ formatCurrency(payment.amount) }}</span>
+            <span class="font-mono text-xs text-gray-500">{{ formatDate(payment.payment_date) }}</span>
+            <PaymentRecordStatusBadge v-if="payment.status" :status="payment.status" />
+          </p>
+          <p class="text-xs text-gray-600 truncate">
+            {{ methodLabel(payment) }}
+            <template v-if="payment.reference_number"> · {{ t('paymentList.ref') }} <span class="font-mono">{{ payment.reference_number }}</span></template>
+            <template v-if="payment.created_by"> · {{ payment.created_by.name }}</template>
+            <template v-if="payment.source === 'HYPERSWITCH'"> · {{ t('paymentList.sources.HYPERSWITCH') }}</template>
+          </p>
+          <p v-if="payment.failure_reason" class="text-xs text-danger-text mt-0.5">{{ payment.failure_reason }}</p>
+          <p v-if="payment.notes" class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ payment.notes }}</p>
+          <div v-if="actionsFor(payment).length" class="flex flex-wrap gap-1.5 mt-1.5">
+            <button
+              v-for="s in actionsFor(payment)"
+              :key="s"
+              type="button"
+              :disabled="busyId === payment.id"
+              :class="[
+                'h-6.5 px-2 rounded-md border text-xs disabled:opacity-50',
+                s === 'REUSSI' ? 'border-success/40 text-success-text hover:bg-success-bg'
+                : s === 'ANNULE' ? 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                : 'border-danger/30 text-danger-text hover:bg-danger-bg',
+              ]"
+              @click="onStatus(payment, s)"
+            >{{ t('paymentList.actions.' + s) }}</button>
           </div>
         </div>
-        <div class="shrink-0">
-          <button
-            v-if="auth.can('PAYMENTS_DELETE')"
-            title="Supprimer"
-            :disabled="deletingId === payment.id"
-            class="p-1.5 rounded-lg text-gray-400 hover:text-danger hover:bg-danger-bg transition-colors disabled:opacity-50"
-            @click="onDelete(payment)"
-          >
-            <AppSpinner v-if="deletingId === payment.id" :size="14" />
-            <Trash2 v-else class="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
-    </div>
+        <button
+          v-if="auth.can('PAYMENTS_DELETE')"
+          type="button"
+          :aria-label="t('common.delete')"
+          :disabled="deletingId === payment.id"
+          class="w-7 h-7 shrink-0 rounded-md flex items-center justify-center text-gray-400 hover:text-danger-text hover:bg-danger-bg disabled:opacity-50"
+          @click="onDelete(payment)"
+        >
+          <AppSpinner v-if="deletingId === payment.id" :size="14" />
+          <Trash2 v-else class="w-3.5 h-3.5" />
+        </button>
+      </li>
+    </ul>
   </div>
 </template>

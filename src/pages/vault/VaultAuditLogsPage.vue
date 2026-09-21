@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ScrollText, User, KeyRound } from 'lucide-vue-next'
+import { User, KeyRound } from 'lucide-vue-next'
 import { useVaultAuditLogsStore } from '@/stores/vaultAuditLogs.store'
 import AppCard from '@/components/base/AppCard.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
@@ -9,6 +9,7 @@ import AppInput from '@/components/base/AppInput.vue'
 import AppTable from '@/components/base/AppTable.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 
 const { t } = useI18n()
 const store = useVaultAuditLogsStore()
@@ -46,16 +47,12 @@ function formatDate(dateStr) {
 </script>
 
 <template>
-  <div class="space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10">
-        <h1 class="text-2xl font-bold text-white">{{ t('vault.auditLogs.title') }}</h1>
-        <p class="text-sm text-indigo-200 mt-0.5">{{ store.meta.total }} {{ t('vault.auditLogs.total') }}</p>
-      </div>
-    </div>
+  <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
+    <AppPageHeader :title="t('vault.auditLogs.title')">
+      <template #meta>
+        <p class="text-[13px] text-gray-500 mt-0.5">{{ store.meta.total }} {{ t('vault.auditLogs.total') }}</p>
+      </template>
+    </AppPageHeader>
 
     <!-- Filters -->
     <AppCard padding="sm">

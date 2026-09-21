@@ -15,7 +15,7 @@ const paddingClasses = {
 <template>
   <div
     :class="[
-      'bg-white rounded-2xl shadow-card',
+      'bg-white rounded-xl border border-gray-200',
       paddingClasses[padding],
       $props.class,
     ]"

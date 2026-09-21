@@ -11,6 +11,7 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppBadge from '@/components/base/AppBadge.vue'
 import { formatDate } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
+import AppPageHeader from '@/components/base/AppPageHeader.vue'
 
 const auth = useAuthStore()
 const toast = useToast()
@@ -96,15 +97,11 @@ async function savePassword() {
 
 <template>
   <div class="max-w-2xl mx-auto space-y-5">
-    <!-- Hero header -->
-    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary-hover px-6 py-5 shadow-card">
-      <div class="pointer-events-none absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5" />
-      <div class="pointer-events-none absolute -bottom-10 -right-20 w-56 h-56 rounded-full bg-white/5" />
-      <div class="relative z-10">
-        <h1 class="text-2xl font-bold text-white">{{ t('profile.title') }}</h1>
-        <p class="text-sm text-indigo-200 mt-0.5">{{ t('profile.subtitle') }}</p>
-      </div>
-    </div>
+    <AppPageHeader :title="t('profile.title')">
+      <template #meta>
+        <p class="text-[13px] text-gray-500 mt-0.5">{{ t('profile.subtitle') }}</p>
+      </template>
+    </AppPageHeader>
 
     <!-- Profile overview -->
     <AppCard>
