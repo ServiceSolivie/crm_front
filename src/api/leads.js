@@ -20,23 +20,14 @@ export const leadsApi = {
     client.patch(`/leads/${id}/status`, payload).then((r) => r.data),
 
   notes: {
-    list: (leadId, params) =>
-      client.get(`/leads/${leadId}/notes`, { params }).then((r) => r.data),
     create: (leadId, note) =>
       client.post(`/leads/${leadId}/notes`, { note }).then((r) => r.data),
   },
 
   calls: {
-    list: (leadId, params) =>
-      client.get(`/leads/${leadId}/calls`, { params }).then((r) => r.data),
     create: (leadId, payload) =>
       client.post(`/leads/${leadId}/calls`, payload).then((r) => r.data),
   },
-
-  statusHistory: (id, params) =>
-    client.get(`/leads/${id}/status-history`, { params }).then((r) => r.data),
-  assignmentHistory: (id, params) =>
-    client.get(`/leads/${id}/assignment-history`, { params }).then((r) => r.data),
 
   appointments: {
     list: (leadId) =>

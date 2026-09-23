@@ -22,7 +22,6 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
   })
 
   const errors = ref(null)
-  const uploadProgress = ref(0)
   let _listGen = 0
 
   async function fetchList() {
@@ -57,7 +56,6 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
 
   async function upload(file) {
     loading.upload = true
-    uploadProgress.value = 0
     errors.value = null
     try {
       const { data } = await leadImportsApi.upload(file)
@@ -108,7 +106,6 @@ export const useLeadImportsStore = defineStore('leadImports', () => {
     filters,
     loading,
     errors,
-    uploadProgress,
     fetchList,
     fetchOne,
     upload,

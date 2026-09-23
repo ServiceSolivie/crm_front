@@ -8,10 +8,6 @@ import { gestionApi } from '@/api/gestion'
 export const useLeadsStore = defineStore('leads', () => {
   const list = ref([])
   const current = ref(null)
-  const notes = ref([])
-  const calls = ref([])
-  const statusHistory = ref([])
-  const assignmentHistory = ref([])
   const leadAppointments = ref([])
   const payments = ref([])
   const dossier = ref(null)
@@ -43,9 +39,7 @@ export const useLeadsStore = defineStore('leads', () => {
     list: false,
     detail: false,
     form: false,
-    notes: false,
-    calls: false,
-    history: false,
+    submitting: false,
     appointments: false,
     payments: false,
     dossier: false,
@@ -192,49 +186,23 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
-  async function fetchNotes(leadId) {
-    loading.notes = true
-    try {
-      const { data } = await leadsApi.notes.list(leadId)
-      notes.value = data
-    } catch (e) {
-      errors.value = e
-    } finally {
-      loading.notes = false
-    }
-  }
-
   async function addNote(leadId, note) {
-    loading.notes = true
+    loading.submitting = true
     try {
       const { data } = await leadsApi.notes.create(leadId, note)
-      notes.value.unshift(data)
       return data
     } catch (e) {
       errors.value = e
       throw e
     } finally {
-      loading.notes = false
-    }
-  }
-
-  async function fetchCalls(leadId) {
-    loading.calls = true
-    try {
-      const { data } = await leadsApi.calls.list(leadId)
-      calls.value = data
-    } catch (e) {
-      errors.value = e
-    } finally {
-      loading.calls = false
+      loading.submitting = false
     }
   }
 
   async function logCall(leadId, payload) {
-    loading.calls = true
+    loading.submitting = true
     try {
       const { data } = await leadsApi.calls.create(leadId, payload)
-      calls.value.unshift(data)
       if (current.value?.id === Number(leadId)) {
         current.value = { ...current.value, calls_count: (current.value.calls_count ?? 0) + 1 }
       }
@@ -247,31 +215,7 @@ export const useLeadsStore = defineStore('leads', () => {
       errors.value = e
       throw e
     } finally {
-      loading.calls = false
-    }
-  }
-
-  async function fetchStatusHistory(leadId) {
-    loading.history = true
-    try {
-      const { data } = await leadsApi.statusHistory(leadId)
-      statusHistory.value = data
-    } catch (e) {
-      errors.value = e
-    } finally {
-      loading.history = false
-    }
-  }
-
-  async function fetchAssignmentHistory(leadId) {
-    loading.history = true
-    try {
-      const { data } = await leadsApi.assignmentHistory(leadId)
-      assignmentHistory.value = data
-    } catch (e) {
-      errors.value = e
-    } finally {
-      loading.history = false
+      loading.submitting = false
     }
   }
 
@@ -501,10 +445,6 @@ export const useLeadsStore = defineStore('leads', () => {
   return {
     list,
     current,
-    notes,
-    calls,
-    statusHistory,
-    assignmentHistory,
     leadAppointments,
     payments,
     dossier,
@@ -524,12 +464,8 @@ export const useLeadsStore = defineStore('leads', () => {
     assign,
     crossSell,
     updateStatus,
-    fetchNotes,
     addNote,
-    fetchCalls,
     logCall,
-    fetchStatusHistory,
-    fetchAssignmentHistory,
     fetchLeadAppointments,
     createLeadAppointment,
     fetchPayments,

@@ -78,16 +78,6 @@ export function formatNumber(value) {
 }
 
 /**
- * Format a percentage value.
- * @param {number|null} value - raw float, e.g. 24.3
- * @param {number} decimals
- */
-export function formatPercent(value, decimals = 1) {
-  if (value === null || value === undefined) return '—'
-  return `${Number(value).toFixed(decimals)}%`
-}
-
-/**
  * Return relative time string (e.g. "2 hours ago").
  */
 export function formatRelative(value) {

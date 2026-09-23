@@ -192,10 +192,6 @@ async function loadSidePanels() {
 }
 
 function resetLeadData() {
-  leadsStore.notes = []
-  leadsStore.statusHistory = []
-  leadsStore.assignmentHistory = []
-  leadsStore.calls = []
   leadsStore.leadAppointments = []
   leadsStore.payments = []
   leadsStore.dossier = null

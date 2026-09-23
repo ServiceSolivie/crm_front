@@ -62,25 +62,12 @@ export const INSURANCE_TYPE = {
   AUTRE: {},
 }
 
-export const LEAD_IMPORT_STATUS = {
-  PENDING: { color: 'neutral' },
-  PROCESSING: { color: 'info' },
-  COMPLETED: { color: 'success' },
-  FAILED: { color: 'danger' },
-}
-
 export const ROLES = {
   super_admin: {},
   manager: {},
   team_leader: {},
   agent: {},
   gestion: {},
-}
-
-export const REMINDER_CHANNEL = {
-  IN_APP: {},
-  EMAIL: {},
-  SMS: {},
 }
 
 // Lead payment status, recalculated by the backend from its payments
@@ -118,15 +105,4 @@ export const PAYMENT_METHOD = {
 export const CLIENT_TYPE = {
   INDIVIDUAL: {},
   PROFESSIONAL: {},
-}
-
-export const DOCUMENT_TYPE = {
-  CARTE_IDENTITE: {},
-  PERMIS_CONDUIRE: {},
-  CARTE_GRISE: {},
-  RIB: {},
-  RELEVE_INFORMATION: {},
-  EXTRAIT_KBIS: {},
-  NUMERO_SIRET: {},
-  CONTRAT_CHANTIER: {},
 }
