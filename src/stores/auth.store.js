@@ -7,7 +7,6 @@ import { useNotificationsStore } from './notifications.store'
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token'))
   const user = ref(null)
-  const booting = ref(false)
 
   const isAuthenticated = computed(() => !!token.value)
 
@@ -80,15 +79,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function boot() {
     if (!token.value) return false
-    booting.value = true
-    try {
-      const response = await authApi.me()
-      user.value = _normalizeUser(response?.data ?? response?.user ?? response)
-      _subscribeToNotifications()
-      return true
-    } finally {
-      booting.value = false
-    }
+    const response = await authApi.me()
+    user.value = _normalizeUser(response?.data ?? response?.user ?? response)
+    _subscribeToNotifications()
+    return true
   }
 
   function clearSession() {
@@ -127,7 +121,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     token,
     user,
-    booting,
     isAuthenticated,
     can,
     hasRole,

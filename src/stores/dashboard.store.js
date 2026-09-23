@@ -101,10 +101,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     filters,
     loading,
     fetchAll,
-    fetchKpis,
-    fetchStatistics,
-    fetchAggregations,
-    fetchCharts,
     fetchRevenue,
     setFilter,
   }
