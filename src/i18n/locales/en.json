@@ -645,7 +645,31 @@
     "confirmPassword": "Confirm Password",
     "saveChanges": "Save Changes",
     "updateSuccess": "Profile updated",
-    "passwordSuccess": "Password changed"
+    "passwordSuccess": "Password changed",
+    "feedback": {
+      "heading": "Report a problem or suggest an improvement",
+      "subtitle": "Share your difficulties and ideas with our team.",
+      "type": "Request type",
+      "issue": "Problem",
+      "suggestion": "Suggestion",
+      "title": "Title",
+      "titleHint": "200 characters maximum.",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe the problem and the steps to reproduce it, or explain your suggestion.",
+      "page": "Related page (optional)",
+      "pageHint": "Enter only the path, for example /leads, without query parameters or a full URL.",
+      "send": "Send feedback",
+      "success": "Your feedback has been sent.",
+      "error": "Your submission could not be confirmed. Your input has been preserved.",
+      "networkError": "The connection was interrupted. Your submission could not be confirmed; retrying may create a duplicate.",
+      "rateLimited": "Too many requests. Try again in {seconds} seconds.",
+      "typeRequired": "Select a request type.",
+      "titleRequired": "The title is required.",
+      "titleMax": "The title must not exceed 200 characters.",
+      "descriptionRequired": "The description is required.",
+      "descriptionMax": "The description must not exceed 10,000 characters.",
+      "pageInvalid": "Enter a path such as /leads, without query parameters or a fragment, up to 500 characters."
+    }
   },
   "errors": {
     "403": "Access Denied",
