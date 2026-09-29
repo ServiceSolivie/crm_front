@@ -19,5 +19,9 @@ export function notificationTitle(item) {
   if (item.type === 'LeadReceivedNotification') {
     return t('notifications.leadReceivedTitle')
   }
+  if (item.type === 'PaymentResultNotification') {
+    const p = item.payload?.payment ?? {}
+    return t(p.status === 'PAYEE' ? 'notifications.paymentReceivedTitle' : 'notifications.paymentFailedTitle', { reference: p.reference ?? '' })
+  }
   return item.payload?.title
 }

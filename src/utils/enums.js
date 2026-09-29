@@ -79,13 +79,13 @@ export const PAYMENT_STATUS = {
   REMBOURSE: { color: 'neutral' },
 }
 
-// One payment. `next` = statuses it can be moved to by hand (same rule as the backend)
+// One payment (from Hyperswitch, or entered by hand in the past)
 export const PAYMENT_RECORD_STATUS = {
-  REUSSI: { color: 'success', next: ['REMBOURSE'] },
-  EN_ATTENTE: { color: 'info', next: ['REUSSI', 'ECHOUE', 'ANNULE'] },
-  ECHOUE: { color: 'danger', next: [] },
-  ANNULE: { color: 'neutral', next: [] },
-  REMBOURSE: { color: 'warning', next: [] },
+  REUSSI: { color: 'success' },
+  EN_ATTENTE: { color: 'info' },
+  ECHOUE: { color: 'danger' },
+  ANNULE: { color: 'neutral' },
+  REMBOURSE: { color: 'warning' },
 }
 
 // DVC track: generated → waiting for the client's signature → signed copy in the dossier
@@ -93,13 +93,6 @@ export const DVC_STATUS = {
   A_GENERER: { color: 'neutral' },
   EN_ATTENTE_SIGNATURE: { color: 'warning' },
   SIGNE: { color: 'success' },
-}
-
-export const PAYMENT_METHOD = {
-  STRIPE: {},
-  VIREMENT_BANCAIRE: {},
-  PAYMENT_LINK: {},
-  AUTRE: {},
 }
 
 export const CLIENT_TYPE = {

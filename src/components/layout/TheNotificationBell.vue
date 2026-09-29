@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Bell, Calendar, UserPlus, CheckCheck } from 'lucide-vue-next'
+import { Bell, Calendar, UserPlus, CheckCheck, CreditCard } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import { formatRelative } from '@/utils/formatters'
@@ -159,7 +159,8 @@ onUnmounted(() => {
               @click="openNotification(item)"
             >
               <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
-                <UserPlus v-if="item.payload?.leads" class="w-4 h-4 text-primary" />
+                <CreditCard v-if="item.payload?.payment" class="w-4 h-4 text-primary" />
+                <UserPlus v-else-if="item.payload?.leads" class="w-4 h-4 text-primary" />
                 <Calendar v-else class="w-4 h-4 text-primary" />
               </div>
               <div class="flex-1 min-w-0">

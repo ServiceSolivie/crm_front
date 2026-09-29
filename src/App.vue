@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationSound } from '@/composables/useNotificationSound'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import PublicLayout from '@/layouts/PublicLayout.vue'
 import ToastContainer from '@/components/base/ToastContainer.vue'
 import ConfirmDialog from '@/components/base/ConfirmDialog.vue'
 
@@ -34,6 +35,7 @@ const isBooting = computed(() => {
 const layout = computed(() => {
   const l = route.meta?.layout
   if (l === 'dashboard') return DashboardLayout
+  if (l === 'public') return PublicLayout
   return AuthLayout
 })
 </script>

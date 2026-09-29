@@ -7,7 +7,9 @@
     "todayDigestTitle": "You have {count} appointment today | You have {count} appointments today",
     "reminderTitle": "Appointment in 30 minutes",
     "leadReceivedTitle": "You received a new lead",
-    "markReadError": "Failed to mark as read"
+    "markReadError": "Failed to mark as read",
+    "paymentReceivedTitle": "Payment received — {reference}",
+    "paymentFailedTitle": "Payment failed — {reference}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -38,7 +40,8 @@
     "vaultCredentials": "Credentials",
     "vaultAuditLogs": "Audit Logs",
     "overdueCount": "{n} overdue appointment(s)",
-    "todayCount": "{n} appointment(s) left today"
+    "todayCount": "{n} appointment(s) left today",
+    "payments": "Payments"
   },
   "common": {
     "save": "Save",
@@ -1024,14 +1027,10 @@
     "payments": {
       "of": "of",
       "remaining": "Remaining",
-      "add": "Add a payment",
-      "added": "Payment recorded",
-      "deleted": "Payment deleted",
-      "notYet": "No payment recorded yet. The contract total is asked with the first payment.",
+      "notYet": "No payment requested. The amount entered with the first payment link becomes the contract total.",
       "validate": "Validate the lead",
       "sendToGestion": "Send to back-office",
-      "inReview": "Under back-office review — they will validate the lead.",
-      "addFirst": "Record a payment"
+      "inReview": "Under back-office review — they will validate the lead."
     },
     "dossier": {
       "open": "Open the file",
@@ -1050,16 +1049,13 @@
       "note": "Failed to add note",
       "call": "Failed to log call",
       "appointmentDelete": "Failed to delete appointment",
-      "paymentAdd": "Failed to record payment",
-      "paymentDelete": "Failed to delete payment",
       "upload": "Upload failed",
       "documentDelete": "Failed to delete",
       "download": "Download failed",
       "update": "Update failed",
       "preview": "Failed to load preview",
       "crossSell": "Failed to create lead",
-      "flag": "Failed to flag the lead",
-      "paymentStatus": "Could not change the payment status."
+      "flag": "Failed to flag the lead"
     },
     "dvc": {
       "label": "DVC",
@@ -1178,47 +1174,58 @@
       "information_incorrecte": "Incorrect information"
     }
   },
-  "paymentForm": {
-    "title": "Record a payment",
-    "amount": "Amount",
-    "date": "Payment date",
-    "method": "Payment method",
-    "select": "Select…",
-    "customMethod": "Specify the method",
-    "customPlaceholder": "e.g. cheque, cash, PayPal…",
-    "reference": "Reference number",
-    "errors": {
-      "amount": "The amount must be greater than 0.",
-      "date": "The date is required.",
-      "method": "The payment method is required.",
-      "customMethod": "Specify the payment method.",
-      "total": "Enter the contract total.",
-      "overRemaining": "The amount exceeds the remaining balance ({amount})."
-    },
-    "total": "Contract total",
-    "totalHint": "Asked once, with the first payment.",
-    "status": "Payment status",
-    "remaining": "Remaining balance: {amount}"
-  },
   "paymentList": {
     "empty": "No payments recorded.",
     "ref": "Ref.",
-    "deleteTitle": "Delete payment",
-    "deleteConfirm": "Delete this payment of {amount}?",
-    "statusChanged": "Payment: {status}",
-    "actions": {
-      "REUSSI": "Mark received",
-      "ECHOUE": "Mark failed",
-      "ANNULE": "Cancel",
-      "REMBOURSE": "Refund"
-    },
-    "confirm": {
-      "ECHOUE": "Mark this {amount} payment as failed? It will no longer count as collected.",
-      "REMBOURSE": "Mark this {amount} payment as refunded? It will be removed from the collected amount."
-    },
     "sources": {
       "HYPERSWITCH": "Hyperswitch"
     }
+  },
+  "paymentLink": {
+    "loading": "Loading…",
+    "send": "Send a payment link",
+    "email": "Client e-mail",
+    "confirm": "Send link",
+    "waiting": "Link waiting for payment",
+    "sentTo": "Sent to {email} on {date}",
+    "notEmailed": "E-mail not sent to {email}: copy the link and pass it to the client.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "open": "Open",
+    "cancel": "Cancel link",
+    "cancelTitle": "Cancel payment link",
+    "cancelConfirm": "Cancel request {reference}? You can then send a new link.",
+    "cancelled": "Payment link cancelled",
+    "statuses": {
+      "OUVERTE": "Link sent",
+      "A_VERIFIER": "To check",
+      "PAYEE": "Paid",
+      "ECHOUEE": "Failed",
+      "ANNULEE": "Cancelled",
+      "EXPIREE": "Expired"
+    },
+    "errors": {
+      "create": "Could not create the payment link.",
+      "cancel": "Could not cancel the payment link.",
+      "copy": "Could not copy the link.",
+      "amountRequired": "Enter an amount greater than 0.",
+      "amountTooHigh": "The amount exceeds the remaining balance ({max}).",
+      "emailRequired": "Enter a valid e-mail address.",
+      "verify": "Could not check the payment request."
+    },
+    "modalTitle": "Send a payment link",
+    "modalHintBalance": "The client will receive a secure link. Left to pay: {remaining}.",
+    "modalHintTotal": "The client will receive a secure link. This amount becomes the contract total.",
+    "amount": "Amount to pay (€)",
+    "emailFromLead": "E-mail of the lead, editable.",
+    "emailMissing": "This lead has no e-mail: enter the client’s.",
+    "toVerify": "Request to check",
+    "toVerifyHint": "Hyperswitch did not confirm the creation. Check whether the payment exists before sending a new link.",
+    "verify": "Check",
+    "refresh": "Refresh",
+    "refreshHint": "Ask Hyperswitch for the payment status",
+    "nothingLeft": "Nothing left to collect.",
+    "nothingLeftHint": "If the contract changed, update its total first to request an additional payment."
   },
   "quickSearch": {
     "placeholder": "Search a lead…",
@@ -1226,5 +1233,79 @@
     "title": "Quick search",
     "noResults": "No lead found.",
     "hint": "Type at least 2 characters · ↑ ↓ to choose · Enter to open"
+  },
+  "paymentsPage": {
+    "title": "Payments",
+    "reference": "Reference",
+    "lead": "Lead",
+    "amount": "Amount",
+    "status": "Status",
+    "email": "Client e-mail",
+    "createdBy": "Sent by",
+    "createdAt": "Created",
+    "searchPlaceholder": "Reference, lead, e-mail or Hyperswitch id",
+    "empty": "No payment links",
+    "emptyDesc": "Links sent from a lead’s page appear here.",
+    "notEmailed": "E-mail not sent"
+  },
+  "paymentResult": {
+    "amount": "Amount",
+    "reference": "Reference",
+    "canClose": "You can close this page.",
+    "pending": {
+      "title": "Confirming your payment…",
+      "text": "We are checking your payment with the bank. This only takes a few seconds."
+    },
+    "paid": {
+      "title": "Payment received",
+      "text": "Thank you! Your payment has been recorded. Your advisor has been informed."
+    },
+    "failed": {
+      "title": "The payment did not go through",
+      "text": "Nothing was charged. Your advisor will send you a new payment link."
+    },
+    "cancelled": {
+      "title": "Payment cancelled",
+      "text": "This payment was cancelled. Contact your advisor if needed."
+    },
+    "expired": {
+      "title": "Payment link expired",
+      "text": "This link is no longer valid. Your advisor can send you a new one."
+    },
+    "slow": {
+      "title": "Payment being confirmed",
+      "text": "The bank has not confirmed your payment yet. We keep following it and your advisor will be informed of the result."
+    },
+    "link_expired": {
+      "title": "This page has expired",
+      "text": "For any question about your payment, contact your advisor."
+    },
+    "not_found": {
+      "title": "Link not found",
+      "text": "This payment link does not exist. Contact your advisor."
+    },
+    "error": {
+      "title": "Status unavailable",
+      "text": "We can’t show the status right now. Your payment is being followed: your advisor will be informed."
+    }
+  },
+  "contractTotal": {
+    "edit": "Edit total",
+    "set": "Set total",
+    "modalTitle": "Contract total",
+    "current": "Current total: {total}. Already collected: {received}.",
+    "none": "No contract total yet. Already collected: {received}.",
+    "hint": "The new total can’t be lower than the payments received, in progress and the waiting link. The balance can then be requested with a new link.",
+    "total": "New contract total (€)",
+    "reason": "Reason",
+    "reasonPlaceholder": "E.g. option added to the contract, plan change…",
+    "reasonHint": "Kept in the lead’s notes.",
+    "save": "Save",
+    "saved": "Contract total updated",
+    "errors": {
+      "total": "Enter an amount greater than 0.",
+      "reason": "Say why the total changes.",
+      "save": "Unable to update the contract total."
+    }
   }
 }

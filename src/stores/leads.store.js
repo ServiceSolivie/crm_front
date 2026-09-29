@@ -258,52 +258,6 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
-  async function addPayment(leadId, payload) {
-    loading.payments = true
-    try {
-      const { data } = await paymentsApi.create(leadId, payload)
-      payments.value.unshift(data)
-      await fetchOne(leadId)
-      return data
-    } catch (e) {
-      errors.value = e
-      throw e
-    } finally {
-      loading.payments = false
-    }
-  }
-
-  /** Move one payment to another status (received, failed, cancelled, refunded) */
-  async function changePaymentStatus(leadId, paymentId, status, reason = null) {
-    loading.action = true
-    try {
-      const { data } = await paymentsApi.updateStatus(leadId, paymentId, { status, reason })
-      const idx = payments.value.findIndex((p) => p.id === paymentId)
-      if (idx !== -1) payments.value.splice(idx, 1, data)
-      await fetchOne(leadId)
-      return data
-    } catch (e) {
-      errors.value = e
-      throw e
-    } finally {
-      loading.action = false
-    }
-  }
-
-  async function removePayment(leadId, paymentId) {
-    loading.action = true
-    try {
-      await paymentsApi.remove(leadId, paymentId)
-      payments.value = payments.value.filter((p) => p.id !== paymentId)
-      await fetchOne(leadId)
-    } catch (e) {
-      errors.value = e
-      throw e
-    } finally {
-      loading.action = false
-    }
-  }
-
   async function setClientType(leadId, clientType) {
     loading.dossier = true
     try {
@@ -469,9 +423,6 @@ export const useLeadsStore = defineStore('leads', () => {
     fetchLeadAppointments,
     createLeadAppointment,
     fetchPayments,
-    addPayment,
-    removePayment,
-    changePaymentStatus,
     setClientType,
     flagIssue,
     fetchDossier,

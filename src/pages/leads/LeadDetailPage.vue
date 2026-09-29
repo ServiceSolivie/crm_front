@@ -25,8 +25,9 @@ import PaymentStatusBadge from '@/components/modules/payments/PaymentStatusBadge
 import DvcStatusBadge from '@/components/modules/leads/DvcStatusBadge.vue'
 import RevenuePromptModal from '@/components/modules/payments/RevenuePromptModal.vue'
 import RappelScheduleModal from '@/components/modules/leads/RappelScheduleModal.vue'
-import PaymentForm from '@/components/modules/payments/PaymentForm.vue'
 import PaymentList from '@/components/modules/payments/PaymentList.vue'
+import PaymentLinkPanel from '@/components/modules/payments/PaymentLinkPanel.vue'
+import ContractTotalModal from '@/components/modules/payments/ContractTotalModal.vue'
 import DossierTab from '@/components/modules/documents/DossierTab.vue'
 import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import CrossSellModal from '@/components/modules/leads/CrossSellModal.vue'
@@ -55,8 +56,6 @@ const showRevenuePrompt = ref(false)
 const showRappelModal = ref(false)
 const rappelLoading = ref(false)
 const pendingStatus = ref(null)
-const showPaymentForm = ref(false)
-const paymentFormRef = ref(null)
 const updatingClientType = ref(false)
 const previewDoc = ref(null)
 const previewBlobUrl = ref(null)
@@ -109,14 +108,23 @@ const sheetExtraFields = computed(() => {
   }
 })
 
-// The contract total is set with the first payment (or by gestion when validating)
+// The contract total is set with the first payment link (or by gestion when validating)
 const hasRevenue = computed(() => leadsStore.current?.expected_revenue != null)
-// Payments can be recorded before or after the DVC signature — not on lost leads
+// A payment link can be sent before or after the DVC signature — not on lost leads
 const LOST_STATUSES = ['PERDU', 'PAS_INTERESSE', 'MAUVAIS_NUMERO', 'LEAD_INVALIDE']
-const canAddPayment = computed(() =>
+const canSendPaymentLink = computed(() =>
   auth.can('PAYMENTS_CREATE') && !LOST_STATUSES.includes(leadsStore.current?.status),
 )
-const paymentListRef = ref(null)
+// The contract total can change (e.g. raised to ask an additional payment)
+const canEditTotal = computed(() => auth.can('REVENUE_SET'))
+const showContractTotalModal = ref(false)
+// What a payment link would ask for: the balance minus pending payments (same rule as the backend)
+const linkAmount = computed(() => {
+  const pending = leadsStore.payments
+    .filter((p) => p.status === 'EN_ATTENTE')
+    .reduce((sum, p) => sum + Number(p.amount), 0)
+  return Math.max(0, Number(leadsStore.current?.remaining_amount ?? 0) - pending)
+})
 
 const GESTION_REVIEW_STATUSES = ['GESTION', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO']
 const canFlagIssue = computed(() =>
@@ -366,40 +374,10 @@ const collectedPct = computed(() => {
   return Math.min(100, Math.round((Number(l.total_received ?? 0) / Number(l.expected_revenue)) * 100))
 })
 
-async function onPaymentSubmit(payload) {
-  try {
-    await leadsStore.addPayment(id.value, payload)
-    toast.showSuccess(t('leadDetail.payments.added'))
-    showPaymentForm.value = false
-    refreshActivity()
-  } catch (e) {
-    if (e?.errors) {
-      paymentFormRef.value?.setServerErrors(e.errors)
-    }
-    toast.showError(firstErrorMessage(e, t('leadDetail.errors.paymentAdd')))
-  }
-}
-
-async function onPaymentStatus(payment, status) {
-  try {
-    await leadsStore.changePaymentStatus(id.value, payment.id, status)
-    toast.showSuccess(t('paymentList.statusChanged', { status: t('statuses.paymentRecord.' + status) }))
-    refreshActivity()
-  } catch (e) {
-    toast.showError(firstErrorMessage(e, t('leadDetail.errors.paymentStatus')))
-  } finally {
-    paymentListRef.value?.clearBusy()
-  }
-}
-
-async function onPaymentDelete(payment) {
-  try {
-    await leadsStore.removePayment(id.value, payment.id)
-    toast.showSuccess(t('leadDetail.payments.deleted'))
-    refreshActivity()
-  } catch (e) {
-    toast.showError(firstErrorMessage(e, t('leadDetail.errors.paymentDelete')))
-  }
+// A payment link or a new contract total changes the lead's amounts: reload it
+async function onPaymentLinkChanged() {
+  await Promise.allSettled([leadsStore.fetchOne(id.value), leadsStore.fetchPayments(id.value)])
+  refreshActivity()
 }
 
 /* ── Dossier ───────────────────────────────────────────────── */
@@ -933,55 +911,52 @@ const companyFields = computed(() => {
               <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('payments.title') }}</h2>
               <PaymentStatusBadge :status="lead.payment_status ?? 'NON_PAYE'" />
             </div>
-            <!-- No contract total yet: the first payment asks for it -->
-            <template v-if="!hasRevenue">
-              <p class="text-[13px] leading-[19px] text-gray-600">{{ t('leadDetail.payments.notYet') }}</p>
-              <button
-                v-if="canAddPayment"
-                type="button"
-                class="h-8 rounded-lg border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
-                @click="showPaymentForm = true"
-              >{{ t('leadDetail.payments.addFirst') }}</button>
-              <PaymentList
-                v-if="leadsStore.payments.length"
-                ref="paymentListRef"
-                :payments="leadsStore.payments"
-                class="border-t border-gray-100 pt-2"
-                @delete="onPaymentDelete"
-                @status="onPaymentStatus"
-              />
-            </template>
-            <template v-else>
-            <div class="flex items-baseline justify-between gap-2">
-              <span class="font-mono text-[22px] font-medium">{{ formatCurrency(lead.total_received ?? 0) }}</span>
-              <span class="text-[13px] text-gray-600">
-                {{ t('leadDetail.payments.of') }} <span class="font-mono">{{ formatCurrency(lead.expected_revenue ?? 0) }}</span>
-              </span>
-            </div>
-            <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div class="h-full rounded-full bg-success" :style="{ width: `${collectedPct}%` }" />
-            </div>
-            <div class="flex items-center justify-between gap-2">
+            <!-- Contract total known: progress of what was received -->
+            <template v-if="hasRevenue">
+              <div class="flex items-baseline justify-between gap-2">
+                <span class="font-mono text-[22px] font-medium">{{ formatCurrency(lead.total_received ?? 0) }}</span>
+                <span class="text-[13px] text-gray-600">
+                  {{ t('leadDetail.payments.of') }} <span class="font-mono">{{ formatCurrency(lead.expected_revenue ?? 0) }}</span>
+                  <button
+                    v-if="canEditTotal"
+                    type="button"
+                    class="ml-1 text-xs font-medium text-primary hover:text-primary-hover"
+                    @click="showContractTotalModal = true"
+                  >{{ t('contractTotal.edit') }}</button>
+                </span>
+              </div>
+              <div class="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div class="h-full rounded-full bg-success" :style="{ width: `${collectedPct}%` }" />
+              </div>
               <span class="text-[13px] text-gray-600">
                 {{ t('leadDetail.payments.remaining') }} <span class="font-mono text-gray-900">{{ formatCurrency(lead.remaining_amount ?? 0) }}</span>
               </span>
+            </template>
+            <p v-else class="text-[13px] leading-[19px] text-gray-600">
+              {{ t('leadDetail.payments.notYet') }}
               <button
-                v-if="canAddPayment && Number(lead.remaining_amount ?? 0) > 0"
+                v-if="canEditTotal"
                 type="button"
-                class="h-7.5 px-2.5 rounded-md border border-gray-300 bg-white text-[13px] text-gray-900 hover:bg-gray-50"
-                @click="showPaymentForm = true"
-              >{{ t('leadDetail.payments.add') }}</button>
-            </div>
+                class="text-xs font-medium text-primary hover:text-primary-hover"
+                @click="showContractTotalModal = true"
+              >{{ t('contractTotal.set') }}</button>
+            </p>
+            <PaymentLinkPanel
+              :lead-id="lead.id"
+              :lead-email="lead.email ?? ''"
+              :remaining="hasRevenue ? linkAmount : null"
+              :can-send="canSendPaymentLink"
+              :can-edit-total="canEditTotal"
+              class="border-t border-gray-100 pt-2"
+              @changed="onPaymentLinkChanged"
+              @edit-total="showContractTotalModal = true"
+            />
             <PaymentList
               v-if="leadsStore.payments.length || leadsStore.loading.payments"
-              ref="paymentListRef"
               :payments="leadsStore.payments"
               :loading="leadsStore.loading.payments"
               class="border-t border-gray-100 pt-2"
-              @delete="onPaymentDelete"
-              @status="onPaymentStatus"
             />
-            </template>
           </section>
 
           <!-- Appointments -->
@@ -1047,6 +1022,16 @@ const companyFields = computed(() => {
       </div>
     </template>
 
+    <ContractTotalModal
+      v-if="leadsStore.current"
+      :open="showContractTotalModal"
+      :lead-id="id"
+      :total="leadsStore.current.expected_revenue"
+      :received="leadsStore.current.total_received ?? 0"
+      @close="showContractTotalModal = false"
+      @saved="onPaymentLinkChanged"
+    />
+
     <!-- Dossier manager -->
     <AppModal :open="showDossierModal" :title="t('leads.history.dossier')" size="lg" @close="showDossierModal = false">
       <DossierTab
@@ -1092,16 +1077,6 @@ const companyFields = computed(() => {
       :lead-name="leadFullName"
       @close="showRappelModal = false; pendingStatus = null"
       @confirm="onRappelConfirm"
-    />
-
-    <PaymentForm
-      ref="paymentFormRef"
-      :open="showPaymentForm"
-      :remaining-amount="leadsStore.current?.remaining_amount ?? 0"
-      :needs-total="!hasRevenue"
-      :loading="leadsStore.loading.payments"
-      @close="showPaymentForm = false"
-      @submit="onPaymentSubmit"
     />
 
     <!-- Flag issue modal (gestion only) -->

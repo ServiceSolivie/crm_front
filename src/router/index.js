@@ -13,6 +13,14 @@ const router = createRouter({
       meta: { layout: 'auth' },
     },
 
+    // Client lands here after paying (Hyperswitch return_url): no login
+    {
+      path: '/paiement/:token',
+      name: 'payment-result',
+      component: () => import('@/pages/public/PaymentResultPage.vue'),
+      meta: { layout: 'public', title: 'Paiement' },
+    },
+
     /* ── Redirect root ───────────────────────────────────────── */
     {
       path: '/',
@@ -65,6 +73,14 @@ const router = createRouter({
       name: 'contracts.create',
       component: () => import('@/pages/contracts/ContractGeneratePage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', permission: 'CONTRACTS_GENERATE', title: 'New Contract' },
+    },
+
+    /* Payments (Hyperswitch payment links) */
+    {
+      path: '/payments',
+      name: 'payments',
+      component: () => import('@/pages/payments/PaymentsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'PAYMENTS_VIEW', title: 'Payments' },
     },
 
     /* Calendar */

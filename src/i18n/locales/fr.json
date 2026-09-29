@@ -7,7 +7,9 @@
     "todayDigestTitle": "Vous avez {count} rendez-vous aujourd'hui | Vous avez {count} rendez-vous aujourd'hui",
     "reminderTitle": "Rendez-vous dans 30 minutes",
     "leadReceivedTitle": "Vous avez reçu un nouveau lead",
-    "markReadError": "Impossible de marquer comme lu"
+    "markReadError": "Impossible de marquer comme lu",
+    "paymentReceivedTitle": "Paiement reçu — {reference}",
+    "paymentFailedTitle": "Paiement échoué — {reference}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -38,7 +40,8 @@
     "vaultCredentials": "Identifiants",
     "vaultAuditLogs": "Journal d'audit",
     "overdueCount": "{n} rendez-vous en retard",
-    "todayCount": "{n} rendez-vous restant(s) aujourd’hui"
+    "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
+    "payments": "Paiements"
   },
   "common": {
     "save": "Enregistrer",
@@ -1024,14 +1027,10 @@
     "payments": {
       "of": "sur",
       "remaining": "Reste",
-      "add": "Ajouter un paiement",
-      "added": "Paiement enregistré",
-      "deleted": "Paiement supprimé",
-      "notYet": "Aucun paiement enregistré. Le montant total du contrat est demandé avec le premier paiement.",
+      "notYet": "Aucun paiement demandé. Le montant saisi avec le premier lien de paiement devient le montant total du contrat.",
       "validate": "Valider le lead",
       "sendToGestion": "Envoyer en gestion",
-      "inReview": "En revue par la gestion — elle validera le lead.",
-      "addFirst": "Enregistrer un paiement"
+      "inReview": "En revue par la gestion — elle validera le lead."
     },
     "dossier": {
       "open": "Voir le dossier",
@@ -1050,16 +1049,13 @@
       "note": "Échec de l’ajout de la note",
       "call": "Échec de l’enregistrement de l’appel",
       "appointmentDelete": "Échec de la suppression du rendez-vous",
-      "paymentAdd": "Échec de l’enregistrement du paiement",
-      "paymentDelete": "Échec de la suppression du paiement",
       "upload": "Échec du téléversement",
       "documentDelete": "Échec de la suppression",
       "download": "Échec du téléchargement",
       "update": "Échec de la mise à jour",
       "preview": "Impossible d’afficher l’aperçu",
       "crossSell": "Échec de la création du lead",
-      "flag": "Échec du signalement",
-      "paymentStatus": "Impossible de modifier le statut du paiement."
+      "flag": "Échec du signalement"
     },
     "dvc": {
       "label": "DVC",
@@ -1178,47 +1174,58 @@
       "information_incorrecte": "Information incorrecte"
     }
   },
-  "paymentForm": {
-    "title": "Enregistrer un paiement",
-    "amount": "Montant",
-    "date": "Date de paiement",
-    "method": "Méthode de paiement",
-    "select": "Sélectionner…",
-    "customMethod": "Préciser la méthode",
-    "customPlaceholder": "Ex. : chèque, espèces, PayPal…",
-    "reference": "Numéro de référence",
-    "errors": {
-      "amount": "Le montant doit être supérieur à 0.",
-      "date": "La date est obligatoire.",
-      "method": "La méthode de paiement est obligatoire.",
-      "customMethod": "Précisez la méthode de paiement.",
-      "total": "Indiquez le montant total du contrat.",
-      "overRemaining": "Le montant dépasse le solde restant ({amount})."
-    },
-    "total": "Montant total du contrat",
-    "totalHint": "Demandé une seule fois, avec le premier paiement.",
-    "status": "Statut du paiement",
-    "remaining": "Solde restant : {amount}"
-  },
   "paymentList": {
     "empty": "Aucun paiement enregistré.",
     "ref": "Réf.",
-    "deleteTitle": "Supprimer le paiement",
-    "deleteConfirm": "Supprimer ce paiement de {amount} ?",
-    "statusChanged": "Paiement : {status}",
-    "actions": {
-      "REUSSI": "Marquer reçu",
-      "ECHOUE": "Marquer échoué",
-      "ANNULE": "Annuler",
-      "REMBOURSE": "Rembourser"
-    },
-    "confirm": {
-      "ECHOUE": "Marquer ce paiement de {amount} comme échoué ? Il ne comptera plus dans l’encaissé.",
-      "REMBOURSE": "Marquer ce paiement de {amount} comme remboursé ? Il sera retiré de l’encaissé."
-    },
     "sources": {
       "HYPERSWITCH": "Hyperswitch"
     }
+  },
+  "paymentLink": {
+    "loading": "Chargement…",
+    "send": "Envoyer un lien de paiement",
+    "email": "E-mail du client",
+    "confirm": "Envoyer le lien",
+    "waiting": "Lien en attente de paiement",
+    "sentTo": "Envoyé à {email} le {date}",
+    "notEmailed": "E-mail non envoyé à {email} : copiez le lien pour le transmettre au client.",
+    "copy": "Copier le lien",
+    "copied": "Lien copié",
+    "open": "Ouvrir",
+    "cancel": "Annuler le lien",
+    "cancelTitle": "Annuler le lien de paiement",
+    "cancelConfirm": "Annuler la demande {reference} ? Vous pourrez ensuite envoyer un nouveau lien.",
+    "cancelled": "Lien de paiement annulé",
+    "statuses": {
+      "OUVERTE": "Lien envoyé",
+      "A_VERIFIER": "À vérifier",
+      "PAYEE": "Payée",
+      "ECHOUEE": "Échouée",
+      "ANNULEE": "Annulée",
+      "EXPIREE": "Expirée"
+    },
+    "errors": {
+      "create": "Impossible de créer le lien de paiement.",
+      "cancel": "Impossible d’annuler le lien de paiement.",
+      "copy": "Impossible de copier le lien.",
+      "amountRequired": "Indiquez un montant supérieur à 0.",
+      "amountTooHigh": "Le montant dépasse le solde restant ({max}).",
+      "emailRequired": "Indiquez une adresse e-mail valide.",
+      "verify": "Impossible de vérifier la demande de paiement."
+    },
+    "modalTitle": "Envoyer un lien de paiement",
+    "modalHintBalance": "Le client recevra un lien sécurisé. Reste à payer : {remaining}.",
+    "modalHintTotal": "Le client recevra un lien sécurisé. Ce montant deviendra le montant total du contrat.",
+    "amount": "Montant à payer (€)",
+    "emailFromLead": "E-mail du lead, modifiable.",
+    "emailMissing": "Ce lead n’a pas d’e-mail : indiquez celui du client.",
+    "toVerify": "Demande à vérifier",
+    "toVerifyHint": "Hyperswitch n’a pas confirmé la création. Vérifiez si le paiement existe avant d’envoyer un nouveau lien.",
+    "verify": "Vérifier",
+    "refresh": "Actualiser",
+    "refreshHint": "Demander le statut du paiement à Hyperswitch",
+    "nothingLeft": "Il ne reste rien à encaisser.",
+    "nothingLeftHint": "Si le contrat a changé, modifiez d’abord son montant total pour demander un paiement complémentaire."
   },
   "quickSearch": {
     "placeholder": "Rechercher un lead…",
@@ -1226,5 +1233,79 @@
     "title": "Recherche rapide",
     "noResults": "Aucun lead trouvé.",
     "hint": "Tapez au moins 2 caractères · ↑ ↓ pour choisir · Entrée pour ouvrir"
+  },
+  "paymentsPage": {
+    "title": "Paiements",
+    "reference": "Référence",
+    "lead": "Lead",
+    "amount": "Montant",
+    "status": "Statut",
+    "email": "E-mail client",
+    "createdBy": "Envoyé par",
+    "createdAt": "Créé le",
+    "searchPlaceholder": "Référence, lead, e-mail ou id Hyperswitch",
+    "empty": "Aucun lien de paiement",
+    "emptyDesc": "Les liens envoyés depuis la fiche d’un lead apparaissent ici.",
+    "notEmailed": "E-mail non envoyé"
+  },
+  "paymentResult": {
+    "amount": "Montant",
+    "reference": "Référence",
+    "canClose": "Vous pouvez fermer cette page.",
+    "pending": {
+      "title": "Confirmation de votre paiement…",
+      "text": "Nous vérifions votre paiement auprès de la banque. Cela ne prend que quelques secondes."
+    },
+    "paid": {
+      "title": "Paiement reçu",
+      "text": "Merci ! Votre paiement a bien été enregistré. Votre conseiller en est informé."
+    },
+    "failed": {
+      "title": "Le paiement n’a pas abouti",
+      "text": "Aucun montant n’a été débité. Votre conseiller va vous envoyer un nouveau lien de paiement."
+    },
+    "cancelled": {
+      "title": "Paiement annulé",
+      "text": "Ce paiement a été annulé. Contactez votre conseiller si besoin."
+    },
+    "expired": {
+      "title": "Lien de paiement expiré",
+      "text": "Ce lien n’est plus valable. Votre conseiller peut vous en envoyer un nouveau."
+    },
+    "slow": {
+      "title": "Paiement en cours de confirmation",
+      "text": "La banque n’a pas encore confirmé votre paiement. Nous le suivons et votre conseiller sera informé du résultat."
+    },
+    "link_expired": {
+      "title": "Cette page a expiré",
+      "text": "Pour toute question sur votre paiement, contactez votre conseiller."
+    },
+    "not_found": {
+      "title": "Lien introuvable",
+      "text": "Ce lien de paiement n’existe pas. Contactez votre conseiller."
+    },
+    "error": {
+      "title": "Statut indisponible",
+      "text": "Nous n’arrivons pas à afficher le statut pour le moment. Votre paiement est suivi : votre conseiller sera informé."
+    }
+  },
+  "contractTotal": {
+    "edit": "Modifier le total",
+    "set": "Définir le total",
+    "modalTitle": "Montant total du contrat",
+    "current": "Montant actuel : {total}. Déjà encaissé : {received}.",
+    "none": "Aucun montant total défini. Déjà encaissé : {received}.",
+    "hint": "Le nouveau montant ne peut pas être inférieur aux paiements reçus, en cours et au lien en attente. Le reste à payer pourra ensuite être demandé avec un nouveau lien.",
+    "total": "Nouveau montant total (€)",
+    "reason": "Motif",
+    "reasonPlaceholder": "Ex. : option ajoutée au contrat, changement de formule…",
+    "reasonHint": "Conservé dans les notes du lead.",
+    "save": "Enregistrer",
+    "saved": "Montant total du contrat mis à jour",
+    "errors": {
+      "total": "Indiquez un montant supérieur à 0.",
+      "reason": "Indiquez pourquoi le montant change.",
+      "save": "Impossible de modifier le montant total."
+    }
   }
 }
