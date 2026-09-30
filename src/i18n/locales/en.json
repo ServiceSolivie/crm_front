@@ -9,7 +9,8 @@
     "leadReceivedTitle": "You received a new lead",
     "markReadError": "Failed to mark as read",
     "paymentReceivedTitle": "Payment received — {reference}",
-    "paymentFailedTitle": "Payment failed — {reference}"
+    "paymentFailedTitle": "Payment failed — {reference}",
+    "paymentExpiredTitle": "Payment link expired — {reference}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1267,10 +1268,24 @@
     "email": "Client e-mail",
     "createdBy": "Sent by",
     "createdAt": "Created",
-    "searchPlaceholder": "Reference, lead, e-mail or Hyperswitch id",
+    "searchPlaceholder": "Reference, lead, phone, e-mail or Hyperswitch id",
     "empty": "No payment links",
     "emptyDesc": "Links sent from a lead’s page appear here.",
-    "notEmailed": "E-mail not sent"
+    "notEmailed": "E-mail not sent",
+    "period": "Period",
+    "sort": "Sort",
+    "periods": {
+      "today": "Today",
+      "last7": "Last 7 days",
+      "last30": "Last 30 days",
+      "thisMonth": "This month"
+    },
+    "sorts": {
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "amountDesc": "Amount, high to low",
+      "amountAsc": "Amount, low to high"
+    }
   },
   "paymentResult": {
     "amount": "Amount",

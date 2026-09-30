@@ -9,7 +9,8 @@
     "leadReceivedTitle": "Vous avez reçu un nouveau lead",
     "markReadError": "Impossible de marquer comme lu",
     "paymentReceivedTitle": "Paiement reçu — {reference}",
-    "paymentFailedTitle": "Paiement échoué — {reference}"
+    "paymentFailedTitle": "Paiement échoué — {reference}",
+    "paymentExpiredTitle": "Lien de paiement expiré — {reference}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -1267,10 +1268,24 @@
     "email": "E-mail client",
     "createdBy": "Envoyé par",
     "createdAt": "Créé le",
-    "searchPlaceholder": "Référence, lead, e-mail ou id Hyperswitch",
+    "searchPlaceholder": "Référence, lead, téléphone, e-mail ou id Hyperswitch",
     "empty": "Aucun lien de paiement",
     "emptyDesc": "Les liens envoyés depuis la fiche d’un lead apparaissent ici.",
-    "notEmailed": "E-mail non envoyé"
+    "notEmailed": "E-mail non envoyé",
+    "period": "Période",
+    "sort": "Tri",
+    "periods": {
+      "today": "Aujourd’hui",
+      "last7": "7 derniers jours",
+      "last30": "30 derniers jours",
+      "thisMonth": "Ce mois-ci"
+    },
+    "sorts": {
+      "newest": "Plus récents",
+      "oldest": "Plus anciens",
+      "amountDesc": "Montant décroissant",
+      "amountAsc": "Montant croissant"
+    }
   },
   "paymentResult": {
     "amount": "Montant",

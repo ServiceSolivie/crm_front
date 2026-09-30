@@ -21,7 +21,8 @@ export function notificationTitle(item) {
   }
   if (item.type === 'PaymentResultNotification') {
     const p = item.payload?.payment ?? {}
-    return t(p.status === 'PAYEE' ? 'notifications.paymentReceivedTitle' : 'notifications.paymentFailedTitle', { reference: p.reference ?? '' })
+    const key = { PAYEE: 'paymentReceivedTitle', EXPIREE: 'paymentExpiredTitle' }[p.status] ?? 'paymentFailedTitle'
+    return t('notifications.' + key, { reference: p.reference ?? '' })
   }
   return item.payload?.title
 }
