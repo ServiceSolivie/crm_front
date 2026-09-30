@@ -648,7 +648,31 @@
     "confirmPassword": "Confirmer le mot de passe",
     "saveChanges": "Enregistrer",
     "updateSuccess": "Profil mis à jour",
-    "passwordSuccess": "Mot de passe modifié"
+    "passwordSuccess": "Mot de passe modifié",
+    "feedback": {
+      "heading": "Signaler un problème ou proposer une amélioration",
+      "subtitle": "Partagez vos difficultés et vos idées avec notre équipe.",
+      "type": "Type de demande",
+      "issue": "Problème",
+      "suggestion": "Suggestion",
+      "title": "Titre",
+      "titleHint": "200 caractères maximum.",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez le problème et les étapes pour le reproduire, ou expliquez votre suggestion.",
+      "page": "Page concernée (facultatif)",
+      "pageHint": "Indiquez uniquement le chemin, par exemple /leads, sans paramètres ni lien complet.",
+      "send": "Envoyer la demande",
+      "success": "Votre demande a été envoyée.",
+      "error": "Impossible de confirmer votre envoi. Votre saisie a été conservée.",
+      "networkError": "La connexion a été interrompue. Votre envoi ne peut pas être confirmé ; une nouvelle tentative pourrait créer un doublon.",
+      "rateLimited": "Trop de demandes. Réessayez dans {seconds} secondes.",
+      "typeRequired": "Sélectionnez un type de demande.",
+      "titleRequired": "Le titre est obligatoire.",
+      "titleMax": "Le titre ne doit pas dépasser 200 caractères.",
+      "descriptionRequired": "La description est obligatoire.",
+      "descriptionMax": "La description ne doit pas dépasser 10 000 caractères.",
+      "pageInvalid": "Indiquez un chemin comme /leads, sans paramètres ni fragment, de 500 caractères maximum."
+    }
   },
   "errors": {
     "403": "Accès refusé",
