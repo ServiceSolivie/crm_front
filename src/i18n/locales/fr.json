@@ -10,7 +10,9 @@
     "markReadError": "Impossible de marquer comme lu",
     "paymentReceivedTitle": "Paiement reçu — {reference}",
     "paymentFailedTitle": "Paiement échoué — {reference}",
-    "paymentExpiredTitle": "Lien de paiement expiré — {reference}"
+    "paymentExpiredTitle": "Lien de paiement expiré — {reference}",
+    "refundDoneTitle": "Remboursement effectué — {reference}",
+    "refundFailedTitle": "Remboursement échoué — {reference}"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -1227,7 +1229,8 @@
       "PAYEE": "Payée",
       "ECHOUEE": "Échouée",
       "ANNULEE": "Annulée",
-      "EXPIREE": "Expirée"
+      "EXPIREE": "Expirée",
+      "REMBOURSEE": "Remboursée"
     },
     "errors": {
       "create": "Impossible de créer le lien de paiement.",
@@ -1265,7 +1268,6 @@
     "lead": "Lead",
     "amount": "Montant",
     "status": "Statut",
-    "email": "E-mail client",
     "createdBy": "Envoyé par",
     "createdAt": "Créé le",
     "searchPlaceholder": "Référence, lead, téléphone, e-mail ou id Hyperswitch",
@@ -1326,6 +1328,10 @@
     "error": {
       "title": "Statut indisponible",
       "text": "Nous n’arrivons pas à afficher le statut pour le moment. Votre paiement est suivi : votre conseiller sera informé."
+    },
+    "refunded": {
+      "title": "Paiement remboursé",
+      "text": "Ce paiement vous a été remboursé. Contactez votre conseiller pour toute question."
     }
   },
   "contractTotal": {
@@ -1346,5 +1352,31 @@
       "reason": "Indiquez pourquoi le montant change.",
       "save": "Impossible de modifier le montant total."
     }
+  },
+  "refund": {
+    "button": "Rembourser",
+    "retry": "Réessayer le remboursement",
+    "verify": "Vérifier",
+    "on": "le {date}",
+    "modalTitle": "Rembourser le client",
+    "reference": "Demande de paiement",
+    "amount": "Montant remboursé",
+    "newTotal": "Total du contrat",
+    "warning": "Le montant total de ce paiement sera rendu sur la carte du client (le remboursement partiel n’est pas possible). Le total du contrat baissera d’autant une fois le remboursement confirmé.",
+    "reason": "Motif",
+    "reasonPlaceholder": "Ex. : contrat annulé à la demande du client",
+    "confirm": "Rembourser",
+    "statuses": {
+      "A_VERIFIER": "Remboursement à vérifier",
+      "EN_ATTENTE": "Remboursement en cours (crédit en attente de la banque)",
+      "REUSSI": "Remboursé",
+      "ECHOUE": "Remboursement échoué"
+    },
+    "errors": {
+      "reasonRequired": "Indiquez le motif du remboursement.",
+      "create": "Le remboursement n’a pas pu être demandé.",
+      "verify": "Impossible de vérifier le remboursement pour le moment."
+    },
+    "retryShort": "Réessayer"
   }
 }

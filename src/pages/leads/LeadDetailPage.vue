@@ -947,6 +947,8 @@ const companyFields = computed(() => {
               :remaining="hasRevenue ? linkAmount : null"
               :can-send="canSendPaymentLink"
               :can-edit-total="canEditTotal"
+              :can-refund="auth.can('PAYMENTS_REFUND')"
+              :contract-total="lead.expected_revenue ?? null"
               class="border-t border-gray-100 pt-2"
               @changed="onPaymentLinkChanged"
               @edit-total="showContractTotalModal = true"

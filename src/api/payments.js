@@ -24,5 +24,11 @@ export const paymentsApi = {
     // Request "to check": asks Hyperswitch whether the payment was created
     verify: (leadId, sessionId) =>
       client.post(`/leads/${leadId}/payment-sessions/${sessionId}/verify`, null, { timeout: 30_000 }).then((r) => r.data),
+    // Full refund of a paid request ({ reason }); no amount: always the whole session
+    refund: (leadId, sessionId, payload) =>
+      client.post(`/leads/${leadId}/payment-sessions/${sessionId}/refund`, payload, { timeout: 30_000 }).then((r) => r.data),
+    // Fresh status of the session's pending refund
+    verifyRefund: (leadId, sessionId) =>
+      client.post(`/leads/${leadId}/payment-sessions/${sessionId}/refund/verify`, null, { timeout: 30_000 }).then((r) => r.data),
   },
 }

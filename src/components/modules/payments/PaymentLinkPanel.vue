@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Copy, ExternalLink, Link2, Pencil, RefreshCw } from 'lucide-vue-next'
+import { Copy, ExternalLink, Link2, Pencil, RefreshCw, Undo2 } from 'lucide-vue-next'
 import { paymentsApi } from '@/api/payments'
 import { getEcho } from '@/plugins/echo'
 import { useUiStore } from '@/stores/ui.store'
@@ -9,6 +9,7 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSpinner from '@/components/base/AppSpinner.vue'
+import RefundModal from '@/components/modules/payments/RefundModal.vue'
 import { firstErrorMessage } from '@/utils/errors'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 
@@ -29,6 +30,10 @@ const props = defineProps({
   canSend: { type: Boolean, default: false },
   // May change the contract total (to ask an additional payment when nothing is left)
   canEditTotal: { type: Boolean, default: false },
+  // May refund a paid request (payments.refund)
+  canRefund: { type: Boolean, default: false },
+  // Lead's contract total (shown in the refund modal: it drops by the refunded amount)
+  contractTotal: { type: [Number, String], default: null },
 })
 
 const emit = defineEmits(['changed', 'edit-total'])
@@ -46,7 +51,18 @@ const hasTotal = computed(() => props.remaining !== null && props.remaining !== 
 const PENDING = ['OUVERTE', 'A_VERIFIER']
 const openSession = computed(() => sessions.value.find((s) => s.status === 'OUVERTE'))
 const toVerify = computed(() => sessions.value.find((s) => s.status === 'A_VERIFIER'))
-const history = computed(() => sessions.value.filter((s) => !PENDING.includes(s.status)).slice(0, 3))
+// Paid and refunded requests always stay listed (they can be refunded /
+// show their refund); the other closed ones only the 3 most recent
+const KEEP = ['PAYEE', 'REMBOURSEE']
+const history = computed(() => {
+  const closed = sessions.value.filter((s) => !PENDING.includes(s.status))
+  const kept = closed.filter((s) => KEEP.includes(s.status))
+  const others = closed.filter((s) => !KEEP.includes(s.status)).slice(0, 3)
+  return [...kept, ...others].sort((a, b) => b.id - a.id)
+})
+const REFUND_PENDING = ['EN_ATTENTE', 'A_VERIFIER']
+const refundTarget = ref(null)
+const refundBusy = ref(false)
 const nothingLeft = computed(() => hasTotal.value && Number(props.remaining) <= 0)
 const canCreate = computed(() => props.canSend && !openSession.value && !toVerify.value && !nothingLeft.value)
 const emailIsKnown = computed(() => !!props.leadEmail)
@@ -145,6 +161,44 @@ async function cancel(session) {
     emit('changed')
   } catch (e) {
     ui.showError(firstErrorMessage(e, t('paymentLink.errors.cancel')))
+  } finally {
+    busy.value = false
+  }
+}
+
+/* Refunds: always the full amount of one paid request */
+async function confirmRefund(reason) {
+  const session = refundTarget.value
+  if (!session) return
+  refundBusy.value = true
+  try {
+    const res = await paymentsApi.sessions.refund(props.leadId, session.id, { reason })
+    const status = res.data?.refund?.status
+    if (status === 'REUSSI') ui.showSuccess(res.message)
+    else ui.showWarning(res.message) // credit pending, or to check
+    refundTarget.value = null
+    await load()
+    emit('changed')
+  } catch (e) {
+    ui.showError(firstErrorMessage(e, t('refund.errors.create')))
+    await load()
+  } finally {
+    refundBusy.value = false
+  }
+}
+
+async function verifyRefund(session) {
+  busy.value = true
+  try {
+    const res = await paymentsApi.sessions.verifyRefund(props.leadId, session.id)
+    const status = res.data?.refund?.status
+    if (status === 'REUSSI') ui.showSuccess(res.message)
+    else if (status === 'ECHOUE') ui.showWarning(res.message)
+    else ui.showInfo(res.message)
+    await load()
+    emit('changed')
+  } catch (e) {
+    ui.showError(firstErrorMessage(e, t('refund.errors.verify')))
   } finally {
     busy.value = false
   }
@@ -281,15 +335,54 @@ onBeforeUnmount(unsubscribe)
     </div>
 
     <!-- Previous links -->
-    <ul v-if="history.length" class="flex flex-col">
+    <ul v-if="history.length" class="flex flex-col gap-1">
       <li v-for="s in history" :key="s.id" class="text-xs text-gray-500">
-        <span class="font-mono">{{ s.reference }}</span> · {{ formatCurrency(s.amount) }} ·
-        <span
-          :class="s.status === 'PAYEE' ? 'text-success-text font-medium' : s.status === 'ECHOUEE' ? 'text-danger-text font-medium' : ''"
-        >{{ t('paymentLink.statuses.' + s.status, s.status_label) }}</span>
-        · {{ formatDateTime(s.created_at) }}
+        <div class="flex flex-wrap items-center gap-x-1 gap-y-1">
+          <span class="font-mono">{{ s.reference }}</span> · {{ formatCurrency(s.amount) }} ·
+          <span
+            :class="s.status === 'PAYEE' ? 'text-success-text font-medium' : s.status === 'ECHOUEE' ? 'text-danger-text font-medium' : s.status === 'REMBOURSEE' ? 'text-gray-700 font-medium' : ''"
+          >{{ t('paymentLink.statuses.' + s.status, s.status_label) }}</span>
+          <template v-if="s.status === 'REMBOURSEE' && s.refund?.refunded_at">
+            {{ t('refund.on', { date: formatDateTime(s.refund.refunded_at) }) }}
+          </template>
+          <template v-else>· {{ formatDateTime(s.created_at) }}</template>
+          <button
+            v-if="canRefund && s.refundable"
+            type="button"
+            :disabled="busy || refundBusy"
+            class="ml-1 h-6 inline-flex items-center gap-1 px-1.5 rounded-md border border-danger/30 text-[11px] text-danger-text hover:bg-danger-bg disabled:opacity-50"
+            @click="refundTarget = s"
+          ><Undo2 class="w-3 h-3" />{{ s.refund?.status === 'ECHOUE' ? t('refund.retry') : t('refund.button') }}</button>
+        </div>
+
+        <!-- Refund of a paid request: in progress, to check, or failed -->
+        <div
+          v-if="s.refund && s.status === 'PAYEE'"
+          class="mt-0.5 ml-2 flex flex-wrap items-center gap-x-1.5 gap-y-1"
+          :class="s.refund.status === 'ECHOUE' ? 'text-danger-text' : 'text-warning-text'"
+        >
+          <span>
+            {{ t('refund.statuses.' + s.refund.status, s.refund.status_label) }}<template v-if="s.refund.status === 'ECHOUE' && s.refund.error_message"> : {{ s.refund.error_message }}</template>
+          </span>
+          <button
+            v-if="canRefund && REFUND_PENDING.includes(s.refund.status)"
+            type="button"
+            :disabled="busy"
+            class="h-6 inline-flex items-center gap-1 px-1.5 rounded-md border border-gray-300 bg-white text-[11px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+            @click="verifyRefund(s)"
+          ><AppSpinner v-if="busy" :size="10" /><RefreshCw v-else class="w-3 h-3" />{{ t('refund.verify') }}</button>
+        </div>
       </li>
     </ul>
+
+    <RefundModal
+      :open="!!refundTarget"
+      :session="refundTarget"
+      :contract-total="contractTotal"
+      :loading="refundBusy"
+      @close="refundTarget = null"
+      @confirm="confirmRefund"
+    />
 
     <AppModal :open="showModal" :title="t('paymentLink.modalTitle')" size="sm" @close="showModal = false">
       <form class="flex flex-col gap-3" @submit.prevent="send">
