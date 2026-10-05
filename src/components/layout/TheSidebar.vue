@@ -11,6 +11,7 @@ import {
   UsersRound,
   UserCog,
   Tag,
+  RadioTower,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -67,15 +68,19 @@ onBeforeUnmount(() => {
   window.removeEventListener('focus', onFocus)
   document.removeEventListener('visibilitychange', onFocus)
 })
-watch(() => route.path, () => loadCounters())
+watch(
+  () => route.path,
+  () => loadCounters(),
+)
 
 const canSearchLeads = computed(() => auth.canAny('LEADS_VIEW'))
 
-const canViewReports = computed(() =>
-  auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM'),
-)
-const canViewRevenue = computed(() =>
-  auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
+const canViewReports = computed(() => auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM'))
+const canViewRevenue = computed(
+  () =>
+    auth.can('REVENUE_VIEW_ALL') ||
+    auth.can('REVENUE_VIEW_TEAM') ||
+    auth.can('REVENUE_VIEW_PERSONAL'),
 )
 
 const reportChildren = computed(() => {
@@ -102,13 +107,25 @@ const reportChildren = computed(() => {
 const navGroups = computed(() => [
   {
     items: [
-      { icon: LayoutDashboard, label: t('nav.dashboard'), to: '/dashboard', permission: null, excludeRole: 'gestion' },
+      {
+        icon: LayoutDashboard,
+        label: t('nav.dashboard'),
+        to: '/dashboard',
+        permission: null,
+        excludeRole: 'gestion',
+      },
     ],
   },
   {
     label: t('nav.crm'),
     items: [
-      { icon: Users, label: t('nav.leads'), to: '/leads', permission: 'LEADS_VIEW_*', count: counters.value?.leads_total },
+      {
+        icon: Users,
+        label: t('nav.leads'),
+        to: '/leads',
+        permission: 'LEADS_VIEW_*',
+        count: counters.value?.leads_total,
+      },
       {
         icon: CalendarClock,
         label: t('nav.appointments'),
@@ -121,10 +138,25 @@ const navGroups = computed(() => [
           ? t('nav.overdueCount', { n: counters.value.appointments_overdue })
           : t('nav.todayCount', { n: counters.value?.appointments_today ?? 0 }),
       },
-      { icon: CalendarRange, label: t('nav.calendar'), to: '/calendar', permission: 'APPOINTMENTS_VIEW_*' },
-      { icon: FileSignature, label: t('nav.contracts'), to: '/contracts', permission: 'CONTRACTS_*' },
+      {
+        icon: CalendarRange,
+        label: t('nav.calendar'),
+        to: '/calendar',
+        permission: 'APPOINTMENTS_VIEW_*',
+      },
+      {
+        icon: FileSignature,
+        label: t('nav.contracts'),
+        to: '/contracts',
+        permission: 'CONTRACTS_*',
+      },
       { icon: CreditCard, label: t('nav.payments'), to: '/payments', permission: 'PAYMENTS_VIEW' },
-      { icon: Upload, label: t('nav.importLeads'), to: '/lead-imports', permission: 'LEADS_IMPORT' },
+      {
+        icon: Upload,
+        label: t('nav.importLeads'),
+        to: '/lead-imports',
+        permission: 'LEADS_IMPORT',
+      },
     ],
   },
   {
@@ -132,8 +164,19 @@ const navGroups = computed(() => [
     items: [
       { icon: UserCheck, label: t('nav.myAgents'), to: '/my-agents', role: 'team_leader' },
       { icon: ClipboardList, label: t('nav.followUps'), to: '/follow-ups', role: 'team_leader' },
-      { icon: ClipboardCheck, label: t('nav.gestionDashboard'), to: '/gestion-dashboard', role: 'gestion' },
-      { key: 'reports', icon: BarChart2, label: t('nav.reports'), base: '/reports', children: reportChildren.value },
+      {
+        icon: ClipboardCheck,
+        label: t('nav.gestionDashboard'),
+        to: '/gestion-dashboard',
+        role: 'gestion',
+      },
+      {
+        key: 'reports',
+        icon: BarChart2,
+        label: t('nav.reports'),
+        base: '/reports',
+        children: reportChildren.value,
+      },
     ],
   },
   {
@@ -147,7 +190,13 @@ const navGroups = computed(() => [
         label: t('nav.crmSettings'),
         children: [
           { icon: Tag, label: t('nav.leadSources'), to: '/lead-sources', role: 'super_admin' },
-          { icon: FileCog, label: t('nav.documentRequirements'), to: '/document-requirements', role: 'super_admin' },
+          { icon: RadioTower, label: t('nav.campaigns'), to: '/campaigns', role: 'super_admin' },
+          {
+            icon: FileCog,
+            label: t('nav.documentRequirements'),
+            to: '/document-requirements',
+            role: 'super_admin',
+          },
         ],
       },
       {
@@ -156,9 +205,24 @@ const navGroups = computed(() => [
         label: t('nav.credentialVault'),
         base: '/vault',
         children: [
-          { icon: Building2, label: t('nav.vaultPartners'), to: '/vault/partners', role: 'super_admin' },
-          { icon: KeyRound, label: t('nav.vaultCredentials'), to: '/vault/credentials', role: 'super_admin' },
-          { icon: ScrollText, label: t('nav.vaultAuditLogs'), to: '/vault/audit-logs', role: 'super_admin' },
+          {
+            icon: Building2,
+            label: t('nav.vaultPartners'),
+            to: '/vault/partners',
+            role: 'super_admin',
+          },
+          {
+            icon: KeyRound,
+            label: t('nav.vaultCredentials'),
+            to: '/vault/credentials',
+            role: 'super_admin',
+          },
+          {
+            icon: ScrollText,
+            label: t('nav.vaultAuditLogs'),
+            to: '/vault/audit-logs',
+            role: 'super_admin',
+          },
         ],
       },
     ],
@@ -171,9 +235,7 @@ function isVisible(item) {
   if (item.role) return auth.hasRole(item.role)
   if (!item.permission) return true
   const perms = Array.isArray(item.permission) ? item.permission : [item.permission]
-  return perms.some((p) =>
-    p.endsWith('_*') ? auth.canAny(p.slice(0, -2)) : auth.can(p),
-  )
+  return perms.some((p) => (p.endsWith('_*') ? auth.canAny(p.slice(0, -2)) : auth.can(p)))
 }
 
 function isActive(to) {
@@ -218,7 +280,8 @@ async function handleLogout() {
   router.push({ name: 'login' })
 }
 
-const itemBase = 'flex items-center gap-2.5 w-full h-9 px-2.5 rounded-lg text-[13.5px] transition-colors duration-150'
+const itemBase =
+  'flex items-center gap-2.5 w-full h-9 px-2.5 rounded-lg text-[13.5px] transition-colors duration-150'
 const itemActive = 'bg-white/12 text-white font-medium'
 const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
 </script>
@@ -234,7 +297,9 @@ const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
   >
     <!-- Brand + notifications -->
     <div class="flex items-center gap-2.5 px-4.5 pt-4 pb-3 shrink-0">
-      <div class="w-8 h-8 rounded-lg bg-primary-soft flex items-center justify-center font-display font-bold text-[13px] shrink-0">
+      <div
+        class="w-8 h-8 rounded-lg bg-primary-soft flex items-center justify-center font-display font-bold text-[13px] shrink-0"
+      >
         BN
       </div>
       <div class="flex-1 min-w-0">
@@ -249,7 +314,10 @@ const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
     </div>
 
     <!-- Nav groups -->
-    <nav :aria-label="t('nav.mainNavigation')" class="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 space-y-0.5">
+    <nav
+      :aria-label="t('nav.mainNavigation')"
+      class="flex-1 overflow-y-auto overflow-x-hidden px-3 pb-3 space-y-0.5"
+    >
       <template v-for="(group, gi) in navGroups" :key="gi">
         <p
           v-if="group.label && group.items.some(isVisible)"
@@ -263,14 +331,20 @@ const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
             <!-- Collapsible group -->
             <template v-if="item.children">
               <button
-                :class="[itemBase, isGroupActive(item) && !openGroups.has(item.key) ? itemActive : itemIdle]"
+                :class="[
+                  itemBase,
+                  isGroupActive(item) && !openGroups.has(item.key) ? itemActive : itemIdle,
+                ]"
                 :aria-expanded="openGroups.has(item.key)"
                 @click="toggleGroup(item.key)"
               >
                 <component :is="item.icon" class="w-4 h-4 shrink-0" />
                 <span class="flex-1 text-left truncate">{{ item.label }}</span>
                 <ChevronRight
-                  :class="['w-3.5 h-3.5 shrink-0 transition-transform duration-200', openGroups.has(item.key) ? 'rotate-90' : '']"
+                  :class="[
+                    'w-3.5 h-3.5 shrink-0 transition-transform duration-200',
+                    openGroups.has(item.key) ? 'rotate-90' : '',
+                  ]"
                 />
               </button>
               <div v-if="openGroups.has(item.key)" class="space-y-0.5 pb-1">
@@ -304,9 +378,12 @@ const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
                 :title="item.countTitle"
                 :class="[
                   'font-mono text-[11px] leading-none px-1.5 py-1 rounded-md',
-                  item.countTone === 'danger' ? 'bg-danger text-white' : 'text-sidebar-icon bg-white/8',
+                  item.countTone === 'danger'
+                    ? 'bg-danger text-white'
+                    : 'text-sidebar-icon bg-white/8',
                 ]"
-              >{{ formatNumber(item.count) }}</span>
+                >{{ formatNumber(item.count) }}</span
+              >
             </RouterLink>
           </template>
         </template>
@@ -314,7 +391,11 @@ const itemIdle = 'text-sidebar-icon hover:bg-white/8 hover:text-white'
     </nav>
 
     <!-- Language -->
-    <div class="shrink-0 px-5.5 pb-2.5 flex items-center justify-between" role="group" :aria-label="t('nav.language')">
+    <div
+      class="shrink-0 px-5.5 pb-2.5 flex items-center justify-between"
+      role="group"
+      :aria-label="t('nav.language')"
+    >
       <span class="text-[12.5px] text-sidebar-icon">{{ t('nav.language') }}</span>
       <div class="flex gap-0.5 p-0.5 rounded-md bg-white/8">
         <button

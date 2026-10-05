@@ -186,6 +186,12 @@ const router = createRouter({
       component: () => import('@/pages/lead-sources/LeadSourcesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Sources' },
     },
+    {
+      path: '/campaigns',
+      name: 'campaigns',
+      component: () => import('@/pages/campaigns/CampaignsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Campaigns' },
+    },
 
     /* Document Requirements */
     {
