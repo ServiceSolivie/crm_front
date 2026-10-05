@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { CheckCircle2, XCircle, Clock, Link2Off } from 'lucide-vue-next'
+import { CheckCircle2, XCircle, Clock, Link2Off, Undo2 } from 'lucide-vue-next'
 import { publicPaymentsApi } from '@/api/publicPayments'
 import AppSpinner from '@/components/base/AppSpinner.vue'
 import { formatCurrency } from '@/utils/formatters'
@@ -21,7 +21,7 @@ const POLL_MS = 3000
 const MAX_WAIT_MS = 2 * 60 * 1000
 
 const payment = ref(null)
-const state = ref('loading') // loading | pending | paid | failed | cancelled | expired | link_expired | not_found | error | slow
+const state = ref('loading') // loading | pending | paid | failed | cancelled | expired | refunded | link_expired | not_found | error | slow
 let timer = null
 const startedAt = Date.now()
 
@@ -30,6 +30,7 @@ const icon = computed(() => ({
   failed: XCircle,
   cancelled: Link2Off,
   expired: Link2Off,
+  refunded: Undo2,
   link_expired: Link2Off,
   not_found: Link2Off,
   error: XCircle,

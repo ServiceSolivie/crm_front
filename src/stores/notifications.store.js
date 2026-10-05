@@ -96,8 +96,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
     unreadCount.value += 1
     useUiStore().showInfo(notificationTitle(item))
     useNotificationSound().play()
-    // Payment received / failed: pages showing payments refresh themselves
-    if (payload.payment) {
+    // Payment received / failed, refund done / failed: pages showing payments refresh themselves
+    if (payload.payment || payload.refund) {
       window.dispatchEvent(new CustomEvent('crm:payment-updated', { detail: payload.payment }))
     }
   }

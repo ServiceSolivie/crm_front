@@ -10,7 +10,9 @@
     "markReadError": "Failed to mark as read",
     "paymentReceivedTitle": "Payment received — {reference}",
     "paymentFailedTitle": "Payment failed — {reference}",
-    "paymentExpiredTitle": "Payment link expired — {reference}"
+    "paymentExpiredTitle": "Payment link expired — {reference}",
+    "refundDoneTitle": "Refund completed — {reference}",
+    "refundFailedTitle": "Refund failed — {reference}"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1256,7 +1258,8 @@
       "PAYEE": "Paid",
       "ECHOUEE": "Failed",
       "ANNULEE": "Cancelled",
-      "EXPIREE": "Expired"
+      "EXPIREE": "Expired",
+      "REMBOURSEE": "Refunded"
     },
     "errors": {
       "create": "Could not create the payment link.",
@@ -1294,7 +1297,6 @@
     "lead": "Lead",
     "amount": "Amount",
     "status": "Status",
-    "email": "Client e-mail",
     "createdBy": "Sent by",
     "createdAt": "Created",
     "searchPlaceholder": "Reference, lead, phone, e-mail or Hyperswitch id",
@@ -1355,6 +1357,10 @@
     "error": {
       "title": "Status unavailable",
       "text": "We can’t show the status right now. Your payment is being followed: your advisor will be informed."
+    },
+    "refunded": {
+      "title": "Payment refunded",
+      "text": "This payment has been refunded to you. Contact your advisor if you have any question."
     }
   },
   "contractTotal": {
@@ -1375,5 +1381,31 @@
       "reason": "Say why the total changes.",
       "save": "Unable to update the contract total."
     }
+  },
+  "refund": {
+    "button": "Refund",
+    "retry": "Retry the refund",
+    "verify": "Check",
+    "on": "on {date}",
+    "modalTitle": "Refund the client",
+    "reference": "Payment request",
+    "amount": "Amount refunded",
+    "newTotal": "Contract total",
+    "warning": "The full amount of this payment goes back to the client’s card (partial refunds aren’t possible). The contract total drops by the same amount once the refund is confirmed.",
+    "reason": "Reason",
+    "reasonPlaceholder": "E.g. contract cancelled at the client’s request",
+    "confirm": "Refund",
+    "statuses": {
+      "A_VERIFIER": "Refund to check",
+      "EN_ATTENTE": "Refund in progress (credit waiting for the bank)",
+      "REUSSI": "Refunded",
+      "ECHOUE": "Refund failed"
+    },
+    "errors": {
+      "reasonRequired": "Enter the reason for the refund.",
+      "create": "The refund could not be requested.",
+      "verify": "The refund can’t be checked right now."
+    },
+    "retryShort": "Retry"
   }
 }

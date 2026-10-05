@@ -60,6 +60,26 @@ export function formatDateTime(value) {
 }
 
 /**
+ * Compact date for narrow table columns: 02/10/26.
+ */
+export function formatShortDate(value) {
+  if (!value) return '—'
+  const date = new Date(value)
+  if (isNaN(date)) return '—'
+  return date.toLocaleDateString(uiLocale(), { day: '2-digit', month: '2-digit', year: '2-digit' })
+}
+
+/**
+ * Time only: 14:05.
+ */
+export function formatTime(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  if (isNaN(date)) return ''
+  return date.toLocaleTimeString(uiLocale(), { hour: '2-digit', minute: '2-digit' })
+}
+
+/**
  * Format a monetary amount with currency symbol.
  * @param {number|string|null} value
  * @param {string} currency
