@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { Copy, ExternalLink, CreditCard, MailX, RefreshCw, Undo2 } from 'lucide-vue-next'
+import { Copy, ExternalLink, CreditCard, History, MailX, RefreshCw, Undo2 } from 'lucide-vue-next'
 import { usePaymentsStore } from '@/stores/payments.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { usersApi } from '@/api/users'
@@ -42,7 +42,7 @@ const COLUMNS = computed(() => [
   { key: 'status', label: t('paymentsPage.status') },
   { key: 'created_by', label: t('paymentsPage.createdBy') },
   { key: 'created_at', label: t('paymentsPage.createdAt') },
-  { key: 'actions', label: '', align: 'right', width: '120px' },
+  { key: 'actions', label: '', align: 'right', width: '150px' },
 ])
 
 const statusOptions = computed(() => STATUSES.map((s) => ({ value: s, label: t('paymentLink.statuses.' + s) })))
@@ -116,6 +116,8 @@ async function copy(url) {
 
 /* Refunds: only paid requests (row.refundable), always the full amount */
 const canRefund = computed(() => auth.can('PAYMENTS_REFUND'))
+// The activity journal shows everything that happened to a payment request
+const canSeeJournal = computed(() => auth.can('AUDIT_LOGS_VIEW'))
 const REFUND_PENDING = ['EN_ATTENTE', 'A_VERIFIER']
 const refundTarget = ref(null)
 const refundBusy = ref(false)
@@ -285,6 +287,7 @@ onBeforeUnmount(() => window.removeEventListener('crm:payment-updated', onPaymen
         </template>
 
         <template #cell-actions="{ row }">
+          <div class="flex items-center justify-end gap-1">
           <!-- Paid: refund (or retry after a failed refund) -->
           <div v-if="canRefund && row.refundable" class="flex items-center justify-end">
             <button
@@ -316,6 +319,13 @@ onBeforeUnmount(() => window.removeEventListener('crm:payment-updated', onPaymen
               :title="t('paymentLink.open')"
               class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
             ><ExternalLink class="w-3.5 h-3.5" /></a>
+          </div>
+          <router-link
+            v-if="canSeeJournal"
+            :to="{ name: 'activity-journal', query: { search: row.reference } }"
+            :title="t('activity.openJournal')"
+            class="w-7 h-7 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
+          ><History class="w-3.5 h-3.5" /></router-link>
           </div>
         </template>
       </AppTable>

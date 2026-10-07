@@ -45,7 +45,8 @@
     "vaultAuditLogs": "Audit Logs",
     "overdueCount": "{n} overdue appointment(s)",
     "todayCount": "{n} appointment(s) left today",
-    "payments": "Payments"
+    "payments": "Payments",
+    "activityJournal": "Activity journal"
   },
   "common": {
     "save": "Save",
@@ -1407,5 +1408,199 @@
       "verify": "The refund can’t be checked right now."
     },
     "retryShort": "Retry"
+  },
+  "activity": {
+    "title": "Activity journal",
+    "subtitle": "Payments, refunds, Google Ads, logins and users: each operation and everything that happened to it.",
+    "refresh": "Refresh",
+    "all": "All",
+    "categoriesLabel": "Operation categories",
+    "categories": {
+      "payment": "Payments",
+      "refund": "Refunds",
+      "google_ads": "Google Ads",
+      "auth": "Logins",
+      "user": "Users",
+      "system": "System"
+    },
+    "searchPlaceholder": "PAY-33509-5, lead, e-mail…",
+    "state": "State",
+    "states": {
+      "success": "Went well",
+      "pending": "In progress",
+      "warning": "Needs attention",
+      "failure": "Failed",
+      "neutral": "Closed, no outcome"
+    },
+    "event": "Event type",
+    "actor": "By",
+    "actors": {
+      "user": "A user",
+      "system": "System",
+      "client": "Client",
+      "google_ads": "Google Ads",
+      "unknown": "Unknown"
+    },
+    "problemsOnly": "Problems only",
+    "leadFilter": "Lead no. {id}",
+    "lead": "Lead:",
+    "containsRefund": "This payment contains a refund",
+    "logsCount": "no event | {count} event | {count} events",
+    "problemsCount": "no problem | {count} problem | {count} problems",
+    "empty": "No operation yet",
+    "emptyDesc": "Payments, refunds, Google Ads leads, logins and user changes will show up here.",
+    "emptyFiltered": "No operation matches these filters",
+    "emptyFilteredDesc": "Widen the period or remove a filter.",
+    "logsError": "The events of this operation could not be loaded.",
+    "noDetails": "No extra detail.",
+    "openJournal": "See in the activity journal",
+    "kinds": {
+      "payment": "Payment {reference}",
+      "contract_total": "Contract total",
+      "google_ads": "Google Ads lead {reference}",
+      "google_ads_unauthenticated": "Unauthenticated Google Ads requests",
+      "auth": "Logins of {reference}",
+      "auth_unknown": "Attempts on unknown accounts",
+      "user": "User {reference}",
+      "hyperswitch": "Hyperswitch incidents"
+    },
+    "events": {
+      "payment": {
+        "link_created": "Payment link created",
+        "link_emailed": "Payment link e-mailed",
+        "link_email_failed": "Payment link e-mail not sent",
+        "link_unconfirmed": "Link not confirmed by Hyperswitch",
+        "link_refused": "Link creation refused",
+        "link_confirmed": "Link confirmed after a check",
+        "not_created": "Payment never created at Hyperswitch",
+        "link_cancelled": "Payment link cancelled",
+        "client_returned": "Client came back from the bank",
+        "paid": "Payment received",
+        "failed": "Payment refused by the bank",
+        "expired": "Payment link expired",
+        "total_changed": "Contract total changed"
+      },
+      "refund": {
+        "requested": "Refund requested",
+        "blocked": "Refund not sent",
+        "succeeded": "Refund completed",
+        "pending": "Refund waiting for the bank",
+        "unconfirmed": "Refund not confirmed by Hyperswitch",
+        "failed": "Refund failed",
+        "follow_up_stopped": "Automatic follow-up of the refund stopped"
+      },
+      "google_ads": {
+        "lead_created": "Lead created from Google Ads",
+        "test_received": "Google Ads test submission received",
+        "duplicate_ignored": "Same submission received again",
+        "rejected": "Google Ads lead rejected"
+      },
+      "auth": {
+        "login": "Login",
+        "logout": "Logout",
+        "password_changed": "Password changed",
+        "login_failed": "Login failed",
+        "login_blocked": "Login blocked"
+      },
+      "user": {
+        "created": "User created",
+        "updated": "User updated",
+        "role_changed": "Role changed",
+        "activated": "User activated",
+        "deactivated": "User deactivated",
+        "password_reset": "Password reset",
+        "deleted": "User deleted"
+      },
+      "system": {
+        "hyperswitch_unreachable": "Hyperswitch does not answer"
+      }
+    },
+    "stateLabels": {
+      "payment": {
+        "link_created": "Waiting for the client",
+        "link_email_failed": "E-mail not sent",
+        "link_unconfirmed": "To check",
+        "link_refused": "Refused at creation",
+        "link_confirmed": "Waiting for the client",
+        "not_created": "Not created",
+        "link_cancelled": "Cancelled",
+        "paid": "Paid",
+        "failed": "Refused by the bank",
+        "expired": "Expired",
+        "total_changed": "Total changed"
+      },
+      "refund": {
+        "requested": "Refund requested",
+        "succeeded": "Refunded",
+        "pending": "Refund in progress",
+        "unconfirmed": "Refund to check",
+        "failed": "Refund failed",
+        "follow_up_stopped": "Refund to check"
+      },
+      "google_ads": {
+        "lead_created": "Lead created",
+        "test_received": "Test received",
+        "rejected": "Rejected"
+      },
+      "auth": {
+        "login": "Logged in",
+        "logout": "Logged out",
+        "login_failed": "Login failed",
+        "login_blocked": "Login blocked"
+      },
+      "user": {
+        "created": "Created",
+        "updated": "Updated",
+        "role_changed": "Role changed",
+        "activated": "Activated",
+        "deactivated": "Deactivated",
+        "password_reset": "Password reset",
+        "deleted": "Deleted"
+      },
+      "system": {
+        "hyperswitch_unreachable": "Incident"
+      }
+    },
+    "details": {
+      "amount": "Amount",
+      "previous_total": "Total before",
+      "new_total": "Total after",
+      "reason": "Reason",
+      "payment_id": "Hyperswitch payment id",
+      "refund_id": "Hyperswitch refund id",
+      "connector_refund_id": "Credit id at the bank",
+      "connector_transaction_id": "Bank transaction",
+      "provider_status": "Hyperswitch status",
+      "error_code": "Error code",
+      "error_message": "Error message",
+      "error": "Error",
+      "duration_ms": "Answer time",
+      "expires_at": "Expires on",
+      "next_check_at": "Next check",
+      "client_email": "Client e-mail",
+      "to": "Recipient",
+      "email": "E-mail typed",
+      "status": "Status",
+      "checks": "Checks done",
+      "expected_connector": "Expected connector",
+      "connector": "Connector received",
+      "google_lead_id": "Google lead id",
+      "campaign_id": "Google campaign id",
+      "form_id": "Google form id",
+      "is_test": "Test submission",
+      "crm_campaign": "CRM campaign",
+      "insurance_type": "Product",
+      "gcl_id": "Google click id",
+      "lead_reference": "Lead created",
+      "first_received_at": "First received on",
+      "http_status": "HTTP answer",
+      "fields": "Fields",
+      "role": "Role",
+      "previous_role": "Previous role",
+      "device": "Device",
+      "during": "During",
+      "ip_address": "IP address",
+      "user_agent": "Browser"
+    }
   }
 }
