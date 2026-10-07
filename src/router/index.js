@@ -83,6 +83,14 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', permission: 'PAYMENTS_VIEW', title: 'Payments' },
     },
 
+    /* Activity journal (operations and their logs) */
+    {
+      path: '/journal',
+      name: 'activity-journal',
+      component: () => import('@/pages/activity-logs/ActivityJournalPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'AUDIT_LOGS_VIEW', title: 'Activity journal' },
+    },
+
     /* Calendar */
     {
       path: '/calendar',

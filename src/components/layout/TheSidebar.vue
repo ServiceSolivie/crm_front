@@ -25,6 +25,7 @@ import {
   CreditCard,
   KeyRound,
   ScrollText,
+  History,
   Building2,
   ClipboardCheck,
   Lock,
@@ -184,6 +185,7 @@ const navGroups = computed(() => [
     items: [
       { icon: UsersRound, label: t('nav.teams'), to: '/teams', permission: 'TEAMS_VIEW' },
       { icon: UserCog, label: t('nav.users'), to: '/users', permission: 'USERS_VIEW' },
+      { icon: History, label: t('nav.activityJournal'), to: '/journal', permission: 'AUDIT_LOGS_VIEW' },
       {
         key: 'settings',
         icon: SlidersHorizontal,
