@@ -1,8 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { ChevronDown } from 'lucide-vue-next'
-import { LEAD_STAGES, leadStage } from '@/utils/enums'
+import { LEAD_STAGES } from '@/utils/enums'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 /** Status pill coloured by pipeline stage (see LEAD_STAGES in utils/enums). */
 const props = defineProps({
@@ -11,8 +11,8 @@ const props = defineProps({
   caret: { type: Boolean, default: false },
 })
 
-const { t } = useI18n()
-const stage = computed(() => LEAD_STAGES[leadStage(props.status)])
+const { statusLabel, statusStage } = useLeadStatuses()
+const stage = computed(() => LEAD_STAGES[statusStage(props.status)])
 </script>
 
 <template>
@@ -24,7 +24,7 @@ const stage = computed(() => LEAD_STAGES[leadStage(props.status)])
     ]"
   >
     <span v-if="dot" :class="['w-1.5 h-1.5 rounded-full shrink-0', stage.dot]" />
-    {{ t('statuses.lead.' + status, status) }}
+    {{ statusLabel(status) }}
     <ChevronDown v-if="caret" class="w-3 h-3 shrink-0 opacity-80" />
   </span>
 </template>

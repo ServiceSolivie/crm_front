@@ -9,8 +9,10 @@ import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import ReportShell from '@/components/modules/reports/ReportShell.vue'
 import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 const { t } = useI18n()
+const { statusLabel } = useLeadStatuses()
 const store = useReportsStore()
 const { num, pct, dateTime } = useReportFormat()
 
@@ -39,7 +41,7 @@ const CSV_COLUMNS = [
   { key: 'name', label: 'Nom', value: fullName },
   { key: 'phone', label: 'Téléphone' },
   { key: 'email', label: 'E-mail' },
-  { key: 'status', label: 'Statut', value: (r) => t('statuses.lead.' + r.status, r.status) },
+  { key: 'status', label: 'Statut', value: (r) => statusLabel(r.status) },
   { key: 'insurance_type', label: 'Assurance', value: (r) => (r.insurance_type ? t('insuranceTypes.' + r.insurance_type, r.insurance_type) : '') },
   { key: 'source', label: 'Source', value: (r) => r.lead_source?.name },
   { key: 'agent', label: 'Agent', value: (r) => r.assigned_agent?.name },
