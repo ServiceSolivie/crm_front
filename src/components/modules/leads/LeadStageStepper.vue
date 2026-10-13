@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 /**
  * Lead progress along the sales + back-office flow.
@@ -13,6 +14,7 @@ const props = defineProps({
   status: { type: String, required: true },
 })
 const { t } = useI18n()
+const { isCustomStatus, statusLabel, statusStage } = useLeadStatuses()
 
 // Sales, then back office: gestion reviews, Call 2 / PDG checks, and the lead is validated last
 const STEPS = ['new', 'contact', 'quote', 'gestion', 'control', 'won']
@@ -39,7 +41,18 @@ const POSITION = {
   LEAD_INVALIDE: [0, 'lost'],
 }
 
-const position = computed(() => POSITION[props.status] ?? [0, 'ok'])
+// A custom status sits where its stage puts it; it never enters the back-office steps
+const CUSTOM_POSITION = {
+  contact: [1, 'ok'],
+  follow_up: [1, 'warn'],
+  quote: [2, 'ok'],
+  lost: [1, 'lost'],
+}
+
+const custom = computed(() => isCustomStatus(props.status))
+const position = computed(
+  () => POSITION[props.status] ?? (custom.value ? CUSTOM_POSITION[statusStage(props.status)] : null) ?? [0, 'ok'],
+)
 
 const steps = computed(() => {
   const [current, tone] = position.value
@@ -61,8 +74,8 @@ const steps = computed(() => {
       bar,
       label,
       isCurrent,
-      text: isCurrent && (tone !== 'ok' || key === 'contact')
-        ? `${t('leadDetail.steps.' + key)} · ${t('statuses.lead.' + props.status, props.status)}`
+      text: isCurrent && (tone !== 'ok' || key === 'contact' || custom.value)
+        ? `${t('leadDetail.steps.' + key)} · ${statusLabel(props.status)}`
         : t('leadDetail.steps.' + key),
     }
   })

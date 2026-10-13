@@ -11,6 +11,7 @@ import {
   UsersRound,
   UserCog,
   Tag,
+  ListChecks,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -145,6 +146,7 @@ const navGroups = computed(() => [
         label: t('nav.crmSettings'),
         children: [
           { icon: Tag, label: t('nav.leadSources'), to: '/lead-sources', role: 'super_admin' },
+          { icon: ListChecks, label: t('nav.leadStatuses'), to: '/lead-statuses', role: 'super_admin' },
           { icon: FileCog, label: t('nav.documentRequirements'), to: '/document-requirements', role: 'super_admin' },
         ],
       },
