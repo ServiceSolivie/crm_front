@@ -163,6 +163,14 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', title: 'Gestion Dashboard' },
     },
 
+    /* Approved machines */
+    {
+      path: '/devices',
+      name: 'devices',
+      component: () => import('@/pages/devices/DevicesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Devices' },
+    },
+
     /* Lead Sources */
     {
       path: '/lead-sources',

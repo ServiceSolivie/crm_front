@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Bell, Calendar, UserPlus, CheckCheck } from 'lucide-vue-next'
+import { Bell, Calendar, UserPlus, CheckCheck, MonitorUp } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import { formatRelative } from '@/utils/formatters'
@@ -46,6 +46,7 @@ async function openNotification(item) {
   const leadId = item.payload?.leads?.[0]?.id
   if (appointmentId) router.push(`/appointments/${appointmentId}`)
   else if (leadId) router.push(`/leads/${leadId}`)
+  else if (item.payload?.devices) router.push('/devices')
 
   close()
 }
@@ -160,6 +161,7 @@ onUnmounted(() => {
             >
               <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
                 <UserPlus v-if="item.payload?.leads" class="w-4 h-4 text-primary" />
+                <MonitorUp v-else-if="item.payload?.devices" class="w-4 h-4 text-primary" />
                 <Calendar v-else class="w-4 h-4 text-primary" />
               </div>
               <div class="flex-1 min-w-0">
@@ -179,6 +181,13 @@ onUnmounted(() => {
                 >
                   {{ lead.name ?? t('notifications.unknownLead') }}
                   <template v-if="lead.source"> — {{ lead.source }}</template>
+                </p>
+                <p
+                  v-for="device in item.payload?.devices?.slice(0, 3)"
+                  :key="device.id"
+                  class="text-xs text-gray-500 mt-0.5 truncate"
+                >
+                  {{ device.requested_by ?? '—' }}<template v-if="device.browser"> — {{ device.browser }}</template>
                 </p>
                 <p class="text-[11px] text-gray-400 mt-1">{{ formatRelative(item.created_at) }}</p>
               </div>
