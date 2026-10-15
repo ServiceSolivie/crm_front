@@ -7,26 +7,31 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, Lock } from 'lucide-vue-next'
 import LeadStatusBadge from './LeadStatusBadge.vue'
-import { LEAD_STATUS, LEAD_STAGES, REVIEW_STATUSES } from '@/utils/enums'
+import { LEAD_STAGES, REVIEW_STATUSES } from '@/utils/enums'
 import { useAuthStore } from '@/stores/auth.store'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const { allCodes, selectableCodes, statusStage } = useLeadStatuses()
 
 // Back-office statuses (Validé, Call2, PDG, À corriger) are for gestion and
 // managers only; agents send the lead to GESTION instead.
 const canReview = computed(() => auth.can('LEADS_SET_REVIEW_STATUS'))
 
-// Statuses grouped under their pipeline stage, in pipeline order
+// Statuses grouped under their pipeline stage, in pipeline order: the system
+// ones, then the custom ones still active (a deactivated one only shows on
+// the lead that already has it)
 const stageGroups = computed(() =>
   Object.entries(LEAD_STAGES)
     .sort(([, a], [, b]) => a.order - b.order)
     .map(([stage, meta]) => ({
       stage,
       dot: meta.dot,
-      statuses: Object.keys(LEAD_STATUS).filter(
+      statuses: allCodes.value.filter(
         (k) =>
-          LEAD_STATUS[k].stage === stage &&
+          statusStage(k) === stage &&
+          (selectableCodes.value.includes(k) || k === props.status) &&
           (canReview.value || !REVIEW_STATUSES.includes(k) || k === props.status),
       ),
     }))

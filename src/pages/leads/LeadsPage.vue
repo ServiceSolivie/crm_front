@@ -19,7 +19,8 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
-import { LEAD_STATUS, LEAD_STAGES, INSURANCE_TYPE, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
+import { LEAD_STAGES, INSURANCE_TYPE, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDateTime } from '@/utils/formatters'
 
@@ -78,7 +79,7 @@ function selectView(key) {
 }
 
 /* Filters */
-const leadStatusOptions = useEnumOptions(LEAD_STATUS, 'statuses.lead')
+const { statusOptions: leadStatusOptions, statusLabel, selectableCodes } = useLeadStatuses()
 const stageOptions = computed(() =>
   Object.entries(LEAD_STAGES)
     .sort(([, a], [, b]) => a.order - b.order)
@@ -285,9 +286,9 @@ const canSelect = computed(() => canBulkAssign.value || canBulkDelete.value || c
 // Validation needs a revenue per lead, so it is never offered in bulk;
 // back-office statuses only for users who may set them.
 const bulkStatusOptions = computed(() =>
-  Object.keys(LEAD_STATUS)
+  selectableCodes.value
     .filter((k) => k !== 'VALIDE' && (auth.can('LEADS_SET_REVIEW_STATUS') || !REVIEW_STATUSES.includes(k)))
-    .map((k) => ({ value: k, label: t('statuses.lead.' + k, k) })),
+    .map((k) => ({ value: k, label: statusLabel(k) })),
 )
 const showBulkStatus = ref(false)
 

@@ -1,11 +1,16 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Menu } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
+import { useLeadStatusesStore } from '@/stores/leadStatuses.store'
 import TheSidebar from './TheSidebar.vue'
 
 const ui = useUiStore()
 const { t } = useI18n()
+
+// Custom lead statuses are shown on most pages: load them once per session
+onMounted(() => useLeadStatusesStore().fetchList())
 </script>
 
 <template>

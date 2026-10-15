@@ -5,7 +5,8 @@ import { Plus, SlidersHorizontal, AlertCircle } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth.store'
 import { useDashboardStore } from '@/stores/dashboard.store'
-import { LEAD_STATUS, LEAD_STAGES } from '@/utils/enums'
+import { LEAD_STAGES } from '@/utils/enums'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { formatCurrency } from '@/utils/formatters'
 
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -22,6 +23,7 @@ import DonutChart from '@/components/charts/DonutChart.vue'
 const auth = useAuthStore()
 const dash = useDashboardStore()
 const { t, locale } = useI18n()
+const { statusLabel, statusStage } = useLeadStatuses()
 
 /* ── Permissions ───────────────────────────────────────────── */
 const canViewGlobal = computed(() => auth.can('DASHBOARD_VIEW_GLOBAL'))
@@ -111,9 +113,9 @@ const pipeline = computed(() => {
   if (!raw) return []
   const totals = Object.fromEntries(Object.keys(LEAD_STAGES).map((k) => [k, { count: 0, statuses: [] }]))
   for (const [status, count] of Object.entries(raw)) {
-    const stage = LEAD_STATUS[status]?.stage ?? 'contact'
+    const stage = statusStage(status)
     totals[stage].count += Number(count) || 0
-    if (count) totals[stage].statuses.push(`${t('statuses.lead.' + status, status)} : ${count}`)
+    if (count) totals[stage].statuses.push(`${statusLabel(status)} : ${count}`)
   }
   const sum = Object.values(totals).reduce((s, v) => s + v.count, 0) || 1
   return Object.entries(LEAD_STAGES)

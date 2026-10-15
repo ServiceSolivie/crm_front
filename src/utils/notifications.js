@@ -29,5 +29,8 @@ export function notificationTitle(item) {
     const key = r.status === 'REUSSI' ? 'refundDoneTitle' : 'refundFailedTitle'
     return t('notifications.' + key, { reference: r.reference ?? '' })
   }
+  if (item.type === 'DeviceApprovalRequestedNotification') {
+    return t('notifications.deviceRequestTitle')
+  }
   return item.payload?.title
 }

@@ -187,6 +187,14 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', title: 'Gestion Dashboard' },
     },
 
+    /* Approved machines */
+    {
+      path: '/devices',
+      name: 'devices',
+      component: () => import('@/pages/devices/DevicesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Devices' },
+    },
+
     /* Lead Sources */
     {
       path: '/lead-sources',
@@ -199,6 +207,14 @@ const router = createRouter({
       name: 'campaigns',
       component: () => import('@/pages/campaigns/CampaignsPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Campaigns' },
+    },
+
+    /* Lead Statuses (custom ones) */
+    {
+      path: '/lead-statuses',
+      name: 'lead-statuses',
+      component: () => import('@/pages/lead-statuses/LeadStatusesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Statuses' },
     },
 
     /* Document Requirements */

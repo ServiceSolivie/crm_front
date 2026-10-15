@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { authApi } from '@/api/auth'
 import { getEcho, disconnectEcho } from '@/plugins/echo'
 import { useNotificationsStore } from './notifications.store'
+import { rememberedDevice, rememberedMark } from '@/utils/webauthn'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem('auth_token'))
@@ -57,14 +58,38 @@ export const useAuthStore = defineStore('auth', () => {
     return { authToken, userData }
   }
 
+  /**
+   * Password step. With the approved-machines restriction on, the answer
+   * carries no token: `device` then holds the ticket and the challenge the
+   * machine must sign (see DeviceStep.vue). During the rehearsal the session
+   * opens as before and `device` only offers that second step.
+   */
   async function login(email, password) {
-    const response = await authApi.login({ email, password })
+    const response = await authApi.login({
+      email,
+      password,
+      device_credential_id: rememberedDevice.get(),
+      device_mark: rememberedMark.get(),
+    })
     const { authToken, userData } = _parseSessionResponse(response)
-    if (!authToken) {
+    const device = (response?.data ?? response)?.device ?? null
+    // The machine is still remembered: the PIN was skipped and the mark renewed
+    rememberedMark.set((response?.data ?? response)?.device_mark)
+    if (!authToken && !device) {
       throw { type: 'server', message: 'Login failed: server did not return a token. Check the console for the raw response.' }
     }
-    _setSession(authToken, userData)
-    return userData
+    if (authToken) _setSession(authToken, userData)
+    return { user: userData, device }
+  }
+
+  /** Machine step: the signed challenge is exchanged for the session. */
+  async function verifyDevice(ticket, assertion) {
+    const response = await authApi.verifyDevice({ ticket, ...assertion })
+    const { authToken, userData } = _parseSessionResponse(response)
+    // PIN checked: this browser is remembered for the next logins
+    rememberedMark.set((response?.data ?? response)?.device_mark)
+    if (authToken) _setSession(authToken, userData)
+    return !!authToken
   }
 
   async function logout() {
@@ -127,6 +152,7 @@ export const useAuthStore = defineStore('auth', () => {
     canAny,
     login,
     logout,
+    verifyDevice,
     boot,
     clearSession,
   }

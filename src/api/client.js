@@ -53,7 +53,8 @@ client.interceptors.response.use(
       return Promise.reject({
         type: isDeactivated ? 'deactivated' : 'forbidden',
         message,
-        errors: null,
+        // Approved machines: errors.code says why the machine was refused
+        errors: data?.errors ?? null,
       })
     }
 
