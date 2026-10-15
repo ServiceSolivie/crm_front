@@ -19,5 +19,8 @@ export function notificationTitle(item) {
   if (item.type === 'LeadReceivedNotification') {
     return t('notifications.leadReceivedTitle')
   }
+  if (item.type === 'DeviceApprovalRequestedNotification') {
+    return t('notifications.deviceRequestTitle')
+  }
   return item.payload?.title
 }

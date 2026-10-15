@@ -12,6 +12,7 @@ import {
   UserCog,
   Tag,
   ListChecks,
+  MonitorCheck,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -30,6 +31,7 @@ import {
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
+import { useDevicesStore } from '@/stores/devices.store'
 import { setLocale } from '@/i18n'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import TheNotificationBell from './TheNotificationBell.vue'
@@ -45,10 +47,13 @@ const { t, locale } = useI18n()
 
 /* Counters next to menu items (GET /me/counters), refreshed on navigation and focus */
 const counters = ref(null)
+const devices = useDevicesStore()
 let lastFetch = 0
 async function loadCounters(force = false) {
   if (!auth.isAuthenticated || (!force && Date.now() - lastFetch < 30000)) return
   lastFetch = Date.now()
+  // Machines waiting for approval, for whoever approves them
+  if (auth.hasRole('super_admin')) devices.fetchSettings()
   try {
     counters.value = (await meApi.counters()).data
   } catch {
@@ -140,6 +145,15 @@ const navGroups = computed(() => [
     items: [
       { icon: UsersRound, label: t('nav.teams'), to: '/teams', permission: 'TEAMS_VIEW' },
       { icon: UserCog, label: t('nav.users'), to: '/users', permission: 'USERS_VIEW' },
+      {
+        icon: MonitorCheck,
+        label: t('nav.devices'),
+        to: '/devices',
+        role: 'super_admin',
+        count: devices.pendingCount || null,
+        countTone: 'danger',
+        countTitle: t('devices.pendingCount', { n: devices.pendingCount }, devices.pendingCount),
+      },
       {
         key: 'settings',
         icon: SlidersHorizontal,

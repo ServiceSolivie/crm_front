@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { AlertCircle, Eye, EyeOff } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import AppInput from '@/components/base/AppInput.vue'
+import DeviceStep from '@/components/modules/auth/DeviceStep.vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -49,15 +50,29 @@ function validate() {
   return ok
 }
 
+// Approved machines: after the password, the machine may have to prove itself
+// (or be registered) before the CRM opens. Holds what the login answered.
+const deviceStep = ref(null)
+
+function enterCrm() {
+  const defaultLanding = auth.hasRole('gestion') ? '/gestion-dashboard' : '/dashboard'
+  router.push(route.query.redirect ?? defaultLanding)
+}
+
+function backToPassword(message) {
+  deviceStep.value = null
+  form.password = ''
+  errors.general = typeof message === 'string' ? message : ''
+}
+
 async function submit() {
   if (!validate() || lockedFor.value > 0) return
   loading.value = true
   attemptsLeft.value = null
   try {
-    await auth.login(form.email.trim(), form.password)
-    const defaultLanding = auth.hasRole('gestion') ? '/gestion-dashboard' : '/dashboard'
-    const redirect = route.query.redirect ?? defaultLanding
-    router.push(redirect)
+    const { device } = await auth.login(form.email.trim(), form.password)
+    if (device) deviceStep.value = device
+    else enterCrm()
   } catch (err) {
     if (err.type === 'validation') {
       if (err.errors?.email) errors.email = err.errors.email[0]
@@ -85,7 +100,9 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex flex-col gap-5">
+  <DeviceStep v-if="deviceStep" :device="deviceStep" @done="enterCrm" @back="backToPassword" />
+
+  <div v-else class="flex flex-col gap-5">
     <div>
       <h1 class="font-display text-2xl font-semibold tracking-tight text-gray-900">{{ t('auth.loginTitle') }}</h1>
       <p class="text-[13.5px] text-gray-600 mt-1">{{ t('auth.loginSubtitle') }}</p>
