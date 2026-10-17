@@ -161,6 +161,7 @@ const navGroups = computed(() => [
         children: [
           { icon: Tag, label: t('nav.leadSources'), to: '/lead-sources', role: 'super_admin' },
           { icon: ListChecks, label: t('nav.leadStatuses'), to: '/lead-statuses', role: 'super_admin' },
+          { icon: FileSignature, label: t('nav.dvcTypes'), to: '/dvc-types', role: 'super_admin' },
           { icon: FileCog, label: t('nav.documentRequirements'), to: '/document-requirements', role: 'super_admin' },
         ],
       },

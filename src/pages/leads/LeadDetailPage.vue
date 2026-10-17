@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import {
   ChevronLeft, ChevronRight, Phone, Mail, Clock, MoreHorizontal, UserPlus, PackagePlus,
   Pencil, Trash2, Flag, AlertTriangle, Check, CalendarDays, Plus, ChevronDown,
+  FileText, Eye, Download,
 } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useAppointmentsStore } from '@/stores/appointments.store'
@@ -31,7 +32,9 @@ import DossierTab from '@/components/modules/documents/DossierTab.vue'
 import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import CrossSellModal from '@/components/modules/leads/CrossSellModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
+import DvcCreateModal from '@/components/modules/leads/DvcCreateModal.vue'
 import { documentsApi } from '@/api/documents'
+import { contractsApi } from '@/api/contracts'
 import { leadsApi } from '@/api/leads'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
@@ -66,6 +69,7 @@ const flagIssueLoading = ref(false)
 const showCrossSellModal = ref(false)
 const crossSellLoading = ref(false)
 const showDossierModal = ref(false)
+const showDvcModal = ref(false)
 const showMoreMenu = ref(false)
 const showFormDetails = ref(false)
 
@@ -188,6 +192,7 @@ async function loadSidePanels() {
     leadsStore.fetchDossier(id.value),
   ]
   if (auth.can('PAYMENTS_VIEW')) jobs.push(leadsStore.fetchPayments(id.value))
+  if (auth.can('CONTRACTS_VIEW')) jobs.push(loadLeadDvcs())
   await Promise.allSettled(jobs)
 }
 
@@ -195,6 +200,7 @@ function resetLeadData() {
   leadsStore.leadAppointments = []
   leadsStore.payments = []
   leadsStore.dossier = null
+  leadDvcs.value = []
 }
 
 onMounted(() => {
@@ -466,6 +472,88 @@ function closePreview() {
   }
   previewDoc.value = null
   previewBlobUrl.value = null
+}
+
+// The preview shows either a dossier document or a just-generated DVC
+function onPreviewDownload() {
+  if (previewDoc.value?.contract_id) {
+    const link = document.createElement('a')
+    link.href = previewBlobUrl.value
+    link.setAttribute('download', previewDoc.value.original_filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  } else {
+    onDossierDownload(previewDoc.value)
+  }
+  closePreview()
+}
+
+/* ── DVC ───────────────────────────────────────────────────── */
+// The DVCs generated for this lead, newest first
+const leadDvcs = ref([])
+const leadDvcsLoading = ref(false)
+
+async function loadLeadDvcs() {
+  leadDvcsLoading.value = true
+  try {
+    const { data } = await contractsApi.list({ lead_id: id.value, per_page: 50 })
+    leadDvcs.value = data
+  } catch {
+    leadDvcs.value = []
+  } finally {
+    leadDvcsLoading.value = false
+  }
+}
+
+// "auto_dvc" → the label of the AUTO insurance type
+function dvcTypeLabel(contract) {
+  const insuranceType = contract.template_key?.replace(/_dvc$/, '').toUpperCase()
+  return t('insuranceTypes.' + insuranceType, insuranceType)
+}
+
+async function onDvcDownload(contract) {
+  try {
+    const response = await contractsApi.download(contract.id)
+    const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', contract.original_filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, t('leadDetail.errors.download')))
+  }
+}
+
+// Generated from the lead: the DVC status moves to "en attente de signature", then the PDF opens
+async function onDvcGenerated(contract) {
+  showDvcModal.value = false
+  leadsStore.fetchOne(id.value).catch(() => {})
+  refreshActivity()
+  loadLeadDvcs()
+  await openDvcPreview(contract)
+}
+
+async function openDvcPreview(contract) {
+  previewDoc.value = {
+    contract_id: contract.id,
+    original_filename: contract.original_filename,
+    mime_type: 'application/pdf',
+    type_label: contract.reference,
+  }
+  previewBlobUrl.value = null
+  previewLoading.value = true
+  try {
+    const response = await contractsApi.download(contract.id)
+    previewBlobUrl.value = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }))
+  } catch (e) {
+    toast.showError(firstErrorMessage(e, t('leadDetail.errors.preview')))
+  } finally {
+    previewLoading.value = false
+  }
 }
 
 /* ── More actions ──────────────────────────────────────────── */
@@ -785,6 +873,101 @@ const companyFields = computed(() => {
             :refresh-key="activityKey"
             :show-payments="hasRevenue"
           />
+
+          <!-- DVC: status, creation and the DVCs generated for this lead -->
+          <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">
+            <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('leadDetail.dvc.label') }}</h2>
+
+            <!-- DVC: generate → client signs → signed copy uploaded (unlocks Gestion / Validé) -->
+            <div
+              :class="[
+                'rounded-lg px-3 py-2.5 flex flex-col gap-2',
+                lead.dvc_status === 'SIGNE' ? 'bg-success-bg/60' : 'bg-amber-50 border border-amber-200',
+              ]"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <DvcStatusBadge :status="lead.dvc_status ?? 'A_GENERER'" dot />
+                <span v-if="lead.dvc_signed_at" class="text-xs text-gray-600">{{ formatDateTime(lead.dvc_signed_at) }}</span>
+              </div>
+              <p v-if="lead.dvc_status !== 'SIGNE'" class="text-[12.5px] leading-[18px] text-amber-900">
+                {{ auth.can('LEADS_SET_REVIEW_STATUS') && !auth.can('CONTRACTS_GENERATE')
+                  ? t('leadDetail.dvc.reviewHint')
+                  : lead.dvc_status === 'EN_ATTENTE_SIGNATURE' ? t('leadDetail.dvc.waitingHint') : t('leadDetail.dvc.generateHint') }}
+              </p>
+              <div class="flex flex-wrap gap-1.5">
+                <!-- Pick the DVC type, fill its form, generate — without leaving the lead -->
+                <button
+                  v-if="lead.dvc_status !== 'SIGNE' && auth.can('CONTRACTS_GENERATE')"
+                  type="button"
+                  class="h-7.5 inline-flex items-center px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50"
+                  @click="showDvcModal = true"
+                >{{ lead.dvc_status === 'EN_ATTENTE_SIGNATURE' ? t('leadDetail.dvc.regenerate') : t('leadDetail.dvc.generate') }}</button>
+                <button
+                  v-if="lead.dvc_status !== 'SIGNE' && auth.can('DOCUMENTS_UPLOAD')"
+                  type="button"
+                  class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50"
+                  @click="showDossierModal = true"
+                >{{ t('leadDetail.dvc.upload') }}</button>
+                <!-- Next step once signed: agents send to gestion, gestion validates -->
+                <template v-if="lead.dvc_status === 'SIGNE'">
+                  <button
+                    v-if="auth.can('LEADS_SET_REVIEW_STATUS') && lead.status !== 'VALIDE'"
+                    type="button"
+                    :disabled="statusChanging"
+                    class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+                    @click="onStatusChange('VALIDE')"
+                  >{{ t('leadDetail.payments.validate') }}</button>
+                  <p v-else-if="lead.status === 'GESTION'" class="text-[12.5px] text-info-text">{{ t('leadDetail.payments.inReview') }}</p>
+                  <button
+                    v-else-if="auth.can('LEADS_UPDATE_STATUS') && !['VALIDE', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO'].includes(lead.status)"
+                    type="button"
+                    :disabled="statusChanging"
+                    class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
+                    @click="onStatusChange('GESTION')"
+                  >{{ t('leadDetail.payments.sendToGestion') }}</button>
+                </template>
+              </div>
+            </div>
+
+            <!-- DVCs generated for this lead -->
+            <div v-if="auth.can('CONTRACTS_VIEW') && (leadDvcs.length || leadDvcsLoading)" class="flex flex-col">
+              <p class="text-[11.5px] font-medium uppercase tracking-wide text-gray-500 mb-1">
+                {{ leadDvcsLoading && !leadDvcs.length ? t('leadDetail.dvc.label') : t('leadDetail.dvc.generated', { count: leadDvcs.length }) }}
+              </p>
+              <AppSkeleton v-if="leadDvcsLoading && !leadDvcs.length" height="36px" />
+              <ul v-else class="flex flex-col">
+                <li
+                  v-for="dvc in leadDvcs"
+                  :key="dvc.id"
+                  class="flex items-center gap-2 py-1.5 border-b border-gray-100 last:border-b-0 text-[13px]"
+                >
+                  <FileText class="w-4 h-4 text-gray-400 shrink-0" />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-gray-900 truncate">
+                      {{ t('leadDetail.dvc.item', { type: dvcTypeLabel(dvc), version: dvc.version }) }}
+                    </p>
+                    <p class="text-[11.5px] text-gray-500 truncate">
+                      {{ formatDateTime(dvc.created_at) }}<template v-if="dvc.generated_by"> · {{ dvc.generated_by.name }}</template>
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    :aria-label="t('leadDetail.dvc.preview')"
+                    :title="t('leadDetail.dvc.preview')"
+                    class="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                    @click="openDvcPreview(dvc)"
+                  ><Eye class="w-3.5 h-3.5" /></button>
+                  <button
+                    type="button"
+                    :aria-label="t('common.download')"
+                    :title="t('common.download')"
+                    class="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                    @click="onDvcDownload(dvc)"
+                  ><Download class="w-3.5 h-3.5" /></button>
+                </li>
+              </ul>
+            </div>
+          </section>
         </div>
 
         <!-- ── Right column ────────────────────────────────────── -->
@@ -845,55 +1028,6 @@ const companyFields = computed(() => {
               <span v-if="leadsStore.dossier?.total_required" class="font-mono text-[12.5px] text-gray-600">
                 {{ leadsStore.dossier.total_uploaded }} / {{ leadsStore.dossier.total_required }}
               </span>
-            </div>
-
-            <!-- DVC: generate → client signs → signed copy uploaded (unlocks Gestion / Validé) -->
-            <div
-              :class="[
-                'rounded-lg px-3 py-2.5 flex flex-col gap-2',
-                lead.dvc_status === 'SIGNE' ? 'bg-success-bg/60' : 'bg-amber-50 border border-amber-200',
-              ]"
-            >
-              <div class="flex items-center justify-between gap-2">
-                <DvcStatusBadge :status="lead.dvc_status ?? 'A_GENERER'" dot />
-                <span v-if="lead.dvc_signed_at" class="text-xs text-gray-600">{{ formatDateTime(lead.dvc_signed_at) }}</span>
-              </div>
-              <p v-if="lead.dvc_status !== 'SIGNE'" class="text-[12.5px] leading-[18px] text-amber-900">
-                {{ auth.can('LEADS_SET_REVIEW_STATUS') && !auth.can('CONTRACTS_GENERATE')
-                  ? t('leadDetail.dvc.reviewHint')
-                  : lead.dvc_status === 'EN_ATTENTE_SIGNATURE' ? t('leadDetail.dvc.waitingHint') : t('leadDetail.dvc.generateHint') }}
-              </p>
-              <div class="flex flex-wrap gap-1.5">
-                <RouterLink
-                  v-if="lead.dvc_status === 'A_GENERER' && auth.can('CONTRACTS_GENERATE')"
-                  :to="{ name: 'contracts.create', query: { lead_id: lead.id } }"
-                  class="h-7.5 inline-flex items-center px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50"
-                >{{ t('leadDetail.dvc.generate') }}</RouterLink>
-                <button
-                  v-if="lead.dvc_status !== 'SIGNE' && auth.can('DOCUMENTS_UPLOAD')"
-                  type="button"
-                  class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50"
-                  @click="showDossierModal = true"
-                >{{ t('leadDetail.dvc.upload') }}</button>
-                <!-- Next step once signed: agents send to gestion, gestion validates -->
-                <template v-if="lead.dvc_status === 'SIGNE'">
-                  <button
-                    v-if="auth.can('LEADS_SET_REVIEW_STATUS') && lead.status !== 'VALIDE'"
-                    type="button"
-                    :disabled="statusChanging"
-                    class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
-                    @click="onStatusChange('VALIDE')"
-                  >{{ t('leadDetail.payments.validate') }}</button>
-                  <p v-else-if="lead.status === 'GESTION'" class="text-[12.5px] text-info-text">{{ t('leadDetail.payments.inReview') }}</p>
-                  <button
-                    v-else-if="auth.can('LEADS_UPDATE_STATUS') && !['VALIDE', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO'].includes(lead.status)"
-                    type="button"
-                    :disabled="statusChanging"
-                    class="h-7.5 px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50 disabled:opacity-50"
-                    @click="onStatusChange('GESTION')"
-                  >{{ t('leadDetail.payments.sendToGestion') }}</button>
-                </template>
-              </div>
             </div>
 
             <div v-if="leadsStore.loading.dossier && !leadsStore.dossier" class="space-y-2">
@@ -1119,7 +1253,15 @@ const companyFields = computed(() => {
       :blob-url="previewBlobUrl"
       :loading="previewLoading"
       @close="closePreview"
-      @download="onDossierDownload(previewDoc); closePreview()"
+      @download="onPreviewDownload"
+    />
+
+    <DvcCreateModal
+      :open="showDvcModal"
+      :lead="lead"
+      :previous-dvcs="leadDvcs"
+      @close="showDvcModal = false"
+      @generated="onDvcGenerated"
     />
   </div>
 </template>
