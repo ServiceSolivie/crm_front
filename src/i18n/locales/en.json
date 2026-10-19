@@ -41,7 +41,8 @@
     "vaultCredentials": "Credentials",
     "vaultAuditLogs": "Audit Logs",
     "overdueCount": "{n} overdue appointment(s)",
-    "todayCount": "{n} appointment(s) left today"
+    "todayCount": "{n} appointment(s) left today",
+    "dvcTypes": "DVC types"
   },
   "common": {
     "save": "Save",
@@ -1203,10 +1204,14 @@
       "open": "Open the file",
       "generateHint": "Generate the DVC, have the client sign it, then add the signed copy to the file.",
       "waitingHint": "DVC generated: add the copy signed by the client to the file before sending it to the back office.",
-      "generate": "Generate the DVC",
+      "generate": "Create a DVC",
       "upload": "Add the signed DVC",
       "lockedHint": "Add the signed DVC to the file first",
-      "reviewHint": "The DVC signed by the client is not in the file yet: the lead cannot be validated. Ask the agent for it (\"Flag an issue\") or add it yourself."
+      "reviewHint": "The DVC signed by the client is not in the file yet: the lead cannot be validated. Ask the agent for it (\"Flag an issue\") or add it yourself.",
+      "regenerate": "New DVC",
+      "generated": "Generated DVCs ({count})",
+      "item": "{type} DVC — #{version}",
+      "preview": "Preview"
     }
   },
   "leadForm": {
@@ -1363,5 +1368,75 @@
     "title": "Quick search",
     "noResults": "No lead found.",
     "hint": "Type at least 2 characters · ↑ ↓ to choose · Enter to open"
+  },
+  "dvc": {
+    "form": {
+      "moneyHint": "Amount in euros"
+    },
+    "create": {
+      "title": "Create a DVC",
+      "description": "Pick the DVC type: the form reuses this lead's previous DVCs, otherwise its details.",
+      "type": "DVC type",
+      "typePlaceholder": "Pick a type…",
+      "noTypes": "No DVC type is active. A super admin has to set one up in CRM settings › DVC types.",
+      "noTypeForLead": "This lead's insurance type has no DVC yet: pick another one or ask the super admin to create it.",
+      "version": "Template version {version}",
+      "fromPrevious": "Prefilled from: {sources}. Fields still empty come from the lead: check before generating.",
+      "source": "{type} DVC #{version} of {date}"
+    },
+    "types": {
+      "title": "DVC types",
+      "subtitle": "One DVC per insurance type. Its fields and its PDF are described by a JSON schema.",
+      "loadFailed": "Could not load the DVC types.",
+      "none": "No DVC yet",
+      "create": "Create the DVC"
+    },
+    "editor": {
+      "newTitle": "New DVC type",
+      "subtitle": "The JSON schema describes the agent's form and the PDF. Each publish creates a new version; DVCs already generated keep theirs.",
+      "schema": "JSON schema",
+      "format": "Indent",
+      "check": "Check",
+      "preview": "PDF preview",
+      "previewTitle": "DVC preview",
+      "valid": "Valid schema",
+      "invalidJson": "Invalid JSON: {error}",
+      "errors": "The schema has errors",
+      "failed": "The operation failed.",
+      "olderVersion": "You are editing the content of version {version}. Publish it to make it the current version.",
+      "settings": "Settings",
+      "insuranceType": "Insurance type",
+      "oneTypePerInsurance": "Only one DVC per insurance type.",
+      "label": "Label",
+      "filenamePrefix": "PDF file prefix",
+      "filenamePrefixHint": "Capitals, digits and \"-\" (e.g. DVC-AUTO).",
+      "active": "Active (offered to agents)",
+      "createTitle": "Create the type",
+      "createHint": "The schema becomes version 1 of this DVC.",
+      "create": "Create the DVC type",
+      "created": "DVC type created",
+      "saved": "Settings saved",
+      "publishTitle": "Publish a version",
+      "publishHint": "The next DVCs will use this schema. DVCs already generated do not change.",
+      "publishConfirm": "Publish this schema as version {version}? The next DVCs of this type will use it.",
+      "publish": "Publish",
+      "published": "Version {version} published",
+      "changeNote": "Version note",
+      "changeNotePlaceholder": "E.g. added the \"Vehicle use\" field",
+      "versions": "Versions",
+      "current": "Current",
+      "load": "Load",
+      "dvcCount": "no DVC | 1 DVC | {count} DVCs",
+      "reference": "Schema cheat sheet",
+      "refSections": "Section types:",
+      "refFields": "Field types:",
+      "refFieldProps": "A field: key, label, type, and optionally required, options (select), prefill, default, width: \"full\", min / max (number, money), uppercase, help.",
+      "refTexts": "Texts: **bold** and variables in double curly braces: a field key, broker.name, mediation.name, authority.name. A \"text\" section can have style: \"info\" (box) and visible_if: \"field_key\".",
+      "refPrefill": "Prefill sources:",
+      "delete": "Delete this type",
+      "deleteTitle": "Delete the DVC type",
+      "deleteConfirm": "\"{name}\" will be deleted with all its versions. Not possible once DVCs were generated: deactivate it instead.",
+      "deleted": "DVC type deleted"
+    }
   }
 }

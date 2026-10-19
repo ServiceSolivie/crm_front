@@ -187,6 +187,26 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Statuses' },
     },
 
+    /* DVC types (one per insurance type, JSON schema) */
+    {
+      path: '/dvc-types',
+      name: 'dvc-types',
+      component: () => import('@/pages/dvc-types/DvcTypesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'DVC Types' },
+    },
+    {
+      path: '/dvc-types/new',
+      name: 'dvc-types.create',
+      component: () => import('@/pages/dvc-types/DvcTypeEditorPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'New DVC Type' },
+    },
+    {
+      path: '/dvc-types/:id',
+      name: 'dvc-types.edit',
+      component: () => import('@/pages/dvc-types/DvcTypeEditorPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'DVC Type' },
+    },
+
     /* Document Requirements */
     {
       path: '/document-requirements',

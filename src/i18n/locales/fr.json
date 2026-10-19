@@ -41,7 +41,8 @@
     "vaultCredentials": "Identifiants",
     "vaultAuditLogs": "Journal d'audit",
     "overdueCount": "{n} rendez-vous en retard",
-    "todayCount": "{n} rendez-vous restant(s) aujourd’hui"
+    "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
+    "dvcTypes": "Types de DVC"
   },
   "common": {
     "save": "Enregistrer",
@@ -1203,10 +1204,14 @@
       "open": "Ouvrir le dossier",
       "generateHint": "Générez le DVC, faites-le signer au client puis ajoutez la copie signée au dossier.",
       "waitingHint": "DVC généré : ajoutez la copie signée par le client au dossier pour pouvoir l’envoyer en gestion.",
-      "generate": "Générer le DVC",
+      "generate": "Créer un DVC",
       "upload": "Ajouter le DVC signé",
       "lockedHint": "Ajoutez d’abord le DVC signé au dossier",
-      "reviewHint": "Le DVC signé par le client n’est pas encore dans le dossier : le lead ne peut pas être validé. Demandez-le à l’agent (« Signaler un problème ») ou ajoutez-le vous-même."
+      "reviewHint": "Le DVC signé par le client n’est pas encore dans le dossier : le lead ne peut pas être validé. Demandez-le à l’agent (« Signaler un problème ») ou ajoutez-le vous-même.",
+      "regenerate": "Nouveau DVC",
+      "generated": "DVC générés ({count})",
+      "item": "DVC {type} — n°{version}",
+      "preview": "Aperçu"
     }
   },
   "leadForm": {
@@ -1363,5 +1368,75 @@
     "title": "Recherche rapide",
     "noResults": "Aucun lead trouvé.",
     "hint": "Tapez au moins 2 caractères · ↑ ↓ pour choisir · Entrée pour ouvrir"
+  },
+  "dvc": {
+    "form": {
+      "moneyHint": "Montant en euros"
+    },
+    "create": {
+      "title": "Créer un DVC",
+      "description": "Choisissez le type de DVC : le formulaire reprend les DVC précédents de ce lead, sinon ses informations.",
+      "type": "Type de DVC",
+      "typePlaceholder": "Choisir un type…",
+      "noTypes": "Aucun type de DVC n'est actif. Un super admin doit en configurer un dans Paramètres CRM › Types de DVC.",
+      "noTypeForLead": "Le type d'assurance de ce lead n'a pas encore de DVC : choisissez-en un autre ou demandez au super admin de le créer.",
+      "version": "Modèle version {version}",
+      "fromPrevious": "Pré-rempli depuis : {sources}. Les champs restés vides viennent du lead : vérifiez avant de générer.",
+      "source": "DVC {type} n°{version} du {date}"
+    },
+    "types": {
+      "title": "Types de DVC",
+      "subtitle": "Un DVC par type d'assurance. Ses champs et son PDF sont décrits par un schéma JSON.",
+      "loadFailed": "Impossible de charger les types de DVC.",
+      "none": "Pas encore de DVC",
+      "create": "Créer le DVC"
+    },
+    "editor": {
+      "newTitle": "Nouveau type de DVC",
+      "subtitle": "Le schéma JSON décrit le formulaire de l’agent et le PDF. Chaque publication crée une nouvelle version ; les DVC déjà générés gardent la leur.",
+      "schema": "Schéma JSON",
+      "format": "Indenter",
+      "check": "Vérifier",
+      "preview": "Aperçu PDF",
+      "previewTitle": "Aperçu du DVC",
+      "valid": "Schéma valide",
+      "invalidJson": "JSON invalide : {error}",
+      "errors": "Le schéma contient des erreurs",
+      "failed": "L'opération a échoué.",
+      "olderVersion": "Vous éditez le contenu de la version {version}. Publiez-le pour en faire la version en cours.",
+      "settings": "Paramètres",
+      "insuranceType": "Type d'assurance",
+      "oneTypePerInsurance": "Un seul DVC par type d'assurance.",
+      "label": "Libellé",
+      "filenamePrefix": "Préfixe du fichier PDF",
+      "filenamePrefixHint": "Majuscules, chiffres et « - » (ex. DVC-AUTO).",
+      "active": "Actif (proposé aux agents)",
+      "createTitle": "Créer le type",
+      "createHint": "Le schéma devient la version 1 de ce DVC.",
+      "create": "Créer le type de DVC",
+      "created": "Type de DVC créé",
+      "saved": "Paramètres enregistrés",
+      "publishTitle": "Publier une version",
+      "publishHint": "Les prochains DVC utiliseront ce schéma. Les DVC déjà générés ne changent pas.",
+      "publishConfirm": "Publier ce schéma comme version {version} ? Les prochains DVC de ce type l’utiliseront.",
+      "publish": "Publier",
+      "published": "Version {version} publiée",
+      "changeNote": "Note de version",
+      "changeNotePlaceholder": "Ex. ajout du champ « Usage du véhicule »",
+      "versions": "Versions",
+      "current": "En cours",
+      "load": "Charger",
+      "dvcCount": "aucun DVC | 1 DVC | {count} DVC",
+      "reference": "Aide-mémoire du schéma",
+      "refSections": "Types de section :",
+      "refFields": "Types de champ :",
+      "refFieldProps": "Un champ : key, label, type, et au choix required, options (select), prefill, default, width: \"full\", min / max (number, money), uppercase, help.",
+      "refTexts": "Textes : **gras** et variables entre doubles accolades : la clé d’un champ, broker.name, mediation.name, authority.name. Une section « text » peut avoir style: \"info\" (encadré) et visible_if: \"cle_du_champ\".",
+      "refPrefill": "Sources de pré-remplissage (prefill) :",
+      "delete": "Supprimer ce type",
+      "deleteTitle": "Supprimer le type de DVC",
+      "deleteConfirm": "« {name} » sera supprimé avec toutes ses versions. Impossible si des DVC ont déjà été générés : désactivez-le plutôt.",
+      "deleted": "Type de DVC supprimé"
+    }
   }
 }
