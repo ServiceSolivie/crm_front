@@ -381,23 +381,26 @@ onMounted(() => {
         </section>
       </div>
 
-      <!-- Right column: today -->
-      <MyDayPanel v-if="canViewAppointments" class="xl:col-span-4">
-        <template v-if="topAgents.length" #footer>
-          <div class="mt-auto px-5 py-3.5 border-t border-gray-100">
-            <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500 mb-2.5">
-              {{ t('dashboard.topAgents') }}
-            </p>
-            <div class="flex flex-col gap-2 text-[13px]">
-              <div v-for="a in topAgents" :key="a.agent_id" class="flex items-center gap-2.5">
-                <span class="flex-1 truncate">{{ a.agent_name }}</span>
-                <span class="font-mono text-gray-600">{{ t('dashboard.validatedCount', { n: a.leads_validated }) }}</span>
-                <span class="w-12 text-right font-mono">{{ fmtRate(a.rate) }}</span>
+      <!-- Right column: today. Out of the flow on xl so a long agenda
+           can't make the row taller than the left column (it scrolls instead). -->
+      <div v-if="canViewAppointments" class="xl:col-span-4 xl:relative min-w-0">
+        <MyDayPanel class="xl:absolute xl:inset-0">
+          <template v-if="topAgents.length" #footer>
+            <div class="mt-auto shrink-0 px-5 py-3.5 border-t border-gray-100">
+              <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500 mb-2.5">
+                {{ t('dashboard.topAgents') }}
+              </p>
+              <div class="flex flex-col gap-2 text-[13px]">
+                <div v-for="a in topAgents" :key="a.agent_id" class="flex items-center gap-2.5">
+                  <span class="flex-1 truncate">{{ a.agent_name }}</span>
+                  <span class="font-mono text-gray-600">{{ t('dashboard.validatedCount', { n: a.leads_validated }) }}</span>
+                  <span class="w-12 text-right font-mono">{{ fmtRate(a.rate) }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </template>
-      </MyDayPanel>
+          </template>
+        </MyDayPanel>
+      </div>
     </div>
 
     <!-- ── Details ───────────────────────────────────────────── -->

@@ -67,7 +67,7 @@ function taskLabel(task) {
 
 <template>
   <section class="bg-white border border-gray-200 rounded-xl flex flex-col min-w-0">
-    <div class="px-5 pt-4.5 pb-3 flex items-start justify-between gap-3">
+    <div class="shrink-0 px-5 pt-4.5 pb-3 flex items-start justify-between gap-3">
       <div>
         <h2 class="font-display text-base font-semibold text-gray-900">
           {{ isAgent ? t('dashboard.myDay') : t('dashboard.todayAgenda') }}
@@ -94,7 +94,8 @@ function taskLabel(task) {
       {{ t('dashboard.nothingToday') }}
     </p>
 
-    <div v-else class="px-3 pb-3">
+    <!-- Only the list scrolls: header and footer stay in view -->
+    <div v-else class="flex-1 min-h-0 max-h-[480px] xl:max-h-none overflow-y-auto px-3 pb-3">
       <template v-for="group in [
         { key: 'late', label: t('dashboard.overdue'), list: overdue },
         { key: 'next', label: t('dashboard.today'), list: today },
