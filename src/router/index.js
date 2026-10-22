@@ -286,6 +286,12 @@ const router = createRouter({
       component: () => import('@/pages/reports/ReportRevenuePage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', permission: ['REVENUE_VIEW_ALL', 'REVENUE_VIEW_TEAM', 'REVENUE_VIEW_PERSONAL'], title: 'Revenue Report' },
     },
+    {
+      path: '/reports/imported-leads',
+      name: 'reports.imported-leads',
+      component: () => import('@/pages/reports/ImportedLeadsExportPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'LEADS_EXPORT_IMPORTED', title: 'Imported Leads Export' },
+    },
 
     /* Profile */
     {

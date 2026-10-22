@@ -42,7 +42,8 @@
     "vaultAuditLogs": "Audit Logs",
     "overdueCount": "{n} overdue appointment(s)",
     "todayCount": "{n} appointment(s) left today",
-    "dvcTypes": "DVC types"
+    "dvcTypes": "DVC types",
+    "importedLeadsExport": "Imported leads export"
   },
   "common": {
     "save": "Save",
@@ -1437,6 +1438,73 @@
       "deleteTitle": "Delete the DVC type",
       "deleteConfirm": "\"{name}\" will be deleted with all its versions. Not possible once DVCs were generated: deactivate it instead.",
       "deleted": "DVC type deleted"
+    }
+  },
+  "importedExport": {
+    "title": "Imported leads export",
+    "subtitle": "Leads that arrived from Google Sheets or a file in the period, with their current status.",
+    "superAdmin": "Super admin",
+    "period": {
+      "week": "Week",
+      "month": "Month",
+      "custom": "Custom",
+      "previous": "Previous period",
+      "next": "Next period",
+      "from": "From",
+      "to": "To"
+    },
+    "origin": {
+      "label": "Origin",
+      "all": "All imports",
+      "google_sheets": "Google Sheets",
+      "file": "Imported file"
+    },
+    "dateBasis": "Date used: received in the CRM",
+    "kpi": {
+      "total": "Imported leads",
+      "validated": "Validated",
+      "unassigned": "Unassigned",
+      "doublons": "Duplicates"
+    },
+    "byStatus": "Breakdown by current status",
+    "preview": "Preview",
+    "previewHint": "First {n} rows · the file has them all",
+    "colReceived": "Received",
+    "colLead": "Lead",
+    "colOrigin": "Origin",
+    "colStatus": "Status",
+    "colAgent": "Agent",
+    "colType": "Insurance",
+    "download": "Download Excel ({n} leads)",
+    "downloading": "Preparing the file…",
+    "downloaded": "File downloaded",
+    "downloadError": "The file could not be generated. Try again.",
+    "loadError": "Couldn’t load this period.",
+    "empty": "No imported lead in this period.",
+    "fileSheets": "“Leads” (one row per lead), “Par agent” and “Résumé” (statuses, stages, sources, insurances) sheets",
+    "agents": {
+      "title": "By agent",
+      "hint": "Current agent of the lead · click a column to sort",
+      "name": "Agent",
+      "received": "Received",
+      "untouched": "Untouched",
+      "in_progress": "In progress",
+      "validated": "Validated",
+      "lost": "Lost",
+      "conversion": "Conversion",
+      "split": "Split",
+      "total": "Total"
+    },
+    "sources": {
+      "title": "By source"
+    },
+    "insurances": {
+      "title": "By insurance",
+      "none": "Not specified"
+    },
+    "groups": {
+      "leads": "Leads",
+      "conversion": "Conversion"
     }
   }
 }
