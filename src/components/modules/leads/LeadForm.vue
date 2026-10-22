@@ -173,9 +173,11 @@ function buildPayload() {
     insurance_type: form.insurance_type,
   }
   if (form.client_type) payload.client_type = form.client_type
-  if (form.source_id) payload.source_id = form.source_id
+  if (form.source_id) payload.lead_source_id = form.source_id
+  else if (props.mode === 'edit') payload.lead_source_id = null
+  // Without LEADS_ASSIGN the API gives the lead to its creator
   if (form.assigned_to && canAssign.value) payload.assigned_to = form.assigned_to
-  if (props.mode === 'create' && form.notes.trim()) payload.notes = form.notes.trim()
+  if (props.mode === 'create' && form.notes.trim()) payload.note = form.notes.trim()
   if (showCompanyFields.value) {
     for (const key of ['address', 'company_name', 'company_legal_form', 'company_sector', 'company_employee_count', 'company_annual_revenue', 'company_status']) {
       const v = String(form[key] ?? '').trim()
@@ -256,7 +258,7 @@ const cardTitle = 'font-display text-[15px] font-semibold text-gray-900'
               >{{ o.label }}</button>
             </div>
           </div>
-          <AppSelect v-model="form.source_id" :label="t('leads.filterSource')" :options="sourceOptions" :error="errors.source_id" />
+          <AppSelect v-model="form.source_id" :label="t('leads.filterSource')" :options="sourceOptions" :error="errors.source_id || errors.lead_source_id" />
           <AppSelect
             v-if="canAssign"
             v-model="form.assigned_to"
