@@ -148,7 +148,8 @@ onMounted(() => {
   leadsStore.fetchList()
   leadsStore.fetchCounts()
   sourcesStore.fetchList()
-  if (auth.can('LEADS_ASSIGN')) usersStore.fetchList({ per_page: 100 })
+  // Agent filter: every agent, deactivated ones included (their leads are still there)
+  if (auth.can('LEADS_ASSIGN')) usersStore.fetchList({ role: 'agent', per_page: 100 })
 })
 
 /* Sorting  */
