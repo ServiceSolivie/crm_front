@@ -28,6 +28,7 @@ import {
   Building2,
   ClipboardCheck,
   Lock,
+  FileSpreadsheet,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -96,6 +97,9 @@ const reportChildren = computed(() => {
   }
   if (canViewRevenue.value) {
     items.push({ label: t('revenue.title'), to: '/reports/revenue', icon: Banknote })
+  }
+  if (auth.can('LEADS_EXPORT_IMPORTED')) {
+    items.push({ label: t('nav.importedLeadsExport'), to: '/reports/imported-leads', icon: FileSpreadsheet })
   }
   return items
 })

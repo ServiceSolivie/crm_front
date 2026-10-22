@@ -42,7 +42,8 @@
     "vaultAuditLogs": "Journal d'audit",
     "overdueCount": "{n} rendez-vous en retard",
     "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
-    "dvcTypes": "Types de DVC"
+    "dvcTypes": "Types de DVC",
+    "importedLeadsExport": "Export leads importés"
   },
   "common": {
     "save": "Enregistrer",
@@ -1437,6 +1438,73 @@
       "deleteTitle": "Supprimer le type de DVC",
       "deleteConfirm": "« {name} » sera supprimé avec toutes ses versions. Impossible si des DVC ont déjà été générés : désactivez-le plutôt.",
       "deleted": "Type de DVC supprimé"
+    }
+  },
+  "importedExport": {
+    "title": "Export des leads importés",
+    "subtitle": "Les leads arrivés par Google Sheets ou par fichier sur la période, avec leur statut actuel.",
+    "superAdmin": "Super admin",
+    "period": {
+      "week": "Semaine",
+      "month": "Mois",
+      "custom": "Personnalisé",
+      "previous": "Période précédente",
+      "next": "Période suivante",
+      "from": "Du",
+      "to": "Au"
+    },
+    "origin": {
+      "label": "Origine",
+      "all": "Toutes les importations",
+      "google_sheets": "Google Sheets",
+      "file": "Fichier importé"
+    },
+    "dateBasis": "Date utilisée : réception dans le CRM",
+    "kpi": {
+      "total": "Leads importés",
+      "validated": "Validés",
+      "unassigned": "Non assignés",
+      "doublons": "Doublons"
+    },
+    "byStatus": "Répartition par statut actuel",
+    "preview": "Aperçu",
+    "previewHint": "{n} premières lignes · le fichier contient tout",
+    "colReceived": "Reçu le",
+    "colLead": "Lead",
+    "colOrigin": "Origine",
+    "colStatus": "Statut",
+    "colAgent": "Agent",
+    "colType": "Assurance",
+    "download": "Télécharger Excel ({n} leads)",
+    "downloading": "Préparation du fichier…",
+    "downloaded": "Fichier téléchargé",
+    "downloadError": "Le fichier n’a pas pu être généré. Réessayez.",
+    "loadError": "Impossible de charger la période.",
+    "empty": "Aucun lead importé sur cette période.",
+    "fileSheets": "Feuilles « Leads » (une ligne par lead), « Par agent » et « Résumé » (statuts, étapes, sources, assurances)",
+    "agents": {
+      "title": "Par agent",
+      "hint": "Agent actuel du lead · cliquez une colonne pour trier",
+      "name": "Agent",
+      "received": "Reçus",
+      "untouched": "Non traités",
+      "in_progress": "En cours",
+      "validated": "Validés",
+      "lost": "Perdus",
+      "conversion": "Conversion",
+      "split": "Répartition",
+      "total": "Total"
+    },
+    "sources": {
+      "title": "Par source"
+    },
+    "insurances": {
+      "title": "Par assurance",
+      "none": "Non renseignée"
+    },
+    "groups": {
+      "leads": "Leads",
+      "conversion": "Conversion"
     }
   }
 }
