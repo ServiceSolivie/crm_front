@@ -1,23 +1,23 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ChevronLeft, ChevronRight, CalendarDays, Download, FileSpreadsheet, ArrowDown, ArrowUp } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, ChevronDown, CalendarDays, Download, FileSpreadsheet, ArrowDown, ArrowUp } from 'lucide-vue-next'
 import { leadExportsApi } from '@/api/leadExports'
 import { useToast } from '@/composables/useToast'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { LEAD_STAGES } from '@/utils/enums'
-import { formatDateTime, formatNumber } from '@/utils/formatters'
+import { formatNumber } from '@/utils/formatters'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
-import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 
 /**
  * Super admin: the imported leads (Google Sheets, files) of a week, a month
- * or a range, with their current status — counters and a preview here, the
- * whole list in the Excel file. The API cuts weeks and months on French time.
+ * or a range, with their current status — counters, per agent (down to each
+ * status), per source and per insurance here, every lead in the Excel file.
+ * The API cuts weeks and months on French time.
  */
 const { t } = useI18n()
 const toast = useToast()
-const { statusStage } = useLeadStatuses()
+const { statusStage, statusLabel } = useLeadStatuses()
 
 const PERIODS = ['week', 'month', 'custom']
 const ORIGINS = ['all', 'google_sheets', 'file']
@@ -114,8 +114,15 @@ const SEGMENTS = [
   { key: 'validated', dot: LEAD_STAGES.won.dot },
   { key: 'lost', dot: LEAD_STAGES.lost.dot },
 ]
-const AGENT_COLUMNS = ['name', 'received', 'untouched', 'in_progress', 'validated', 'lost', 'conversion']
+// A group header unfolds into the statuses of the period that belong to it
+const openGroups = ref([])
+const isOpen = (group) => openGroups.value.includes(group)
+function toggleGroup(group) {
+  openGroups.value = isOpen(group) ? openGroups.value.filter((g) => g !== group) : [...openGroups.value, group]
+}
+const statusesOf = (group) => (summary.value?.status_columns ?? []).filter((s) => s.group === group)
 
+// Sort keys: name, received, conversion, a group, or "status:CODE"
 const sortKey = ref('received')
 const sortDesc = ref(true)
 function sortBy(col) {
@@ -130,7 +137,9 @@ function sortBy(col) {
 const sortedAgents = computed(() => {
   const rows = [...(summary.value?.agents ?? [])]
   const dir = sortDesc.value ? -1 : 1
-  const value = (r) => (sortKey.value === 'name' ? (r.name ?? '').toLowerCase() : r[sortKey.value])
+  const key = sortKey.value
+  const value = (r) =>
+    key === 'name' ? (r.name ?? '').toLowerCase() : key.startsWith('status:') ? (r.statuses?.[key.slice(7)] ?? 0) : r[key]
   return rows.sort((a, b) => {
     if (!a.agent_id !== !b.agent_id) return a.agent_id ? -1 : 1
     const [x, y] = [value(a), value(b)]
@@ -141,12 +150,16 @@ const sortedAgents = computed(() => {
 const totals = computed(() =>
   (summary.value?.agents ?? []).reduce(
     (sum, a) => {
-      for (const k of Object.keys(sum)) sum[k] += a[k]
+      for (const k of ['received', 'untouched', 'in_progress', 'validated', 'lost']) sum[k] += a[k]
+      for (const [code, n] of Object.entries(a.statuses ?? {})) sum.statuses[code] = (sum.statuses[code] ?? 0) + n
       return sum
     },
-    { received: 0, untouched: 0, in_progress: 0, validated: 0, lost: 0 },
+    { received: 0, untouched: 0, in_progress: 0, validated: 0, lost: 0, statuses: {} },
   ),
 )
+
+// Untouched in red when it is half or more of what the agent received
+const untouchedAlert = (a) => a.agent_id && a.received && a.untouched / a.received >= 0.5
 
 const GROUP_BLOCKS = [
   { key: 'sources', id: 'source_id', label: (g) => g.name ?? t('common.noSource') },
@@ -155,7 +168,11 @@ const GROUP_BLOCKS = [
 const maxOf = (key) => Math.max(1, ...(summary.value?.[key] ?? []).map((g) => g.received))
 const rate = (value) => `${(Math.round((value ?? 0) * 10) / 10).toLocaleString('fr-FR')} %`
 
+const ariaSort = (key) => (sortKey.value === key ? (sortDesc.value ? 'descending' : 'ascending') : 'none')
+
 const card = 'bg-white border border-gray-200 rounded-xl px-5 py-4'
+// Sortable header cell
+const th = 'py-2 px-2 font-medium whitespace-nowrap select-none cursor-pointer hover:text-gray-900'
 </script>
 
 <template>
@@ -264,64 +281,6 @@ const card = 'bg-white border border-gray-200 rounded-xl px-5 py-4'
       </div>
     </section>
 
-    <div :class="['grid grid-cols-1 xl:grid-cols-5 gap-4 transition-opacity', loading && summary ? 'opacity-60' : '']">
-      <!-- Breakdown by current status -->
-      <section :class="[card, 'xl:col-span-2']">
-        <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-3">{{ t('importedExport.byStatus') }}</h2>
-        <div v-if="!summary" class="space-y-2.5">
-          <AppSkeleton v-for="n in 5" :key="n" height="14px" />
-        </div>
-        <p v-else-if="!summary.total" class="text-sm text-gray-500">{{ t('importedExport.empty') }}</p>
-        <div v-else class="flex flex-col gap-2">
-          <div v-for="s in summary.statuses" :key="s.code" class="grid grid-cols-[150px_minmax(0,1fr)_48px] items-center gap-3 text-[13px]">
-            <span class="truncate text-gray-700" :title="s.label">{{ s.label }}</span>
-            <span class="h-2 rounded bg-gray-100 overflow-hidden">
-              <span :class="['block h-full rounded', barClass(s.code)]" :style="{ width: `${(s.count / maxStatus) * 100}%` }" />
-            </span>
-            <span class="text-right font-mono text-gray-900">{{ formatNumber(s.count) }}</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- Preview -->
-      <section :class="[card, 'xl:col-span-3 min-w-0']">
-        <div class="flex items-baseline justify-between gap-3 mb-2">
-          <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('importedExport.preview') }}</h2>
-          <span class="text-xs text-gray-500">{{ t('importedExport.previewHint', { n: summary?.preview?.length ?? 10 }) }}</span>
-        </div>
-        <div v-if="!summary" class="space-y-2.5">
-          <AppSkeleton v-for="n in 5" :key="n" height="20px" />
-        </div>
-        <p v-else-if="!summary.preview.length" class="text-sm text-gray-500 py-4">{{ t('importedExport.empty') }}</p>
-        <div v-else class="overflow-x-auto">
-          <table class="w-full text-[13px]">
-            <thead>
-              <tr class="text-left text-[12px] text-gray-500 border-b border-gray-100">
-                <th class="py-2 pr-3 font-medium">{{ t('importedExport.colReceived') }}</th>
-                <th class="py-2 pr-3 font-medium">{{ t('importedExport.colLead') }}</th>
-                <th class="py-2 pr-3 font-medium">{{ t('importedExport.colOrigin') }}</th>
-                <th class="py-2 pr-3 font-medium">{{ t('importedExport.colStatus') }}</th>
-                <th class="py-2 pr-3 font-medium">{{ t('importedExport.colAgent') }}</th>
-                <th class="py-2 font-medium">{{ t('importedExport.colType') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="r in summary.preview" :key="r.id" class="border-b border-gray-100 last:border-b-0">
-                <td class="py-2 pr-3 font-mono text-[12.5px] whitespace-nowrap">{{ formatDateTime(r.received_at) }}</td>
-                <td class="py-2 pr-3 max-w-[180px] truncate">
-                  <RouterLink :to="{ name: 'leads.detail', params: { id: r.id } }" class="font-medium text-gray-900 hover:text-primary">{{ r.name || r.reference }}</RouterLink>
-                </td>
-                <td class="py-2 pr-3 max-w-[160px] truncate text-gray-600" :title="r.origin">{{ r.origin }}</td>
-                <td class="py-2 pr-3"><LeadStatusBadge :status="r.status" /></td>
-                <td class="py-2 pr-3 whitespace-nowrap" :class="r.agent ? 'text-gray-900' : 'text-gray-500'">{{ r.agent ?? t('common.unassigned') }}</td>
-                <td class="py-2 whitespace-nowrap text-gray-600">{{ r.insurance_type ? t('insuranceTypesShort.' + r.insurance_type, r.insurance_type) : '—' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-
     <!-- Per agent -->
     <section :class="[card, 'transition-opacity', loading && summary ? 'opacity-60' : '']">
       <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
@@ -341,56 +300,123 @@ const card = 'bg-white border border-gray-200 rounded-xl px-5 py-4'
       <p v-else-if="!summary.total" class="text-sm text-gray-500 py-2">{{ t('importedExport.empty') }}</p>
       <div v-else class="overflow-x-auto">
         <table class="w-full text-[13px]">
-          <thead>
-            <tr class="text-[12px] text-gray-500 border-b border-gray-100">
+          <thead class="text-[12px] text-gray-500">
+            <!-- Row 1: agent, received, the 4 groups (folded or spanning their statuses), conversion, split -->
+            <tr>
               <th
-                v-for="col in AGENT_COLUMNS"
+                v-for="col in ['name', 'received']"
                 :key="col"
-                :class="['py-2 px-2 font-medium whitespace-nowrap select-none cursor-pointer hover:text-gray-900', col === 'name' ? 'text-left' : 'text-right']"
-                :aria-sort="sortKey === col ? (sortDesc ? 'descending' : 'ascending') : 'none'"
+                rowspan="2"
+                :class="[th, col === 'name' ? 'text-left sticky left-0 bg-white z-[1]' : 'text-right']"
+                :aria-sort="ariaSort(col)"
                 @click="sortBy(col)"
               >
                 {{ t('importedExport.agents.' + col) }}
                 <component :is="sortDesc ? ArrowDown : ArrowUp" v-if="sortKey === col" class="inline w-3 h-3 -mt-0.5" />
               </th>
-              <th class="py-2 px-2 font-medium text-left w-[24%]">{{ t('importedExport.agents.split') }}</th>
+              <th
+                v-for="seg in SEGMENTS"
+                :key="seg.key"
+                :colspan="isOpen(seg.key) ? statusesOf(seg.key).length + 1 : 1"
+                :rowspan="isOpen(seg.key) ? 1 : 2"
+                :class="[th, isOpen(seg.key) ? 'text-left border-b border-gray-200 bg-gray-50' : 'text-right']"
+              >
+                <button
+                  type="button"
+                  class="inline-flex items-center gap-1.5 hover:text-gray-900"
+                  :aria-expanded="isOpen(seg.key)"
+                  :title="t('importedExport.agents.toggleGroup')"
+                  @click="toggleGroup(seg.key)"
+                >
+                  <span :class="['w-2 h-2 rounded-sm', seg.dot]" />
+                  {{ t('importedExport.agents.' + seg.key) }}
+                  <component :is="isOpen(seg.key) ? ChevronDown : ChevronRight" class="w-3.5 h-3.5" />
+                </button>
+              </th>
+              <th rowspan="2" :class="[th, 'text-right']" :aria-sort="ariaSort('conversion')" @click="sortBy('conversion')">
+                {{ t('importedExport.agents.conversion') }}
+                <component :is="sortDesc ? ArrowDown : ArrowUp" v-if="sortKey === 'conversion'" class="inline w-3 h-3 -mt-0.5" />
+              </th>
+              <th rowspan="2" class="py-2 px-2 font-medium text-left min-w-[140px]">{{ t('importedExport.agents.split') }}</th>
+            </tr>
+            <!-- Row 2: for each unfolded group, its total then its statuses -->
+            <tr class="border-b border-gray-100">
+              <template v-for="seg in SEGMENTS" :key="seg.key">
+                <template v-if="isOpen(seg.key)">
+                  <th :class="[th, 'text-right']" :aria-sort="ariaSort(seg.key)" @click="sortBy(seg.key)">
+                    {{ t('importedExport.agents.total') }}
+                    <component :is="sortDesc ? ArrowDown : ArrowUp" v-if="sortKey === seg.key" class="inline w-3 h-3 -mt-0.5" />
+                  </th>
+                  <th
+                    v-for="s in statusesOf(seg.key)"
+                    :key="s.code"
+                    :class="[th, 'text-right font-normal']"
+                    :aria-sort="ariaSort('status:' + s.code)"
+                    @click="sortBy('status:' + s.code)"
+                  >
+                    <span class="block text-gray-700">
+                      {{ statusLabel(s.code) }}
+                      <component :is="sortDesc ? ArrowDown : ArrowUp" v-if="sortKey === 'status:' + s.code" class="inline w-3 h-3 -mt-0.5" />
+                    </span>
+                    <span v-if="seg.key === 'in_progress' && s.stage" class="block text-[11px] text-gray-400">{{ t('stages.' + s.stage) }}</span>
+                  </th>
+                </template>
+              </template>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="a in sortedAgents" :key="a.agent_id ?? 'none'" class="border-b border-gray-100">
-              <td class="py-2 px-2 max-w-[200px]">
-                <p :class="['truncate', a.agent_id ? 'font-medium text-gray-900' : 'text-gray-500']">{{ a.name ?? t('common.unassigned') }}</p>
-                <p v-if="a.team" class="text-[11.5px] text-gray-500 truncate">{{ a.team }}</p>
+            <tr v-for="row in [...sortedAgents, { ...totals, isTotal: true }]" :key="row.isTotal ? 'total' : (row.agent_id ?? 'none')" :class="row.isTotal ? 'font-medium text-gray-900' : 'border-b border-gray-100'">
+              <td class="py-2 px-2 max-w-[200px] sticky left-0 bg-white">
+                <template v-if="row.isTotal">{{ t('importedExport.agents.total') }}</template>
+                <template v-else>
+                  <p :class="['truncate', row.agent_id ? 'font-medium text-gray-900' : 'text-gray-500']">{{ row.name ?? t('common.unassigned') }}</p>
+                  <p v-if="row.team" class="text-[11.5px] text-gray-500 truncate">{{ row.team }}</p>
+                </template>
               </td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(a.received) }}</td>
-              <td :class="['py-2 px-2 text-right font-mono', a.agent_id && a.received && a.untouched / a.received >= 0.5 ? 'text-danger-text' : '']">{{ formatNumber(a.untouched) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(a.in_progress) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(a.validated) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(a.lost) }}</td>
-              <td class="py-2 px-2 text-right font-mono whitespace-nowrap">{{ a.agent_id ? rate(a.conversion) : '—' }}</td>
+              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(row.received) }}</td>
+              <template v-for="seg in SEGMENTS" :key="seg.key">
+                <td :class="['py-2 px-2 text-right font-mono', isOpen(seg.key) ? 'font-medium' : '', seg.key === 'untouched' && !row.isTotal && untouchedAlert(row) ? 'text-danger-text' : '']">
+                  {{ formatNumber(row[seg.key]) }}
+                </td>
+                <template v-if="isOpen(seg.key)">
+                  <td v-for="s in statusesOf(seg.key)" :key="s.code" class="py-2 px-2 text-right font-mono">
+                    <span v-if="row.statuses?.[s.code]">{{ formatNumber(row.statuses[s.code]) }}</span>
+                    <span v-else class="text-gray-300">·</span>
+                  </td>
+                </template>
+              </template>
+              <td class="py-2 px-2 text-right font-mono whitespace-nowrap">
+                {{ row.isTotal ? rate(row.received ? (row.validated / row.received) * 100 : 0) : row.agent_id ? rate(row.conversion) : '—' }}
+              </td>
               <td class="py-2 px-2">
-                <span class="flex h-2 rounded overflow-hidden bg-gray-100">
-                  <span v-for="seg in SEGMENTS" :key="seg.key" :class="seg.dot" :style="{ width: `${(a[seg.key] / (a.received || 1)) * 100}%` }" />
+                <span v-if="!row.isTotal" class="flex h-2 rounded overflow-hidden bg-gray-100">
+                  <span v-for="seg in SEGMENTS" :key="seg.key" :class="seg.dot" :style="{ width: `${(row[seg.key] / (row.received || 1)) * 100}%` }" />
                 </span>
               </td>
-            </tr>
-            <tr class="font-medium text-gray-900">
-              <td class="py-2 px-2">{{ t('importedExport.agents.total') }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(totals.received) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(totals.untouched) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(totals.in_progress) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(totals.validated) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ formatNumber(totals.lost) }}</td>
-              <td class="py-2 px-2 text-right font-mono">{{ rate(totals.received ? (totals.validated / totals.received) * 100 : 0) }}</td>
-              <td />
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- Per source / per insurance -->
-    <div :class="['grid grid-cols-1 lg:grid-cols-2 gap-4 transition-opacity', loading && summary ? 'opacity-60' : '']">
+    <!-- Current status, per source, per insurance -->
+    <div :class="['grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 transition-opacity', loading && summary ? 'opacity-60' : '']">
+      <section :class="card">
+        <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-3">{{ t('importedExport.byStatus') }}</h2>
+        <div v-if="!summary" class="space-y-2.5">
+          <AppSkeleton v-for="n in 5" :key="n" height="14px" />
+        </div>
+        <p v-else-if="!summary.total" class="text-sm text-gray-500">{{ t('importedExport.empty') }}</p>
+        <div v-else class="flex flex-col gap-2">
+          <div v-for="s in summary.statuses" :key="s.code" class="grid grid-cols-[130px_minmax(0,1fr)_44px] items-center gap-3 text-[13px]">
+            <span class="truncate text-gray-700" :title="statusLabel(s.code)">{{ statusLabel(s.code) }}</span>
+            <span class="h-2 rounded bg-gray-100 overflow-hidden">
+              <span :class="['block h-full rounded', barClass(s.code)]" :style="{ width: `${(s.count / maxStatus) * 100}%` }" />
+            </span>
+            <span class="text-right font-mono text-gray-900">{{ formatNumber(s.count) }}</span>
+          </div>
+        </div>
+      </section>
       <section v-for="block in GROUP_BLOCKS" :key="block.key" :class="card">
         <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-2">{{ t('importedExport.' + block.key + '.title') }}</h2>
         <div v-if="!summary" class="space-y-2.5">
