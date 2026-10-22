@@ -1467,14 +1467,6 @@
       "doublons": "Duplicates"
     },
     "byStatus": "Breakdown by current status",
-    "preview": "Preview",
-    "previewHint": "First {n} rows · the file has them all",
-    "colReceived": "Received",
-    "colLead": "Lead",
-    "colOrigin": "Origin",
-    "colStatus": "Status",
-    "colAgent": "Agent",
-    "colType": "Insurance",
     "download": "Download Excel ({n} leads)",
     "downloading": "Preparing the file…",
     "downloaded": "File downloaded",
@@ -1484,7 +1476,7 @@
     "fileSheets": "“Leads” (one row per lead), “Par agent” and “Résumé” (statuses, stages, sources, insurances) sheets",
     "agents": {
       "title": "By agent",
-      "hint": "Current agent of the lead · click a column to sort",
+      "hint": "Current agent of the lead · click a group to see its statuses, a column to sort",
       "name": "Agent",
       "received": "Received",
       "untouched": "Untouched",
@@ -1493,7 +1485,8 @@
       "lost": "Lost",
       "conversion": "Conversion",
       "split": "Split",
-      "total": "Total"
+      "total": "Total",
+      "toggleGroup": "Show / hide the statuses of this group"
     },
     "sources": {
       "title": "By source"
