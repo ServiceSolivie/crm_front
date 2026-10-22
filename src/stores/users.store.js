@@ -27,12 +27,17 @@ export const useUsersStore = defineStore('users', () => {
   const errors = ref(null)
   let _listGen = 0
 
-  async function fetchList() {
+  /**
+   * Without arguments: the Users page, with its filters. With params (e.g.
+   * { role: 'agent', per_page: 100 } for a dropdown): exactly those, the
+   * page's filters left untouched.
+   */
+  async function fetchList(params = null) {
     const gen = ++_listGen
     loading.list = true
     errors.value = null
     try {
-      const { data, meta: m } = await usersApi.list(_buildParams())
+      const { data, meta: m } = await usersApi.list(params ?? _buildParams())
       if (gen !== _listGen) return
       list.value = data
       if (m) meta.value = m

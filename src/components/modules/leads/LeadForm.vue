@@ -102,7 +102,10 @@ watch(
 
 onMounted(() => {
   sourcesStore.fetchList()
-  if (canAssign.value) usersStore.fetchList({ role: 'agent', per_page: 100 })
+  // A new lead goes to an active agent; editing keeps the current one even if deactivated
+  if (canAssign.value) {
+    usersStore.fetchList({ role: 'agent', per_page: 100, ...(props.mode === 'create' ? { is_active: 1 } : {}) })
+  }
 })
 
 /* ── Duplicate check on the phone number / e-mail ───────────
