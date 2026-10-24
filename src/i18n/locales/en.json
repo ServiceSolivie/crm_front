@@ -43,7 +43,8 @@
     "overdueCount": "{n} overdue appointment(s)",
     "todayCount": "{n} appointment(s) left today",
     "dvcTypes": "DVC types",
-    "importedLeadsExport": "Imported leads export"
+    "importedLeadsExport": "Imported leads export",
+    "intake": "API intake"
   },
   "common": {
     "save": "Save",
@@ -1499,5 +1500,68 @@
       "leads": "Leads",
       "conversion": "Conversion"
     }
+  },
+  "intake": {
+    "title": "API intake",
+    "superAdmin": "Super admin",
+    "subtitle": "Test phase: requests are recorded exactly as received, no lead is created.",
+    "address": "Address",
+    "key": "Key",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Couldn’t copy.",
+    "show": "Show",
+    "hide": "Hide",
+    "newKey": "New key",
+    "newKeyTitle": "Generate a new key?",
+    "newKeyConfirm": "The old key stops working at once: the marketing team will have to use the new one.",
+    "keyCreated": "Key generated",
+    "noKey": "No key: every request is refused.",
+    "createKey": "Generate a key",
+    "howToSend": "Send the key in the X-Api-Key header, as an “Authorization: Bearer …” token, or at the end of the address: …/intake/leads?key=…",
+    "retention": "Received requests are deleted automatically after {n} days.",
+    "received": "Requests received · {n}",
+    "refresh": "Refresh",
+    "deleteAll": "Delete all",
+    "deleteAllTitle": "Delete every request?",
+    "deleteAllConfirm": "The {n} received requests will be deleted for good.",
+    "deleteTitle": "Delete this request?",
+    "deleteConfirm": "It will be deleted for good.",
+    "emptyTitle": "No request received yet",
+    "emptyHint": "Send the address and key to the marketing team: what they send will show up here.",
+    "notKept": "Invalid key: content not kept",
+    "noContent": "{method} with no content (connection test?)",
+    "pickOne": "Select a request to see its content.",
+    "truncated": "content cut at 256 KB",
+    "keyOk": "Valid key",
+    "keyBad": "Invalid or missing key",
+    "keyVia": {
+      "header": "via the X-Api-Key header",
+      "bearer": "via Authorization: Bearer",
+      "query": "via ?key= in the address",
+      "none": "no key sent"
+    },
+    "queryParams": "Address parameters",
+    "body": "Content received",
+    "emptyBody": "No content.",
+    "invalidNotKept": "The key was invalid: the content was not kept.",
+    "headers": "Headers received",
+    "meta": {
+      "method": "Method",
+      "format": "Format",
+      "size": "Size",
+      "key": "Key",
+      "ip": "IP",
+      "userAgent": "Tool (User-Agent)"
+    },
+    "format": {
+      "invalidKey": "Invalid key",
+      "empty": "Empty",
+      "form": "Form",
+      "multipart": "Form + files",
+      "other": "Other"
+    },
+    "loadError": "Couldn’t load the data.",
+    "actionError": "The action failed. Try again."
   }
 }
