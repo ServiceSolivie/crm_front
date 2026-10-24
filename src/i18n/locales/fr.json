@@ -49,7 +49,10 @@
     "overdueCount": "{n} rendez-vous en retard",
     "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
     "payments": "Paiements",
-    "activityJournal": "Journal d'activité"
+    "activityJournal": "Journal d'activité",
+    "dvcTypes": "Types de DVC",
+    "importedLeadsExport": "Export leads importés",
+    "intake": "Réception API"
   },
   "common": {
     "save": "Enregistrer",
@@ -1256,10 +1259,14 @@
       "open": "Ouvrir le dossier",
       "generateHint": "Générez le DVC, faites-le signer au client puis ajoutez la copie signée au dossier.",
       "waitingHint": "DVC généré : ajoutez la copie signée par le client au dossier pour pouvoir l’envoyer en gestion.",
-      "generate": "Générer le DVC",
+      "generate": "Créer un DVC",
       "upload": "Ajouter le DVC signé",
       "lockedHint": "Ajoutez d’abord le DVC signé au dossier",
-      "reviewHint": "Le DVC signé par le client n’est pas encore dans le dossier : le lead ne peut pas être validé. Demandez-le à l’agent (« Signaler un problème ») ou ajoutez-le vous-même."
+      "reviewHint": "Le DVC signé par le client n’est pas encore dans le dossier : le lead ne peut pas être validé. Demandez-le à l’agent (« Signaler un problème ») ou ajoutez-le vous-même.",
+      "regenerate": "Nouveau DVC",
+      "generated": "DVC générés ({count})",
+      "item": "DVC {type} — n°{version}",
+      "preview": "Aperçu"
     }
   },
   "leadForm": {
@@ -1632,5 +1639,198 @@
       "ip_address": "Adresse IP",
       "user_agent": "Navigateur"
     }
+  },
+  "dvc": {
+    "form": {
+      "moneyHint": "Montant en euros"
+    },
+    "create": {
+      "title": "Créer un DVC",
+      "description": "Choisissez le type de DVC : le formulaire reprend les DVC précédents de ce lead, sinon ses informations.",
+      "type": "Type de DVC",
+      "typePlaceholder": "Choisir un type…",
+      "noTypes": "Aucun type de DVC n'est actif. Un super admin doit en configurer un dans Paramètres CRM › Types de DVC.",
+      "noTypeForLead": "Le type d'assurance de ce lead n'a pas encore de DVC : choisissez-en un autre ou demandez au super admin de le créer.",
+      "version": "Modèle version {version}",
+      "fromPrevious": "Pré-rempli depuis : {sources}. Les champs restés vides viennent du lead : vérifiez avant de générer.",
+      "source": "DVC {type} n°{version} du {date}"
+    },
+    "types": {
+      "title": "Types de DVC",
+      "subtitle": "Un DVC par type d'assurance. Ses champs et son PDF sont décrits par un schéma JSON.",
+      "loadFailed": "Impossible de charger les types de DVC.",
+      "none": "Pas encore de DVC",
+      "create": "Créer le DVC"
+    },
+    "editor": {
+      "newTitle": "Nouveau type de DVC",
+      "subtitle": "Le schéma JSON décrit le formulaire de l’agent et le PDF. Chaque publication crée une nouvelle version ; les DVC déjà générés gardent la leur.",
+      "schema": "Schéma JSON",
+      "format": "Indenter",
+      "check": "Vérifier",
+      "preview": "Aperçu PDF",
+      "previewTitle": "Aperçu du DVC",
+      "valid": "Schéma valide",
+      "invalidJson": "JSON invalide : {error}",
+      "errors": "Le schéma contient des erreurs",
+      "failed": "L'opération a échoué.",
+      "olderVersion": "Vous éditez le contenu de la version {version}. Publiez-le pour en faire la version en cours.",
+      "settings": "Paramètres",
+      "insuranceType": "Type d'assurance",
+      "oneTypePerInsurance": "Un seul DVC par type d'assurance.",
+      "label": "Libellé",
+      "filenamePrefix": "Préfixe du fichier PDF",
+      "filenamePrefixHint": "Majuscules, chiffres et « - » (ex. DVC-AUTO).",
+      "active": "Actif (proposé aux agents)",
+      "createTitle": "Créer le type",
+      "createHint": "Le schéma devient la version 1 de ce DVC.",
+      "create": "Créer le type de DVC",
+      "created": "Type de DVC créé",
+      "saved": "Paramètres enregistrés",
+      "publishTitle": "Publier une version",
+      "publishHint": "Les prochains DVC utiliseront ce schéma. Les DVC déjà générés ne changent pas.",
+      "publishConfirm": "Publier ce schéma comme version {version} ? Les prochains DVC de ce type l’utiliseront.",
+      "publish": "Publier",
+      "published": "Version {version} publiée",
+      "changeNote": "Note de version",
+      "changeNotePlaceholder": "Ex. ajout du champ « Usage du véhicule »",
+      "versions": "Versions",
+      "current": "En cours",
+      "load": "Charger",
+      "dvcCount": "aucun DVC | 1 DVC | {count} DVC",
+      "reference": "Aide-mémoire du schéma",
+      "refSections": "Types de section :",
+      "refFields": "Types de champ :",
+      "refFieldProps": "Un champ : key, label, type, et au choix required, options (select), prefill, default, width: \"full\", min / max (number, money), uppercase, help.",
+      "refTexts": "Textes : **gras** et variables entre doubles accolades : la clé d’un champ, broker.name, mediation.name, authority.name. Une section « text » peut avoir style: \"info\" (encadré) et visible_if: \"cle_du_champ\".",
+      "refPrefill": "Sources de pré-remplissage (prefill) :",
+      "delete": "Supprimer ce type",
+      "deleteTitle": "Supprimer le type de DVC",
+      "deleteConfirm": "« {name} » sera supprimé avec toutes ses versions. Impossible si des DVC ont déjà été générés : désactivez-le plutôt.",
+      "deleted": "Type de DVC supprimé"
+    }
+  },
+  "importedExport": {
+    "title": "Export des leads importés",
+    "subtitle": "Les leads arrivés par Google Sheets ou par fichier sur la période, avec leur statut actuel.",
+    "superAdmin": "Super admin",
+    "period": {
+      "week": "Semaine",
+      "month": "Mois",
+      "custom": "Personnalisé",
+      "previous": "Période précédente",
+      "next": "Période suivante",
+      "from": "Du",
+      "to": "Au"
+    },
+    "origin": {
+      "label": "Origine",
+      "all": "Toutes les importations",
+      "google_sheets": "Google Sheets",
+      "file": "Fichier importé"
+    },
+    "dateBasis": "Date utilisée : réception dans le CRM",
+    "kpi": {
+      "total": "Leads importés",
+      "validated": "Validés",
+      "unassigned": "Non assignés",
+      "doublons": "Doublons"
+    },
+    "byStatus": "Répartition par statut actuel",
+    "download": "Télécharger Excel ({n} leads)",
+    "downloading": "Préparation du fichier…",
+    "downloaded": "Fichier téléchargé",
+    "downloadError": "Le fichier n’a pas pu être généré. Réessayez.",
+    "loadError": "Impossible de charger la période.",
+    "empty": "Aucun lead importé sur cette période.",
+    "fileSheets": "Feuilles « Leads » (une ligne par lead), « Par agent » et « Résumé » (statuts, étapes, sources, assurances)",
+    "agents": {
+      "title": "Par agent",
+      "hint": "Agent actuel du lead · cliquez un groupe pour voir ses statuts, une colonne pour trier",
+      "name": "Agent",
+      "received": "Reçus",
+      "untouched": "Non traités",
+      "in_progress": "En cours",
+      "validated": "Validés",
+      "lost": "Perdus",
+      "conversion": "Conversion",
+      "split": "Répartition",
+      "total": "Total",
+      "toggleGroup": "Afficher / masquer les statuts du groupe"
+    },
+    "sources": {
+      "title": "Par source"
+    },
+    "insurances": {
+      "title": "Par assurance",
+      "none": "Non renseignée"
+    },
+    "groups": {
+      "leads": "Leads",
+      "conversion": "Conversion"
+    }
+  },
+  "intake": {
+    "title": "Réception API",
+    "superAdmin": "Super admin",
+    "subtitle": "Phase de test : les requêtes reçues sont enregistrées telles quelles, aucun lead n’est créé.",
+    "address": "Adresse",
+    "key": "Clé",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyFailed": "Impossible de copier.",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "newKey": "Nouvelle clé",
+    "newKeyTitle": "Générer une nouvelle clé ?",
+    "newKeyConfirm": "L’ancienne clé cessera de fonctionner immédiatement : l’équipe marketing devra utiliser la nouvelle.",
+    "keyCreated": "Clé générée",
+    "noKey": "Aucune clé : toutes les requêtes sont refusées.",
+    "createKey": "Générer une clé",
+    "howToSend": "La clé s’envoie dans l’en-tête X-Api-Key, en jeton « Authorization: Bearer … », ou à la fin de l’adresse : …/intake/leads?key=…",
+    "retention": "Les requêtes reçues sont supprimées automatiquement après {n} jours.",
+    "received": "Requêtes reçues · {n}",
+    "refresh": "Actualiser",
+    "deleteAll": "Tout supprimer",
+    "deleteAllTitle": "Supprimer toutes les requêtes ?",
+    "deleteAllConfirm": "Les {n} requêtes reçues seront supprimées définitivement.",
+    "deleteTitle": "Supprimer cette requête ?",
+    "deleteConfirm": "Elle sera supprimée définitivement.",
+    "emptyTitle": "Aucune requête reçue",
+    "emptyHint": "Envoyez l’adresse et la clé à l’équipe marketing : leurs envois apparaîtront ici.",
+    "notKept": "Clé invalide : contenu non conservé",
+    "noContent": "{method} sans contenu (test de connexion ?)",
+    "pickOne": "Sélectionnez une requête pour voir son contenu.",
+    "truncated": "contenu coupé à 256 ko",
+    "keyOk": "Clé valide",
+    "keyBad": "Clé invalide ou absente",
+    "keyVia": {
+      "header": "via l’en-tête X-Api-Key",
+      "bearer": "via Authorization: Bearer",
+      "query": "via ?key= dans l’adresse",
+      "none": "aucune clé envoyée"
+    },
+    "queryParams": "Paramètres de l’adresse",
+    "body": "Contenu reçu",
+    "emptyBody": "Aucun contenu.",
+    "invalidNotKept": "La clé était invalide : le contenu n’a pas été conservé.",
+    "headers": "En-têtes reçus",
+    "meta": {
+      "method": "Méthode",
+      "format": "Format",
+      "size": "Taille",
+      "key": "Clé",
+      "ip": "IP",
+      "userAgent": "Outil (User-Agent)"
+    },
+    "format": {
+      "invalidKey": "Clé invalide",
+      "empty": "Vide",
+      "form": "Formulaire",
+      "multipart": "Formulaire + fichiers",
+      "other": "Autre"
+    },
+    "loadError": "Impossible de charger les données.",
+    "actionError": "L’action a échoué. Réessayez."
   }
 }

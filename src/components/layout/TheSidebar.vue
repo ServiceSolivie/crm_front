@@ -14,6 +14,7 @@ import {
   RadioTower,
   ListChecks,
   MonitorCheck,
+  Webhook,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -31,6 +32,7 @@ import {
   Building2,
   ClipboardCheck,
   Lock,
+  FileSpreadsheet,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -103,6 +105,9 @@ const reportChildren = computed(() => {
   }
   if (canViewRevenue.value) {
     items.push({ label: t('revenue.title'), to: '/reports/revenue', icon: Banknote })
+  }
+  if (auth.can('LEADS_EXPORT_IMPORTED')) {
+    items.push({ label: t('nav.importedLeadsExport'), to: '/reports/imported-leads', icon: FileSpreadsheet })
   }
   return items
 })
@@ -201,6 +206,7 @@ const navGroups = computed(() => [
         countTone: 'danger',
         countTitle: t('devices.pendingCount', { n: devices.pendingCount }, devices.pendingCount),
       },
+      { icon: Webhook, label: t('nav.intake'), to: '/api-intake', role: 'super_admin' },
       {
         key: 'settings',
         icon: SlidersHorizontal,
@@ -215,6 +221,7 @@ const navGroups = computed(() => [
             to: '/document-requirements',
             role: 'super_admin',
           },
+          { icon: FileSignature, label: t('nav.dvcTypes'), to: '/dvc-types', role: 'super_admin' },
         ],
       },
       {

@@ -9,12 +9,14 @@ import { useToast } from '@/composables/useToast'
 import AppCard from '@/components/base/AppCard.vue'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppButton from '@/components/base/AppButton.vue'
-import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadPickerModal from '@/components/modules/contracts/LeadPickerModal.vue'
+import DvcSchemaForm from '@/components/modules/contracts/DvcSchemaForm.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
+import { blankDvcValues, applyDvcValues, dvcFieldErrors } from '@/utils/dvcSchema'
+import { firstErrorMessage } from '@/utils/errors'
 
 const { t } = useI18n()
 const store = useContractsStore()
@@ -23,6 +25,7 @@ const toast = useToast()
 const template = ref(null)
 const templateKey = ref('')
 const form = reactive({})
+const fieldErrors = ref({})
 const linkedLead = ref(null)
 const showLeadPicker = ref(false)
 
@@ -38,12 +41,12 @@ const route = useRoute()
 
 onMounted(async () => {
   try {
-    await store.fetchTemplates()
-    // Opened from a lead ("Générer le DVC"): pick its product's template and link the lead
+    await store.fetchTemplates({ force: true })
+    // Opened with a lead: pick the DVC type of its insurance type and link the lead
     const lead = route.query.lead_id ? (await leadsApi.get(route.query.lead_id).catch(() => null))?.data : null
     if (store.templates.length) {
       const forProduct = lead?.insurance_type
-        ? store.templates.find((tpl) => tpl.key.startsWith(lead.insurance_type.toLowerCase()))
+        ? store.templates.find((tpl) => tpl.insurance_type === lead.insurance_type)
         : null
       templateKey.value = (forProduct ?? store.templates[0]).key
       await selectTemplate(templateKey.value)
@@ -58,33 +61,21 @@ async function selectTemplate(key) {
   template.value = store.templates.find((tpl) => tpl.key === key) ?? null
   if (!template.value) return
 
-  // Reset the form to the template's field set
+  // Reset the form to the DVC type's field set
   Object.keys(form).forEach((k) => delete form[k])
-  for (const section of template.value.schema) {
-    if (section.type === 'garanties') {
-      for (const item of section.items) {
-        form[`${item.key}_included`] = false
-        form[`${item.key}_franchise`] = ''
-      }
-    } else {
-      for (const field of section.fields) {
-        form[field.key] = ''
-      }
-    }
-  }
+  fieldErrors.value = {}
+  Object.assign(form, blankDvcValues(template.value.schema))
 
-  // Server defaults (agent identity etc.)
+  // Server defaults (agent identity etc.), and the lead's values if one is linked
   try {
-    applyValues(await store.fetchPrefill(key, null))
+    applyValues(await store.fetchPrefill(key, linkedLead.value?.id))
   } catch {
     /* non-blocking */
   }
 }
 
 function applyValues(values) {
-  Object.entries(values ?? {}).forEach(([k, v]) => {
-    if (k in form) form[k] = typeof v === 'boolean' ? v : (v ?? '')
-  })
+  applyDvcValues(form, values)
 }
 
 async function onLeadSelected(lead) {
@@ -109,16 +100,19 @@ const leadName = computed(() =>
 )
 
 async function generate() {
+  fieldErrors.value = {}
   try {
     const contract = await store.generate({
       template_key: templateKey.value,
+      dvc_type_version_id: template.value?.version_id ?? null,
       lead_id: linkedLead.value?.id ?? null,
       data: { ...form },
     })
     toast.showSuccess(t('contracts.generated'))
     await openPreview(contract)
   } catch (e) {
-    toast.showError(e?.message ?? t('contracts.generateFailed'))
+    fieldErrors.value = dvcFieldErrors(e?.errors)
+    toast.showError(firstErrorMessage(e, t('contracts.generateFailed')))
   }
 }
 
@@ -205,59 +199,14 @@ function downloadFromPreview() {
       </div>
     </AppCard>
 
-    <!-- Dynamic sections -->
-    <template v-else-if="template">
-      <AppCard v-for="section in template.schema" :key="section.key">
-        <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <FileText class="w-4 h-4 text-primary" />
-          {{ section.title }}
-        </h2>
-
-        <!-- Garanties matrix -->
-        <div v-if="section.type === 'garanties'" class="divide-y divide-gray-100">
-          <div
-            v-for="item in section.items"
-            :key="item.key"
-            class="flex flex-col sm:flex-row sm:items-center gap-2 py-2.5"
-          >
-            <label class="flex items-center gap-2.5 flex-1 cursor-pointer select-none">
-              <input
-                v-model="form[`${item.key}_included`]"
-                type="checkbox"
-                class="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
-              />
-              <span class="text-sm text-gray-800">{{ item.label }}</span>
-            </label>
-            <input
-              v-model="form[`${item.key}_franchise`]"
-              type="text"
-              :placeholder="t('contracts.franchisePlaceholder')"
-              :disabled="!form[`${item.key}_included`]"
-              class="w-full sm:w-52 h-9 px-3 rounded-lg border border-gray-200 text-sm
-                     focus:outline-none focus:border-primary disabled:bg-gray-50 disabled:text-gray-400"
-            />
-          </div>
-        </div>
-
-        <!-- Standard fields grid -->
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <template v-for="field in section.fields" :key="field.key">
-            <AppSelect
-              v-if="field.type === 'select'"
-              v-model="form[field.key]"
-              :label="field.label"
-              :options="[{ value: '', label: '—' }, ...field.options.map((o) => ({ value: o, label: o }))]"
-            />
-            <AppInput
-              v-else
-              v-model="form[field.key]"
-              :label="field.label"
-              :type="field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : 'text'"
-            />
-          </template>
-        </div>
-      </AppCard>
-    </template>
+    <!-- Form generated from the DVC type's schema -->
+    <AppCard v-else-if="template">
+      <h2 class="font-display text-[15px] font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <FileText class="w-4 h-4 text-primary" />
+        {{ template.label }}
+      </h2>
+      <DvcSchemaForm v-model="form" :schema="template.schema" :errors="fieldErrors" />
+    </AppCard>
 
     <!-- Sticky generate bar -->
     <div

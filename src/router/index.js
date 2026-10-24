@@ -194,6 +194,12 @@ const router = createRouter({
       component: () => import('@/pages/devices/DevicesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Devices' },
     },
+    {
+      path: '/api-intake',
+      name: 'intake',
+      component: () => import('@/pages/intake/IntakeRequestsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'API Intake' },
+    },
 
     /* Lead Sources */
     {
@@ -215,6 +221,26 @@ const router = createRouter({
       name: 'lead-statuses',
       component: () => import('@/pages/lead-statuses/LeadStatusesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Statuses' },
+    },
+
+    /* DVC types (one per insurance type, JSON schema) */
+    {
+      path: '/dvc-types',
+      name: 'dvc-types',
+      component: () => import('@/pages/dvc-types/DvcTypesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'DVC Types' },
+    },
+    {
+      path: '/dvc-types/new',
+      name: 'dvc-types.create',
+      component: () => import('@/pages/dvc-types/DvcTypeEditorPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'New DVC Type' },
+    },
+    {
+      path: '/dvc-types/:id',
+      name: 'dvc-types.edit',
+      component: () => import('@/pages/dvc-types/DvcTypeEditorPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'DVC Type' },
     },
 
     /* Document Requirements */
@@ -295,6 +321,12 @@ const router = createRouter({
       name: 'reports.revenue',
       component: () => import('@/pages/reports/ReportRevenuePage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', permission: ['REVENUE_VIEW_ALL', 'REVENUE_VIEW_TEAM', 'REVENUE_VIEW_PERSONAL'], title: 'Revenue Report' },
+    },
+    {
+      path: '/reports/imported-leads',
+      name: 'reports.imported-leads',
+      component: () => import('@/pages/reports/ImportedLeadsExportPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'LEADS_EXPORT_IMPORTED', title: 'Imported Leads Export' },
     },
 
     /* Profile */

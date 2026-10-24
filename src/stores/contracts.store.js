@@ -42,8 +42,9 @@ export const useContractsStore = defineStore('contracts', () => {
     }
   }
 
-  async function fetchTemplates() {
-    if (templates.value.length) return templates.value
+  // Templates are the active DVC types; force reloads them (the super admin may have published a version)
+  async function fetchTemplates({ force = false } = {}) {
+    if (templates.value.length && !force) return templates.value
     loading.templates = true
     try {
       const { data } = await contractsApi.templates()
