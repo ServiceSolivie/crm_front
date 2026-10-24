@@ -43,7 +43,8 @@
     "overdueCount": "{n} rendez-vous en retard",
     "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
     "dvcTypes": "Types de DVC",
-    "importedLeadsExport": "Export leads importés"
+    "importedLeadsExport": "Export leads importés",
+    "intake": "Réception API"
   },
   "common": {
     "save": "Enregistrer",
@@ -1499,5 +1500,68 @@
       "leads": "Leads",
       "conversion": "Conversion"
     }
+  },
+  "intake": {
+    "title": "Réception API",
+    "superAdmin": "Super admin",
+    "subtitle": "Phase de test : les requêtes reçues sont enregistrées telles quelles, aucun lead n’est créé.",
+    "address": "Adresse",
+    "key": "Clé",
+    "copy": "Copier",
+    "copied": "Copié",
+    "copyFailed": "Impossible de copier.",
+    "show": "Afficher",
+    "hide": "Masquer",
+    "newKey": "Nouvelle clé",
+    "newKeyTitle": "Générer une nouvelle clé ?",
+    "newKeyConfirm": "L’ancienne clé cessera de fonctionner immédiatement : l’équipe marketing devra utiliser la nouvelle.",
+    "keyCreated": "Clé générée",
+    "noKey": "Aucune clé : toutes les requêtes sont refusées.",
+    "createKey": "Générer une clé",
+    "howToSend": "La clé s’envoie dans l’en-tête X-Api-Key, en jeton « Authorization: Bearer … », ou à la fin de l’adresse : …/intake/leads?key=…",
+    "retention": "Les requêtes reçues sont supprimées automatiquement après {n} jours.",
+    "received": "Requêtes reçues · {n}",
+    "refresh": "Actualiser",
+    "deleteAll": "Tout supprimer",
+    "deleteAllTitle": "Supprimer toutes les requêtes ?",
+    "deleteAllConfirm": "Les {n} requêtes reçues seront supprimées définitivement.",
+    "deleteTitle": "Supprimer cette requête ?",
+    "deleteConfirm": "Elle sera supprimée définitivement.",
+    "emptyTitle": "Aucune requête reçue",
+    "emptyHint": "Envoyez l’adresse et la clé à l’équipe marketing : leurs envois apparaîtront ici.",
+    "notKept": "Clé invalide : contenu non conservé",
+    "noContent": "{method} sans contenu (test de connexion ?)",
+    "pickOne": "Sélectionnez une requête pour voir son contenu.",
+    "truncated": "contenu coupé à 256 ko",
+    "keyOk": "Clé valide",
+    "keyBad": "Clé invalide ou absente",
+    "keyVia": {
+      "header": "via l’en-tête X-Api-Key",
+      "bearer": "via Authorization: Bearer",
+      "query": "via ?key= dans l’adresse",
+      "none": "aucune clé envoyée"
+    },
+    "queryParams": "Paramètres de l’adresse",
+    "body": "Contenu reçu",
+    "emptyBody": "Aucun contenu.",
+    "invalidNotKept": "La clé était invalide : le contenu n’a pas été conservé.",
+    "headers": "En-têtes reçus",
+    "meta": {
+      "method": "Méthode",
+      "format": "Format",
+      "size": "Taille",
+      "key": "Clé",
+      "ip": "IP",
+      "userAgent": "Outil (User-Agent)"
+    },
+    "format": {
+      "invalidKey": "Clé invalide",
+      "empty": "Vide",
+      "form": "Formulaire",
+      "multipart": "Formulaire + fichiers",
+      "other": "Autre"
+    },
+    "loadError": "Impossible de charger les données.",
+    "actionError": "L’action a échoué. Réessayez."
   }
 }

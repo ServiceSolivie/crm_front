@@ -13,6 +13,7 @@ import {
   Tag,
   ListChecks,
   MonitorCheck,
+  Webhook,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -158,6 +159,7 @@ const navGroups = computed(() => [
         countTone: 'danger',
         countTitle: t('devices.pendingCount', { n: devices.pendingCount }, devices.pendingCount),
       },
+      { icon: Webhook, label: t('nav.intake'), to: '/api-intake', role: 'super_admin' },
       {
         key: 'settings',
         icon: SlidersHorizontal,

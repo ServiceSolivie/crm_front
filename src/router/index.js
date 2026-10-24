@@ -170,6 +170,12 @@ const router = createRouter({
       component: () => import('@/pages/devices/DevicesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Devices' },
     },
+    {
+      path: '/api-intake',
+      name: 'intake',
+      component: () => import('@/pages/intake/IntakeRequestsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'API Intake' },
+    },
 
     /* Lead Sources */
     {
