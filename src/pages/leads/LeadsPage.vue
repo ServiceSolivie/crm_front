@@ -47,12 +47,14 @@ const myId = computed(() => String(auth.user?.id ?? ''))
 // Gestion works on leads assigned to it in the back office, not on agent assignment
 const showAssignmentViews = computed(() => auth.can('LEADS_ASSIGN'))
 const showDueView = computed(() => !auth.hasRole('gestion'))
+// Duplicates are for the super admin only (the API doesn't send them to anyone else)
+const seesDoublons = computed(() => auth.hasRole('super_admin'))
 const views = computed(() => [
   { key: 'all', label: t('leads.views.all'), count: leadsStore.counts?.all },
   ...(showAssignmentViews.value ? [{ key: 'mine', label: t('leads.views.mine'), count: leadsStore.counts?.mine }] : []),
   ...(showDueView.value ? [{ key: 'due', label: t('leads.views.due'), count: leadsStore.counts?.due_today }] : []),
   ...(showAssignmentViews.value ? [{ key: 'unassigned', label: t('leads.views.unassigned'), count: leadsStore.counts?.unassigned }] : []),
-  { key: 'doublons', label: t('leads.views.doublons'), count: leadsStore.counts?.doublons },
+  ...(seesDoublons.value ? [{ key: 'doublons', label: t('leads.views.doublons'), count: leadsStore.counts?.doublons }] : []),
 ])
 const activeView = computed(() => {
   const f = leadsStore.filters
@@ -593,7 +595,7 @@ const gridCols = computed(() =>
                     @click.stop
                   >{{ fullName(row) }}</RouterLink>
                   <span
-                    v-if="row.is_doublon"
+                    v-if="seesDoublons && row.is_doublon"
                     class="shrink-0 px-1.5 rounded text-[11px] leading-[17px] font-medium bg-danger-bg text-danger-text"
                     :title="row.doublon_of ? t('leads.doublonOf', { ref: row.doublon_of.reference }) : ''"
                   >{{ t('leads.doublon') }}</span>

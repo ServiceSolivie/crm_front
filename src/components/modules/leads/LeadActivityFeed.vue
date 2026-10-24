@@ -14,8 +14,9 @@ import { formatCurrency } from '@/utils/formatters'
 
 /**
  * One chronological feed for everything that happened on a lead: notes,
- * calls, status changes, (re)assignments, appointments, payments and
- * documents — one paginated call (GET /leads/{id}/activity), grouped by day.
+ * calls, status changes, (re)assignments (super admin only: the API leaves
+ * them out for anyone else), appointments, payments and documents — one
+ * paginated call (GET /leads/{id}/activity), grouped by day.
  * Bump `refreshKey` after an action on the lead to reload it.
  */
 const props = defineProps({

@@ -733,7 +733,7 @@ const companyFields = computed(() => {
               <h1 class="font-display text-2xl leading-[30px] font-semibold tracking-tight text-gray-900">{{ leadFullName }}</h1>
               <span v-if="lead.reference" class="font-mono text-xs text-gray-500">{{ lead.reference }}</span>
               <span
-                v-if="lead.is_doublon"
+                v-if="auth.hasRole('super_admin') && lead.is_doublon"
                 class="px-1.5 rounded text-[11px] leading-[18px] font-medium bg-danger-bg text-danger-text"
               >{{ lead.doublon_of ? t('leads.doublonOf', { ref: lead.doublon_of.reference }) : t('leads.doublon') }}</span>
             </div>
