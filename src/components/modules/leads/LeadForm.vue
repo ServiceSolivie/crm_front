@@ -107,7 +107,9 @@ onMounted(() => {
 
 /* ── Duplicate check on the phone number / e-mail ───────────
  * GET /leads/duplicates looks across all leads (same rule as the backend's
- * doublon detection); leads the user cannot open come back without an id. */
+ * doublon detection); leads the user cannot open come back without an id.
+ * Super admin only: nobody else is warned (the API returns nothing to them). */
+const seesDoublons = computed(() => auth.hasRole('super_admin'))
 const duplicates = ref([])
 let dupTimer = null
 let dupGen = 0
@@ -116,6 +118,7 @@ watch(
   () => [form.phone, form.email],
   ([phone, email]) => {
     clearTimeout(dupTimer)
+    if (!seesDoublons.value) return
     const digits = (phone ?? '').replace(/\D/g, '')
     const mail = (email ?? '').trim()
     const checkPhone = digits.length >= 8
