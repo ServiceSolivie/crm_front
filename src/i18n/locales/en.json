@@ -1689,7 +1689,10 @@
         "ringing": "Ringing…",
         "answered": "In call"
       },
-      "signIn": "Sign in to Ringover in the phone window: the call will start automatically."
+      "signIn": "Sign in to Ringover in the phone window: the call will start automatically.",
+      "panelTitle": "Ringover phone",
+      "hide": "Collapse",
+      "pending": "To call as soon as you are signed in to Ringover:"
     },
     "postCall": {
       "title": "After the call with {name}",

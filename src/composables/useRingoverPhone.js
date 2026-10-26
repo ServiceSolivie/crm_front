@@ -25,6 +25,8 @@ const state = reactive({
   postCall: null,
   // Lead the agent asked to call before signing in: dialled once they are signed in.
   pendingLead: null,
+  // Slide-over panel holding the phone
+  open: false,
 })
 
 let sdk = null
@@ -77,6 +79,8 @@ function onRinging(e) {
       startedAt: Date.now(),
       answeredAt: null,
     }
+    // Slide the phone in so the agent can pick up
+    state.open = true
   }
 }
 
@@ -105,21 +109,22 @@ function onHangup(e) {
 }
 
 /**
- * Create the iframe once, hidden behind Ringover's tray button.
+ * Create the iframe once, filling `containerId` (the CRM's slide-over panel,
+ * which opens and closes it, so Ringover's own tray button is not used).
  */
-function init({ linkedUserId }) {
+function init({ linkedUserId, containerId }) {
   state.linkedUserId = linkedUserId ? String(linkedUserId) : null
   if (state.initialised) return
 
   sdk = new RingoverSDK({
-    type: 'fixed',
-    size: 'medium',
-    position: { bottom: '72px', right: '20px' },
-    trayicon: true,
-    trayposition: { bottom: '20px', right: '20px' },
+    type: 'relative',
+    size: 'auto',
+    container: containerId,
+    animation: false,
+    trayicon: false,
   })
   sdk.generate()
-  sdk.hide()
+  sdk.show()
 
   sdk.on('dialerReady', onSignedIn)
   sdk.on('login', onSignedIn)
@@ -141,7 +146,7 @@ function destroy() {
   sdk.destroy()
   sdk = null
   clearTimeout(dialTimer)
-  Object.assign(state, { initialised: false, ready: false, signedInUserId: null, active: null, postCall: null, pendingLead: null })
+  Object.assign(state, { initialised: false, ready: false, signedInUserId: null, active: null, postCall: null, pendingLead: null, open: false })
 }
 
 /**
@@ -155,13 +160,19 @@ async function callLead(lead) {
   if (state.active) throw new Error('call_in_progress')
 
   if (!state.ready) {
-    state.pendingLead = lead
-    sdk.show()
+    state.pendingLead = {
+      id: lead.id,
+      reference: lead.reference,
+      first_name: lead.first_name,
+      last_name: lead.last_name,
+      phone: lead.phone,
+    }
+    state.open = true
     return 'sign_in'
   }
 
   const { call, dial } = await callsApi.initiate(lead.id)
-  sdk.show()
+  state.open = true
 
   state.active = {
     crmCallId: call.id,
@@ -188,7 +199,15 @@ async function callLead(lead) {
 }
 
 function showPhone() {
-  sdk?.show()
+  state.open = true
+}
+
+function hidePhone() {
+  state.open = false
+}
+
+function togglePhone() {
+  state.open = !state.open
 }
 
 function closePostCall() {
@@ -202,6 +221,8 @@ export function useRingoverPhone() {
     destroy,
     callLead,
     showPhone,
+    hidePhone,
+    togglePhone,
     closePostCall,
   }
 }

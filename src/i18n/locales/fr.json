@@ -1689,7 +1689,10 @@
         "ringing": "Sonnerie…",
         "answered": "En communication"
       },
-      "signIn": "Connectez-vous à Ringover dans la fenêtre du téléphone : l'appel partira automatiquement."
+      "signIn": "Connectez-vous à Ringover dans la fenêtre du téléphone : l'appel partira automatiquement.",
+      "panelTitle": "Téléphone Ringover",
+      "hide": "Réduire",
+      "pending": "À appeler dès que vous êtes connecté à Ringover :"
     },
     "postCall": {
       "title": "Après l'appel avec {name}",
