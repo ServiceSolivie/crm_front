@@ -9,4 +9,5 @@ export const dashboardApi = {
   aggregations: (params) => client.get('/dashboard/aggregations', { params }).then(unwrap),
   charts: (params) => client.get('/dashboard/charts', { params }).then(unwrap),
   revenue: (params) => client.get('/dashboard/revenue', { params }).then(unwrap),
+  calls: (params) => client.get('/dashboard/calls', { params }).then(unwrap),
 }

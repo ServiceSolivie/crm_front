@@ -44,7 +44,9 @@
     "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
     "dvcTypes": "Types de DVC",
     "importedLeadsExport": "Export leads importés",
-    "intake": "Réception API"
+    "intake": "Réception API",
+    "ringover": "Ringover",
+    "calls": "Appels"
   },
   "common": {
     "save": "Enregistrer",
@@ -167,7 +169,16 @@
     "tasks": "Dossiers à compléter",
     "tasksCount": "{n} dossier(s) à compléter",
     "missingDocs": "Documents manquants : {docs}",
-    "dossierToFix": "Renvoyé par la gestion — dossier à corriger"
+    "dossierToFix": "Renvoyé par la gestion — dossier à corriger",
+    "calls": {
+      "outbound": "Appels passés",
+      "totalWithInbound": "{total} au total avec les entrants",
+      "answerRate": "Taux de décroché",
+      "answeredOf": "{answered} décrochés sur {total}",
+      "talkTime": "Temps de conversation",
+      "missedInbound": "{count} appels entrants manqués",
+      "averageTalk": "Durée moyenne d'un appel"
+    }
   },
   "leads": {
     "title": "Leads",
@@ -1563,5 +1574,135 @@
     },
     "loadError": "Impossible de charger les données.",
     "actionError": "L’action a échoué. Réessayez."
+  },
+  "ringover": {
+    "title": "Ringover — Agents",
+    "linkedCount": "{linked} / {total} utilisateurs liés à Ringover",
+    "refresh": "Actualiser",
+    "autoLink": "Lier automatiquement",
+    "autoLinkResult": "{linked} utilisateur(s) lié(s), {unmatched} sans correspondance",
+    "connected": "Connecté à Ringover · {count} utilisateur(s) Ringover",
+    "notConfigured": "Ringover n'est pas configuré",
+    "notConfiguredHint": "Ajoutez RINGOVER_API_KEY dans le fichier .env du backend.",
+    "connectionFailed": "Connexion à Ringover impossible",
+    "webhookSecretMissing": "RINGOVER_WEBHOOK_SECRET n'est pas défini : l'historique des appels ne pourra pas être reçu.",
+    "searchPlaceholder": "Rechercher un utilisateur…",
+    "noUsers": "Aucun utilisateur",
+    "crmUser": "Utilisateur CRM",
+    "role": "Rôle",
+    "ringoverAccount": "Compte Ringover",
+    "number": "Numéro Ringover",
+    "state": "État",
+    "linked": "Lié",
+    "notLinked": "Non lié",
+    "stale": "Introuvable sur Ringover",
+    "suggested": "Suggestion : {name}",
+    "link": "Lier",
+    "unlink": "Délier",
+    "linkTitle": "Lier {name} à Ringover",
+    "selectUser": "Choisir un utilisateur Ringover",
+    "selectNumber": "Choisir un numéro",
+    "selectUserRequired": "Choisissez un utilisateur Ringover",
+    "linkSuccess": "{name} est lié à Ringover",
+    "unlinkTitle": "Supprimer la liaison",
+    "unlinkConfirm": "Délier {name} de son compte Ringover ? Ses appels ne lui seront plus attribués.",
+    "unlinkSuccess": "Liaison supprimée",
+    "loadError": "Erreur lors du chargement des données Ringover"
+  },
+  "calls": {
+    "title": "Appels",
+    "allDirections": "Tous les sens",
+    "allStatuses": "Tous les résultats",
+    "allAgents": "Tous les agents",
+    "direction": {
+      "in": "Appel entrant",
+      "out": "Appel sortant"
+    },
+    "status": {
+      "initiated": "Initié",
+      "ringing": "Sonne",
+      "answered": "En cours",
+      "completed": "Terminé",
+      "missed": "Manqué",
+      "no_answer": "Pas de réponse",
+      "voicemail": "Messagerie"
+    },
+    "empty": "Aucun appel avec ce lead",
+    "ownOnlyHint": "Seuls vos propres appels sont affichés.",
+    "loadError": "Impossible de charger les appels",
+    "unknownAgent": "Agent inconnu",
+    "talkTime": "conversation",
+    "from": "De",
+    "to": "Vers",
+    "totalDuration": "Durée totale",
+    "endedAt": "Fin",
+    "aiSummary": "Résumé IA",
+    "summaryUnavailable": "Résumé non disponible",
+    "hasRecording": "Enregistrement disponible",
+    "hasSummary": "Résumé IA disponible",
+    "note": "Note",
+    "pageSubtitleTeam": "Appels de votre équipe",
+    "pageSubtitleOwn": "Vos appels",
+    "emptyAll": "Aucun appel",
+    "fromDate": "Du",
+    "toDate": "Au",
+    "media": {
+      "recording": "Écouter l'enregistrement",
+      "voicemail": "Écouter la messagerie",
+      "transcription": "Transcription",
+      "loadError": "Impossible de charger le fichier",
+      "forbidden": "Vous n'avez pas accès à ce fichier",
+      "notAvailable": "Fichier non disponible"
+    },
+    "unmatched": {
+      "only": "Non associés uniquement",
+      "badge": "Non associé",
+      "empty": "Aucun appel non associé",
+      "createLead": "Créer un lead",
+      "attach": "Associer",
+      "attachTitle": "Associer l'appel du {number} à un lead",
+      "searchLead": "Rechercher un lead (nom, téléphone, référence)…",
+      "noLeadFound": "Aucun lead trouvé",
+      "assigned": "Appel associé au lead"
+    },
+    "notCalled": {
+      "title": "Leads non appelés",
+      "summary": "{total} lead(s) ouverts sans appel sur la période, dont {never} jamais appelé(s)",
+      "days": "Depuis {n} jour | Depuis {n} jours",
+      "empty": "Tous les leads ouverts ont été appelés récemment",
+      "never": "Jamais appelé",
+      "lastCall": "Dernier appel aujourd'hui | Dernier appel il y a {days} jour | Dernier appel il y a {days} jours"
+    },
+    "phone": {
+      "call": "Appeler",
+      "starting": "Appel…",
+      "notLinked": "Votre compte n'est pas lié à Ringover. Contactez votre administrateur.",
+      "notCallable": "Numéro invalide ou marqué comme erroné",
+      "callInProgress": "Un appel est déjà en cours",
+      "unavailable": "Le téléphone Ringover n'est pas prêt. Ouvrez-le et connectez-vous.",
+      "wrongAccount": "Vous êtes connecté à Ringover avec un autre compte que celui lié à votre profil CRM.",
+      "open": "Ouvrir le téléphone",
+      "callViaMobile": "Appeler via mon mobile",
+      "mobileRinging": "Ringover fait sonner votre téléphone. Décrochez pour appeler le lead.",
+      "phase": {
+        "dialing": "Composition…",
+        "ringing": "Sonnerie…",
+        "answered": "En communication"
+      }
+    },
+    "postCall": {
+      "title": "Après l'appel avec {name}",
+      "duration": "Durée : {duration}",
+      "note": "Note",
+      "notePlaceholder": "Ce qui a été dit, prochaine étape…",
+      "newStatus": "Nouveau statut du lead",
+      "keepStatus": "Ne pas changer le statut",
+      "expectedRevenue": "Montant attendu (€)",
+      "revenueRequired": "Le montant attendu est obligatoire pour valider un lead.",
+      "later": "Plus tard",
+      "planAppointment": "Planifier un RDV",
+      "saved": "Suivi de l'appel enregistré",
+      "saveError": "Impossible d'enregistrer le suivi"
+    }
   }
 }

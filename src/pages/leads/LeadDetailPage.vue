@@ -33,6 +33,8 @@ import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import CrossSellModal from '@/components/modules/leads/CrossSellModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
 import DvcCreateModal from '@/components/modules/leads/DvcCreateModal.vue'
+import LeadCallsTab from '@/components/modules/calls/LeadCallsTab.vue'
+import CallButton from '@/components/modules/calls/CallButton.vue'
 import { documentsApi } from '@/api/documents'
 import { contractsApi } from '@/api/contracts'
 import { leadsApi } from '@/api/leads'
@@ -49,6 +51,9 @@ const auth = useAuthStore()
 const toast = useToast()
 
 const id = computed(() => route.params.id)
+
+// Linked to Ringover: call from the CRM instead of a plain tel: link
+const isRingoverCaller = computed(() => auth.can('CALLS_MAKE') && !!auth.user?.ringover?.is_linked)
 
 // Copy the lead's phone number (to paste it in Ringover or elsewhere)
 const phoneCopied = ref(false)
@@ -772,8 +777,10 @@ const companyFields = computed(() => {
 
           <!-- Actions -->
           <div class="flex items-center gap-2 shrink-0">
+            <!-- Ringover: embedded phone, or ring the agent's mobile first -->
+            <CallButton v-if="isRingoverCaller" :lead="lead" variant="button" />
             <a
-              v-if="lead.phone"
+              v-else-if="lead.phone"
               :href="`tel:${lead.phone}`"
               class="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover"
             ><Phone class="w-3.5 h-3.5" />{{ t('leadDetail.call') }}</a>
@@ -916,6 +923,15 @@ const companyFields = computed(() => {
             :refresh-key="activityKey"
             :show-payments="hasRevenue"
           />
+
+          <!-- Calls made or received through Ringover, with recordings -->
+          <section
+            v-if="auth.canAny('CALLS_VIEW')"
+            class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5"
+          >
+            <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('calls.title') }}</h2>
+            <LeadCallsTab :lead-id="id" />
+          </section>
 
           <!-- DVC: status, creation and the DVCs generated for this lead -->
           <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">

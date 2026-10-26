@@ -5,6 +5,7 @@ import { Menu } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
 import { useLeadStatusesStore } from '@/stores/leadStatuses.store'
 import TheSidebar from './TheSidebar.vue'
+import RingoverPhone from '@/components/modules/calls/RingoverPhone.vue'
 
 const ui = useUiStore()
 const { t } = useI18n()
@@ -43,5 +44,8 @@ onMounted(() => useLeadStatusesStore().fetchList())
         <slot />
       </main>
     </div>
+
+    <!-- Embedded Ringover phone, call bar and after-call popup -->
+    <RingoverPhone />
   </div>
 </template>

@@ -241,6 +241,22 @@ const router = createRouter({
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Vault Audit Logs' },
     },
 
+    /* Calls */
+    {
+      path: '/calls',
+      name: 'calls',
+      component: () => import('@/pages/calls/CallsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'CALLS_VIEW_*', title: 'Calls' },
+    },
+
+    /* Ringover */
+    {
+      path: '/ringover',
+      name: 'ringover-agents',
+      component: () => import('@/pages/ringover/RingoverAgentsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'RINGOVER_MANAGE', title: 'Ringover' },
+    },
+
     /* Lead Imports */
     {
       path: '/lead-imports',

@@ -19,6 +19,7 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
+import CallButton from '@/components/modules/calls/CallButton.vue'
 import { LEAD_STAGES, INSURANCE_TYPE, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { useEnumOptions } from '@/composables/useEnumOptions'
@@ -32,6 +33,9 @@ const usersStore = useUsersStore()
 const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
+
+// Linked to Ringover: call from the CRM instead of a plain tel: link
+const isRingoverCaller = computed(() => auth.can('CALLS_MAKE') && !!auth.user?.ringover?.is_linked)
 const { t, locale } = useI18n()
 
 const statusChangingId = ref(null)
@@ -607,8 +611,9 @@ const gridCols = computed(() =>
             </div>
             <div role="cell" class="px-3 flex items-center gap-1 min-w-0">
               <span class="font-mono text-[12.5px] text-gray-900 truncate">{{ row.phone || '—' }}</span>
+              <CallButton v-if="row.phone && isRingoverCaller" :lead="row" class="shrink-0 !w-6.5 !h-6.5" />
               <a
-                v-if="row.phone"
+                v-else-if="row.phone"
                 :href="`tel:${row.phone}`"
                 class="shrink-0 w-6.5 h-6.5 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                 :aria-label="t('leads.callName', { name: fullName(row) })"
