@@ -34,8 +34,8 @@ const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
 
-// Linked to Ringover: call from the CRM instead of a plain tel: link
-const isRingoverCaller = computed(() => auth.can('CALLS_MAKE') && !!auth.user?.ringover?.is_linked)
+// Allowed to call: use the embedded Ringover phone instead of a plain tel: link
+const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
 const { t, locale } = useI18n()
 
 const statusChangingId = ref(null)

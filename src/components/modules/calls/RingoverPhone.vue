@@ -15,7 +15,8 @@ const auth = useAuthStore()
 const phone = useRingoverPhone()
 const { state } = phone
 
-const enabled = computed(() => auth.can('CALLS_MAKE') && !!auth.user?.ringover?.is_linked)
+// Anyone allowed to call gets the phone: they sign in to Ringover inside it.
+const enabled = computed(() => auth.can('CALLS_MAKE'))
 
 // Signed in to Ringover with a different account than the one linked to this CRM user:
 // calls would be attributed to someone else.
@@ -38,7 +39,7 @@ const elapsed = computed(() => {
 
 function sync() {
   if (enabled.value) {
-    phone.init({ linkedUserId: auth.user.ringover.user_id })
+    phone.init({ linkedUserId: auth.user?.ringover?.user_id })
   } else {
     phone.destroy()
   }

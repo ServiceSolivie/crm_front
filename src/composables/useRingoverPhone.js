@@ -23,6 +23,8 @@ const state = reactive({
   active: null,
   // { crmCallId, lead, talkSeconds } — drives the after-call popup.
   postCall: null,
+  // Lead the agent asked to call before signing in: dialled once they are signed in.
+  pendingLead: null,
 })
 
 let sdk = null
@@ -41,6 +43,11 @@ function isCurrentCall(data) {
 function onSignedIn(e) {
   state.ready = true
   state.signedInUserId = e?.data?.userId != null ? String(e.data.userId) : null
+
+  // The agent clicked "Call" before signing in: place that call now.
+  const lead = state.pendingLead
+  state.pendingLead = null
+  if (lead && !state.active) callLead(lead).catch(() => {})
 }
 
 function onRinging(e) {
@@ -119,6 +126,7 @@ function init({ linkedUserId }) {
   sdk.on('logout', () => {
     state.ready = false
     state.signedInUserId = null
+    state.pendingLead = null
   })
   sdk.on('ringingCall', onRinging)
   sdk.on('answeredCall', onAnswered)
@@ -133,18 +141,27 @@ function destroy() {
   sdk.destroy()
   sdk = null
   clearTimeout(dialTimer)
-  Object.assign(state, { initialised: false, ready: false, signedInUserId: null, active: null, postCall: null })
+  Object.assign(state, { initialised: false, ready: false, signedInUserId: null, active: null, postCall: null, pendingLead: null })
 }
 
 /**
  * Call a lead: record the attempt in the CRM, then dial it in the phone.
+ * Not signed in to Ringover yet: open the phone on its sign-in screen and
+ * dial once the agent is signed in (returns "sign_in" in that case).
  * Throws with a user-facing message when the call cannot start.
  */
 async function callLead(lead) {
   if (!sdk) throw new Error('phone_unavailable')
   if (state.active) throw new Error('call_in_progress')
 
+  if (!state.ready) {
+    state.pendingLead = lead
+    sdk.show()
+    return 'sign_in'
+  }
+
   const { call, dial } = await callsApi.initiate(lead.id)
+  sdk.show()
 
   state.active = {
     crmCallId: call.id,
@@ -157,7 +174,8 @@ async function callLead(lead) {
     answeredAt: null,
   }
 
-  if (!sdk.dial(dial.to, dial.from)) {
+  // No CRM-side number: Ringover dials from the signed-in account's default line.
+  if (!(dial.from ? sdk.dial(dial.to, dial.from) : sdk.dial(dial.to))) {
     state.active = null
     throw new Error('phone_unavailable')
   }

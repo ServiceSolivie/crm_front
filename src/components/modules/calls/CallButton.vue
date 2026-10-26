@@ -22,15 +22,20 @@ const starting = ref(false)
 
 const visible = computed(() => auth.can('CALLS_MAKE'))
 
+// The embedded phone works with whatever Ringover account the agent signs in with
 const disabledReason = computed(() => {
-  if (!auth.user?.ringover?.is_linked) return t('calls.phone.notLinked')
   if (!props.lead.is_callable) return t('calls.phone.notCallable')
   if (phone.state.active) return t('calls.phone.callInProgress')
   return ''
 })
 
+// Ringing the agent's mobile first needs their Ringover account linked in the CRM
+const mobileDisabledReason = computed(() =>
+  disabledReason.value || (auth.user?.ringover?.is_linked ? '' : t('calls.phone.notLinked')),
+)
+
 async function callViaMobile() {
-  if (disabledReason.value || starting.value) return
+  if (mobileDisabledReason.value || starting.value) return
   starting.value = true
   try {
     await callsApi.initiateVia(props.lead.id, 'mobile')
@@ -46,7 +51,7 @@ async function call() {
   if (disabledReason.value || starting.value) return
   starting.value = true
   try {
-    await phone.callLead(props.lead)
+    if ((await phone.callLead(props.lead)) === 'sign_in') toast.showInfo(t('calls.phone.signIn'))
   } catch (e) {
     const key = { phone_unavailable: 'calls.phone.unavailable', call_in_progress: 'calls.phone.callInProgress' }[e?.message]
     toast.showError(key ? t(key) : (e?.message ?? t('calls.phone.unavailable')))
@@ -82,9 +87,9 @@ async function call() {
       </button>
       <button
         type="button"
-        :title="disabledReason || t('calls.phone.callViaMobile')"
+        :title="mobileDisabledReason || t('calls.phone.callViaMobile')"
         :aria-label="t('calls.phone.callViaMobile')"
-        :disabled="!!disabledReason || starting"
+        :disabled="!!mobileDisabledReason || starting"
         class="inline-flex items-center justify-center w-9 h-9 border-l border-white/30 text-white bg-success hover:brightness-95 transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         @click.stop="callViaMobile"
       >

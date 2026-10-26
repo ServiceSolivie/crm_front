@@ -1688,7 +1688,8 @@
         "dialing": "Composition…",
         "ringing": "Sonnerie…",
         "answered": "En communication"
-      }
+      },
+      "signIn": "Connectez-vous à Ringover dans la fenêtre du téléphone : l'appel partira automatiquement."
     },
     "postCall": {
       "title": "Après l'appel avec {name}",

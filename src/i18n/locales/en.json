@@ -1688,7 +1688,8 @@
         "dialing": "Dialling…",
         "ringing": "Ringing…",
         "answered": "In call"
-      }
+      },
+      "signIn": "Sign in to Ringover in the phone window: the call will start automatically."
     },
     "postCall": {
       "title": "After the call with {name}",

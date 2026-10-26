@@ -52,8 +52,8 @@ const toast = useToast()
 
 const id = computed(() => route.params.id)
 
-// Linked to Ringover: call from the CRM instead of a plain tel: link
-const isRingoverCaller = computed(() => auth.can('CALLS_MAKE') && !!auth.user?.ringover?.is_linked)
+// Allowed to call: use the embedded Ringover phone instead of a plain tel: link
+const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
 
 // Copy the lead's phone number (to paste it in Ringover or elsewhere)
 const phoneCopied = ref(false)
