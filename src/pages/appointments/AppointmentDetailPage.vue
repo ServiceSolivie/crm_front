@@ -16,6 +16,7 @@ import AppointmentRemindersPanel from '@/components/modules/appointments/Appoint
 import CallButton from '@/components/modules/calls/CallButton.vue'
 import { formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
+import { dialNumber } from '@/utils/phone'
 
 const route = useRoute()
 const router = useRouter()
@@ -224,7 +225,7 @@ async function handleDelete() {
               <dt class="text-xs text-gray-500">{{ t('leads.phone') }}</dt>
               <dd class="mt-0.5">
                 <span class="inline-flex items-center gap-2">
-                  <a :href="`tel:${apt.lead.phone}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
+                  <a :href="`tel:${dialNumber(apt.lead.phone)}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
                     <Phone class="w-3.5 h-3.5" />{{ apt.lead.phone }}
                   </a>
                   <CallButton :lead="apt.lead" />

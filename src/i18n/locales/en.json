@@ -1676,14 +1676,11 @@
     "phone": {
       "call": "Call",
       "starting": "Calling…",
-      "notLinked": "Your account is not linked to Ringover. Contact your administrator.",
-      "notCallable": "Invalid number or flagged as wrong",
+      "notCallable": "No number, or flagged as wrong",
       "callInProgress": "A call is already in progress",
       "unavailable": "The Ringover phone is not ready. Open it and sign in.",
       "wrongAccount": "You are signed in to Ringover with a different account than the one linked to your CRM profile.",
       "open": "Open phone",
-      "callViaMobile": "Call via my mobile",
-      "mobileRinging": "Ringover is ringing your phone. Pick up to call the lead.",
       "phase": {
         "dialing": "Dialling…",
         "ringing": "Ringing…",

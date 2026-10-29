@@ -3,7 +3,7 @@ import { onMounted, computed, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
-  Plus, Search, Phone, Pencil, Trash2, X, SearchX, ChevronUp, ChevronDown, CalendarClock, FileWarning,
+  Plus, Search, Pencil, Trash2, X, SearchX, ChevronUp, ChevronDown, CalendarClock, FileWarning,
 } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useLeadSourcesStore } from '@/stores/leadSources.store'
@@ -19,7 +19,7 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
-import CallButton from '@/components/modules/calls/CallButton.vue'
+import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 import { LEAD_STAGES, INSURANCE_TYPE, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { useEnumOptions } from '@/composables/useEnumOptions'
@@ -34,8 +34,6 @@ const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
 
-// Allowed to call: use the embedded Ringover phone instead of a plain tel: link
-const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
 const { t, locale } = useI18n()
 
 const statusChangingId = ref(null)
@@ -367,10 +365,10 @@ const to = computed(() =>
 const showAgentColumn = computed(() => !auth.hasRole('agent'))
 // Written out in full so Tailwind generates them: [select column] × [agent column]
 const GRIDS = {
-  selectAgent: 'grid-cols-[44px_minmax(210px,1.6fr)_minmax(150px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(140px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
-  select: 'grid-cols-[44px_minmax(210px,1.6fr)_minmax(150px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
-  agent: 'grid-cols-[16px_minmax(210px,1.6fr)_minmax(150px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(140px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
-  none: 'grid-cols-[16px_minmax(210px,1.6fr)_minmax(150px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
+  selectAgent: 'grid-cols-[44px_minmax(210px,1.6fr)_minmax(190px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(140px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
+  select: 'grid-cols-[44px_minmax(210px,1.6fr)_minmax(190px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
+  agent: 'grid-cols-[16px_minmax(210px,1.6fr)_minmax(190px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(140px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
+  none: 'grid-cols-[16px_minmax(210px,1.6fr)_minmax(190px,1fr)_minmax(80px,0.5fr)_minmax(160px,1fr)_minmax(150px,1fr)_minmax(100px,0.7fr)_56px_76px]',
 }
 const gridCols = computed(() =>
   GRIDS[canSelect.value ? (showAgentColumn.value ? 'selectAgent' : 'select') : (showAgentColumn.value ? 'agent' : 'none')],
@@ -609,16 +607,9 @@ const gridCols = computed(() =>
                 </p>
               </div>
             </div>
-            <div role="cell" class="px-3 flex items-center gap-1 min-w-0">
-              <span class="font-mono text-[12.5px] text-gray-900 truncate">{{ row.phone || '—' }}</span>
-              <CallButton v-if="row.phone && isRingoverCaller" :lead="row" class="shrink-0 !w-6.5 !h-6.5" />
-              <a
-                v-else-if="row.phone"
-                :href="`tel:${row.phone}`"
-                class="shrink-0 w-6.5 h-6.5 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900"
-                :aria-label="t('leads.callName', { name: fullName(row) })"
-                @click.stop
-              ><Phone class="w-3.5 h-3.5" /></a>
+            <div role="cell" class="px-3 flex items-center min-w-0">
+              <PhoneCallLink v-if="row.phone" :lead="row" />
+              <span v-else class="text-gray-400">—</span>
             </div>
             <div role="cell" class="px-3 min-w-0">
               <span

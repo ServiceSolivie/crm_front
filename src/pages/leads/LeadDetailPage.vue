@@ -40,6 +40,7 @@ import { contractsApi } from '@/api/contracts'
 import { leadsApi } from '@/api/leads'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
+import { dialNumber } from '@/utils/phone'
 
 const route = useRoute()
 const router = useRouter()
@@ -744,7 +745,7 @@ const companyFields = computed(() => {
             </div>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-gray-600">
               <span v-if="lead.phone" class="flex items-center gap-1">
-                <a :href="`tel:${lead.phone}`" class="flex items-center gap-1.5 hover:text-gray-900">
+                <a :href="`tel:${dialNumber(lead.phone)}`" class="flex items-center gap-1.5 hover:text-gray-900">
                   <Phone class="w-3.5 h-3.5" /><span class="font-mono text-[12.5px] text-gray-900">{{ lead.phone }}</span>
                 </a>
                 <button
@@ -781,7 +782,7 @@ const companyFields = computed(() => {
             <CallButton v-if="isRingoverCaller" :lead="lead" variant="button" />
             <a
               v-else-if="lead.phone"
-              :href="`tel:${lead.phone}`"
+              :href="`tel:${dialNumber(lead.phone)}`"
               class="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover"
             ><Phone class="w-3.5 h-3.5" />{{ t('leadDetail.call') }}</a>
             <button

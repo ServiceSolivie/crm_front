@@ -24,7 +24,4 @@ export const callsApi = {
   /** kind: "recording" | "voicemail" | "transcription". Served through the CRM (permission-checked). */
   media: (callId, kind) =>
     client.get(`/calls/${callId}/${kind}`, { responseType: 'blob', timeout: 60_000 }).then((r) => r.data),
-
-  /** via: "phone" (embedded Ringover phone) or "mobile" (Ringover rings the agent's devices). */
-  initiateVia: (leadId, via) => client.post(`/leads/${leadId}/phone-calls`, { via }).then(unwrap),
 }

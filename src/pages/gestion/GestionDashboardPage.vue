@@ -11,6 +11,7 @@ import KpiStripCell from '@/components/modules/dashboard/KpiStripCell.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import DvcStatusBadge from '@/components/modules/leads/DvcStatusBadge.vue'
 import { formatDateTime } from '@/utils/formatters'
+import { dialNumber } from '@/utils/phone'
 
 /**
  * Gestion's workspace: headline figures, then every lead currently with
@@ -213,7 +214,7 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
               <span role="cell" class="flex justify-end" @click.stop>
                 <a
                   v-if="lead.phone"
-                  :href="`tel:${lead.phone}`"
+                  :href="`tel:${dialNumber(lead.phone)}`"
                   :aria-label="t('leads.callName', { name: fullName(lead) })"
                   class="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900"
                 ><Phone class="w-3.5 h-3.5" /></a>
