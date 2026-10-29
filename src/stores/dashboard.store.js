@@ -8,6 +8,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const aggregations = ref(null)
   const charts = ref(null)
   const revenue = ref(null)
+  const calls = ref(null)
 
   const filters = reactive({ days: 30, from: null, to: null, team_id: null, agent_id: null })
 
@@ -17,6 +18,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     aggregations: false,
     charts: false,
     revenue: false,
+    calls: false,
   })
 
   function _params() {
@@ -75,8 +77,20 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  async function fetchCalls() {
+    loading.calls = true
+    try {
+      calls.value = await dashboardApi.calls(_params())
+    } catch {
+      // No call permission (403) or Ringover not used: the section is simply hidden.
+      calls.value = null
+    } finally {
+      loading.calls = false
+    }
+  }
+
   async function fetchAll() {
-    await Promise.all([fetchKpis(), fetchStatistics(), fetchAggregations(), fetchCharts(), fetchRevenue()])
+    await Promise.all([fetchKpis(), fetchStatistics(), fetchAggregations(), fetchCharts(), fetchRevenue(), fetchCalls()])
   }
 
   function setFilter(key, value) {
@@ -98,10 +112,12 @@ export const useDashboardStore = defineStore('dashboard', () => {
     aggregations,
     charts,
     revenue,
+    calls,
     filters,
     loading,
     fetchAll,
     fetchRevenue,
+    fetchCalls,
     setFilter,
   }
 })

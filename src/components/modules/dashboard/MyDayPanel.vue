@@ -5,6 +5,7 @@ import { Phone, ChevronRight, FileWarning, Check } from 'lucide-vue-next'
 import { meApi } from '@/api/me'
 import { useAuthStore } from '@/stores/auth.store'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import { dialNumber } from '@/utils/phone'
 
 /**
  * "Ma journée" (GET /me/agenda): every late appointment, today's
@@ -135,7 +136,7 @@ function taskLabel(task) {
             </div>
             <a
               v-if="a.lead?.phone"
-              :href="`tel:${a.lead.phone}`"
+              :href="`tel:${dialNumber(a.lead.phone)}`"
               class="w-8.5 h-8.5 shrink-0 rounded-lg border border-gray-200 bg-white text-gray-900 flex items-center justify-center hover:border-gray-300"
               :aria-label="t('dashboard.callName', { name: leadName(a.lead) })"
             >

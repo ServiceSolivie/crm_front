@@ -11,10 +11,13 @@ import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppEmptyState from '@/components/base/AppEmptyState.vue'
+import NotCalledLeads from '@/components/modules/calls/NotCalledLeads.vue'
+import { useAuthStore } from '@/stores/auth.store'
 
 const { t } = useI18n()
 const router = useRouter()
 const store = useTeamLeaderStore()
+const auth = useAuthStore()
 
 const urgencyVariant = { overdue: 'danger', warning: 'warning', due_today: 'info', on_track: 'success' }
 const urgencyLabel = (u) =>
@@ -91,5 +94,8 @@ onMounted(() => {
         </div>
       </div>
     </AppCard>
+
+    <!-- Leads nobody called recently -->
+    <NotCalledLeads v-if="auth.canAny('CALLS_VIEW')" />
   </div>
 </template>

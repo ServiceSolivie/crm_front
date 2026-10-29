@@ -44,7 +44,9 @@
     "todayCount": "{n} appointment(s) left today",
     "dvcTypes": "DVC types",
     "importedLeadsExport": "Imported leads export",
-    "intake": "API intake"
+    "intake": "API intake",
+    "ringover": "Ringover",
+    "calls": "Calls"
   },
   "common": {
     "save": "Save",
@@ -167,7 +169,16 @@
     "tasks": "Files to complete",
     "tasksCount": "{n} file(s) to complete",
     "missingDocs": "Missing documents: {docs}",
-    "dossierToFix": "Sent back by the back-office — file to fix"
+    "dossierToFix": "Sent back by the back-office — file to fix",
+    "calls": {
+      "outbound": "Calls made",
+      "totalWithInbound": "{total} in total with incoming",
+      "answerRate": "Answer rate",
+      "answeredOf": "{answered} answered out of {total}",
+      "talkTime": "Talk time",
+      "missedInbound": "{count} missed incoming calls",
+      "averageTalk": "Average call length"
+    }
   },
   "leads": {
     "title": "Leads",
@@ -1563,5 +1574,136 @@
     },
     "loadError": "Couldn’t load the data.",
     "actionError": "The action failed. Try again."
+  },
+  "ringover": {
+    "title": "Ringover — Agents",
+    "linkedCount": "{linked} / {total} users linked to Ringover",
+    "refresh": "Refresh",
+    "autoLink": "Auto-link",
+    "autoLinkResult": "{linked} user(s) linked, {unmatched} without a match",
+    "connected": "Connected to Ringover · {count} Ringover user(s)",
+    "notConfigured": "Ringover is not configured",
+    "notConfiguredHint": "Add RINGOVER_API_KEY to the backend .env file.",
+    "connectionFailed": "Could not connect to Ringover",
+    "webhookSecretMissing": "RINGOVER_WEBHOOK_SECRET is not set: call history cannot be received.",
+    "searchPlaceholder": "Search a user…",
+    "noUsers": "No users",
+    "crmUser": "CRM user",
+    "role": "Role",
+    "ringoverAccount": "Ringover account",
+    "number": "Ringover number",
+    "state": "Status",
+    "linked": "Linked",
+    "notLinked": "Not linked",
+    "stale": "Not found on Ringover",
+    "suggested": "Suggested: {name}",
+    "link": "Link",
+    "unlink": "Unlink",
+    "linkTitle": "Link {name} to Ringover",
+    "selectUser": "Select a Ringover user",
+    "selectNumber": "Select a number",
+    "selectUserRequired": "Select a Ringover user",
+    "linkSuccess": "{name} is linked to Ringover",
+    "unlinkTitle": "Remove link",
+    "unlinkConfirm": "Unlink {name} from their Ringover account? Their calls will no longer be attributed to them.",
+    "unlinkSuccess": "Link removed",
+    "loadError": "Failed to load Ringover data"
+  },
+  "calls": {
+    "title": "Calls",
+    "allDirections": "All directions",
+    "allStatuses": "All results",
+    "allAgents": "All agents",
+    "direction": {
+      "in": "Incoming call",
+      "out": "Outgoing call"
+    },
+    "status": {
+      "initiated": "Initiated",
+      "ringing": "Ringing",
+      "answered": "In progress",
+      "completed": "Completed",
+      "missed": "Missed",
+      "no_answer": "No answer",
+      "voicemail": "Voicemail"
+    },
+    "empty": "No calls with this lead",
+    "ownOnlyHint": "Only your own calls are shown.",
+    "loadError": "Could not load calls",
+    "unknownAgent": "Unknown agent",
+    "talkTime": "talk time",
+    "from": "From",
+    "to": "To",
+    "totalDuration": "Total duration",
+    "endedAt": "Ended",
+    "aiSummary": "AI summary",
+    "summaryUnavailable": "Summary not available",
+    "hasRecording": "Recording available",
+    "hasSummary": "AI summary available",
+    "note": "Note",
+    "pageSubtitleTeam": "Your team's calls",
+    "pageSubtitleOwn": "Your calls",
+    "emptyAll": "No calls",
+    "fromDate": "From",
+    "toDate": "To",
+    "media": {
+      "recording": "Play recording",
+      "voicemail": "Play voicemail",
+      "transcription": "Transcript",
+      "loadError": "Could not load the file",
+      "forbidden": "You do not have access to this file",
+      "notAvailable": "File not available"
+    },
+    "unmatched": {
+      "only": "Unmatched only",
+      "badge": "Unmatched",
+      "empty": "No unmatched calls",
+      "createLead": "Create lead",
+      "attach": "Attach",
+      "attachTitle": "Attach the call from {number} to a lead",
+      "searchLead": "Search a lead (name, phone, reference)…",
+      "noLeadFound": "No lead found",
+      "assigned": "Call attached to the lead"
+    },
+    "notCalled": {
+      "title": "Leads not called",
+      "summary": "{total} open lead(s) with no call in the period, {never} never called",
+      "days": "Last {n} day | Last {n} days",
+      "empty": "Every open lead was called recently",
+      "never": "Never called",
+      "lastCall": "Last call today | Last call {days} day ago | Last call {days} days ago"
+    },
+    "phone": {
+      "call": "Call",
+      "starting": "Calling…",
+      "notCallable": "No number, or flagged as wrong",
+      "callInProgress": "A call is already in progress",
+      "unavailable": "The Ringover phone is not ready. Open it and sign in.",
+      "wrongAccount": "You are signed in to Ringover with a different account than the one linked to your CRM profile.",
+      "open": "Open phone",
+      "phase": {
+        "dialing": "Dialling…",
+        "ringing": "Ringing…",
+        "answered": "In call"
+      },
+      "signIn": "Sign in to Ringover in the phone window: the call will start automatically.",
+      "panelTitle": "Ringover phone",
+      "hide": "Collapse",
+      "pending": "To call as soon as you are signed in to Ringover:"
+    },
+    "postCall": {
+      "title": "After the call with {name}",
+      "duration": "Duration: {duration}",
+      "note": "Note",
+      "notePlaceholder": "What was said, next step…",
+      "newStatus": "New lead status",
+      "keepStatus": "Keep current status",
+      "expectedRevenue": "Expected amount (€)",
+      "revenueRequired": "The expected amount is required to validate a lead.",
+      "later": "Later",
+      "planAppointment": "Plan appointment",
+      "saved": "Call follow-up saved",
+      "saveError": "Could not save the follow-up"
+    }
   }
 }

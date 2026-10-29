@@ -113,6 +113,36 @@
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #3b82f6 100%);
   }
 
+  /* Phone number that calls when clicked (leads list): quiet at rest, green on hover */
+  .phone-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 3px 8px 3px 6px;
+    margin-left: -6px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--color-gray-900);
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .phone-link:hover:not(:disabled) {
+    background-color: var(--color-success-bg);
+    border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+    color: var(--color-success-text);
+  }
+  .phone-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 30%, transparent);
+  }
+  .phone-link:disabled {
+    color: var(--color-gray-500);
+    cursor: not-allowed;
+  }
+
   /* Text truncation */
   .truncate-2 {
     display: -webkit-box;

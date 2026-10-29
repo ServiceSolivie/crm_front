@@ -33,11 +33,14 @@ import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import CrossSellModal from '@/components/modules/leads/CrossSellModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
 import DvcCreateModal from '@/components/modules/leads/DvcCreateModal.vue'
+import LeadCallsTab from '@/components/modules/calls/LeadCallsTab.vue'
+import CallButton from '@/components/modules/calls/CallButton.vue'
 import { documentsApi } from '@/api/documents'
 import { contractsApi } from '@/api/contracts'
 import { leadsApi } from '@/api/leads'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
+import { dialNumber } from '@/utils/phone'
 
 const route = useRoute()
 const router = useRouter()
@@ -49,6 +52,9 @@ const auth = useAuthStore()
 const toast = useToast()
 
 const id = computed(() => route.params.id)
+
+// Allowed to call: use the embedded Ringover phone instead of a plain tel: link
+const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
 
 // Copy the lead's phone number (to paste it in Ringover or elsewhere)
 const phoneCopied = ref(false)
@@ -739,7 +745,7 @@ const companyFields = computed(() => {
             </div>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-gray-600">
               <span v-if="lead.phone" class="flex items-center gap-1">
-                <a :href="`tel:${lead.phone}`" class="flex items-center gap-1.5 hover:text-gray-900">
+                <a :href="`tel:${dialNumber(lead.phone)}`" class="flex items-center gap-1.5 hover:text-gray-900">
                   <Phone class="w-3.5 h-3.5" /><span class="font-mono text-[12.5px] text-gray-900">{{ lead.phone }}</span>
                 </a>
                 <button
@@ -772,9 +778,11 @@ const companyFields = computed(() => {
 
           <!-- Actions -->
           <div class="flex items-center gap-2 shrink-0">
+            <!-- Ringover: embedded phone, or ring the agent's mobile first -->
+            <CallButton v-if="isRingoverCaller" :lead="lead" variant="button" />
             <a
-              v-if="lead.phone"
-              :href="`tel:${lead.phone}`"
+              v-else-if="lead.phone"
+              :href="`tel:${dialNumber(lead.phone)}`"
               class="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover"
             ><Phone class="w-3.5 h-3.5" />{{ t('leadDetail.call') }}</a>
             <button
@@ -916,6 +924,15 @@ const companyFields = computed(() => {
             :refresh-key="activityKey"
             :show-payments="hasRevenue"
           />
+
+          <!-- Calls made or received through Ringover, with recordings -->
+          <section
+            v-if="auth.canAny('CALLS_VIEW')"
+            class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5"
+          >
+            <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('calls.title') }}</h2>
+            <LeadCallsTab :lead-id="id" />
+          </section>
 
           <!-- DVC: status, creation and the DVCs generated for this lead -->
           <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">

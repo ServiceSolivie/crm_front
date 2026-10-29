@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { Bell, Calendar, UserPlus, CheckCheck, MonitorUp } from 'lucide-vue-next'
+import { Bell, Calendar, UserPlus, CheckCheck, MonitorUp, PhoneMissed, Voicemail } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useNotificationsStore } from '@/stores/notifications.store'
 import { formatRelative } from '@/utils/formatters'
@@ -43,7 +43,8 @@ async function openNotification(item) {
   }
 
   const appointmentId = item.payload?.appointments?.[0]?.id
-  const leadId = item.payload?.leads?.[0]?.id
+  // Missed calls carry a single lead_id
+  const leadId = item.payload?.leads?.[0]?.id ?? item.payload?.lead_id
   if (appointmentId) router.push(`/appointments/${appointmentId}`)
   else if (leadId) router.push(`/leads/${leadId}`)
   else if (item.payload?.devices) router.push('/devices')
@@ -159,7 +160,14 @@ onUnmounted(() => {
               ]"
               @click="openNotification(item)"
             >
-              <div class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
+              <div
+                v-if="item.payload?.kind === 'missed_call'"
+                class="w-8 h-8 rounded-full bg-danger-bg flex items-center justify-center shrink-0"
+              >
+                <Voicemail v-if="item.payload.voicemail" class="w-4 h-4 text-danger" />
+                <PhoneMissed v-else class="w-4 h-4 text-danger" />
+              </div>
+              <div v-else class="w-8 h-8 rounded-full bg-primary-light flex items-center justify-center shrink-0">
                 <UserPlus v-if="item.payload?.leads" class="w-4 h-4 text-primary" />
                 <MonitorUp v-else-if="item.payload?.devices" class="w-4 h-4 text-primary" />
                 <Calendar v-else class="w-4 h-4 text-primary" />
@@ -188,6 +196,9 @@ onUnmounted(() => {
                   class="text-xs text-gray-500 mt-0.5 truncate"
                 >
                   {{ device.requested_by ?? '—' }}<template v-if="device.browser"> — {{ device.browser }}</template>
+                </p>
+                <p v-if="item.payload?.kind === 'missed_call'" class="text-xs text-gray-500 mt-0.5 truncate">
+                  {{ item.payload.body }}
                 </p>
                 <p class="text-[11px] text-gray-400 mt-1">{{ formatRelative(item.created_at) }}</p>
               </div>
