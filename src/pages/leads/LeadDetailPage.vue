@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import {
   ChevronLeft, ChevronRight, Phone, Mail, Clock, MoreHorizontal, UserPlus, PackagePlus,
   Pencil, Trash2, Flag, AlertTriangle, Check, CalendarDays, Plus, ChevronDown,
-  FileText, Eye, Download,Copy,
+  FileText, Eye, Download,
 } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useAppointmentsStore } from '@/stores/appointments.store'
@@ -35,6 +35,7 @@ import DocumentPreviewModal from '@/components/modules/documents/DocumentPreview
 import DvcCreateModal from '@/components/modules/leads/DvcCreateModal.vue'
 import LeadCallsTab from '@/components/modules/calls/LeadCallsTab.vue'
 import CallButton from '@/components/modules/calls/CallButton.vue'
+import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 import { documentsApi } from '@/api/documents'
 import { contractsApi } from '@/api/contracts'
 import { leadsApi } from '@/api/leads'
@@ -55,36 +56,6 @@ const id = computed(() => route.params.id)
 
 // Allowed to call: use the embedded Ringover phone instead of a plain tel: link
 const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
-
-// Copy the lead's phone number (to paste it in Ringover or elsewhere)
-const phoneCopied = ref(false)
-let phoneCopiedTimer = null
-async function copyPhone() {
-  const phone = leadsStore.current?.phone
-  if (!phone) return
-  try {
-    await navigator.clipboard.writeText(phone)
-  } catch {
-    // The clipboard API needs https or localhost: fall back to the old way
-    const field = document.createElement('textarea')
-    field.value = phone
-    field.style.position = 'fixed'
-    field.style.opacity = '0'
-    document.body.appendChild(field)
-    field.select()
-    const ok = document.execCommand('copy')
-    field.remove()
-    if (!ok) {
-      toast.showError(t('leadDetail.phoneCopyFailed'))
-      return
-    }
-  }
-  phoneCopied.value = true
-  toast.showSuccess(t('leadDetail.phoneCopied'))
-  clearTimeout(phoneCopiedTimer)
-  phoneCopiedTimer = setTimeout(() => (phoneCopied.value = false), 1500)
-}
-onBeforeUnmount(() => clearTimeout(phoneCopiedTimer))
 
 const showAssignModal = ref(false)
 const statusChanging = ref(false)
@@ -744,21 +715,7 @@ const companyFields = computed(() => {
               >{{ lead.doublon_of ? t('leads.doublonOf', { ref: lead.doublon_of.reference }) : t('leads.doublon') }}</span>
             </div>
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-gray-600">
-              <span v-if="lead.phone" class="flex items-center gap-1">
-                <a :href="`tel:${dialNumber(lead.phone)}`" class="flex items-center gap-1.5 hover:text-gray-900">
-                  <Phone class="w-3.5 h-3.5" /><span class="font-mono text-[12.5px] text-gray-900">{{ lead.phone }}</span>
-                </a>
-                <button
-                  type="button"
-                  :title="phoneCopied ? t('leadDetail.phoneCopied') : t('leadDetail.copyPhone')"
-                  :aria-label="t('leadDetail.copyPhone')"
-                  class="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-gray-900 hover:bg-gray-100"
-                  @click="copyPhone"
-                >
-                  <Check v-if="phoneCopied" class="w-3.5 h-3.5 text-success" />
-                  <Copy v-else class="w-3.5 h-3.5" />
-                </button>
-              </span>
+              <PhoneCallLink v-if="lead.phone" :lead="lead" />
               <a v-if="lead.email" :href="`mailto:${lead.email}`" class="flex items-center gap-1.5 min-w-0 hover:text-gray-900">
                 <Mail class="w-3.5 h-3.5 shrink-0" /><span class="text-gray-900 truncate">{{ lead.email }}</span>
               </a>
@@ -778,7 +735,7 @@ const companyFields = computed(() => {
 
           <!-- Actions -->
           <div class="flex items-center gap-2 shrink-0">
-            <!-- Ringover: embedded phone, or ring the agent's mobile first -->
+            <!-- Ringover: embedded phone -->
             <CallButton v-if="isRingoverCaller" :lead="lead" variant="button" />
             <a
               v-else-if="lead.phone"

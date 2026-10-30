@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Phone, RefreshCw, Inbox } from 'lucide-vue-next'
 import { useGestionDashboardStore } from '@/stores/gestionDashboard.store'
+import { useAuthStore } from '@/stores/auth.store'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -11,6 +12,7 @@ import KpiStripCell from '@/components/modules/dashboard/KpiStripCell.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import DvcStatusBadge from '@/components/modules/leads/DvcStatusBadge.vue'
 import { formatDateTime } from '@/utils/formatters'
+import CallButton from '@/components/modules/calls/CallButton.vue'
 import { dialNumber } from '@/utils/phone'
 
 /**
@@ -19,6 +21,7 @@ import { dialNumber } from '@/utils/phone'
  */
 const { t, locale } = useI18n()
 const router = useRouter()
+const auth = useAuthStore()
 const store = useGestionDashboardStore()
 
 onMounted(() => store.fetchDashboard())
@@ -212,8 +215,9 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
               >{{ since(lead) }}</span>
               <span role="cell" :class="['text-[12.5px] truncate', TONES[nextStep(lead).tone]]">{{ nextStep(lead).text }}</span>
               <span role="cell" class="flex justify-end" @click.stop>
+                <CallButton v-if="lead.phone && auth.can('CALLS_MAKE')" :lead="lead" />
                 <a
-                  v-if="lead.phone"
+                  v-else-if="lead.phone"
                   :href="`tel:${dialNumber(lead.phone)}`"
                   :aria-label="t('leads.callName', { name: fullName(lead) })"
                   class="w-7 h-7 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-gray-900"
