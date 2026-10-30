@@ -153,6 +153,14 @@ watch(enabled, sync, { flush: 'post' })
           <p class="text-xs text-gray-400">{{ t(`calls.phone.phase.${state.active.phase}`) }}</p>
         </div>
         <span class="font-mono tabular-nums text-sm text-gray-200">{{ elapsed }}</span>
+        <button
+          v-if="state.active.phase === 'dialing'"
+          type="button"
+          class="shrink-0 px-2.5 py-1 rounded-lg text-xs font-medium bg-white/10 text-white hover:bg-white/20 cursor-pointer"
+          @click="phone.cancelDial()"
+        >
+          {{ t('common.cancel') }}
+        </button>
       </div>
 
       <!-- Asked to call before signing in -->

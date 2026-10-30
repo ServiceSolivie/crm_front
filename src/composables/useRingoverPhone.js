@@ -11,7 +11,7 @@ import { callsApi } from '@/api/calls'
  * Ringover's signed webhooks remain the source of truth for the call history.
  */
 
-const DIAL_TIMEOUT_MS = 60_000
+const DIAL_TIMEOUT_MS = 30_000
 
 const state = reactive({
   initialised: false,
@@ -198,6 +198,13 @@ async function callLead(lead) {
   }, DIAL_TIMEOUT_MS)
 }
 
+// The agent gives up before pressing call in Ringover: free the call buttons now.
+function cancelDial() {
+  if (state.active?.phase !== 'dialing') return
+  clearTimeout(dialTimer)
+  state.active = null
+}
+
 function showPhone() {
   state.open = true
 }
@@ -220,6 +227,7 @@ export function useRingoverPhone() {
     init,
     destroy,
     callLead,
+    cancelDial,
     showPhone,
     hidePhone,
     togglePhone,

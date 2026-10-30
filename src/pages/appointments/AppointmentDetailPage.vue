@@ -2,7 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Clock, Pencil, Trash2, Phone, Check, X } from 'lucide-vue-next'
+import { Clock, Pencil, Trash2, Check, X } from 'lucide-vue-next'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useAuthStore } from '@/stores/auth.store'
@@ -13,10 +13,9 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import AppointmentRescheduleModal from '@/components/modules/appointments/AppointmentRescheduleModal.vue'
 import AppointmentRemindersPanel from '@/components/modules/appointments/AppointmentRemindersPanel.vue'
-import CallButton from '@/components/modules/calls/CallButton.vue'
+import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 import { formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
-import { dialNumber } from '@/utils/phone'
 
 const route = useRoute()
 const router = useRouter()
@@ -224,12 +223,7 @@ async function handleDelete() {
             <div v-if="apt.lead.phone">
               <dt class="text-xs text-gray-500">{{ t('leads.phone') }}</dt>
               <dd class="mt-0.5">
-                <span class="inline-flex items-center gap-2">
-                  <a :href="`tel:${dialNumber(apt.lead.phone)}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
-                    <Phone class="w-3.5 h-3.5" />{{ apt.lead.phone }}
-                  </a>
-                  <CallButton :lead="apt.lead" />
-                </span>
+                <PhoneCallLink :lead="apt.lead" />
               </dd>
             </div>
             <div v-if="apt.lead.insurance_type">

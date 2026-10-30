@@ -2,7 +2,7 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { Phone, Mail } from 'lucide-vue-next'
+import { Mail } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useUsersStore } from '@/stores/users.store'
 import { useAuthStore } from '@/stores/auth.store'
@@ -18,7 +18,7 @@ import { APPOINTMENT_STATUS } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { fromDatetimeLocalValue } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
-import { dialNumber } from '@/utils/phone'
+import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -160,9 +160,7 @@ function goBack() {
               <span v-if="lead.insurance_type" class="block text-xs text-gray-500">{{ t('insuranceTypes.' + lead.insurance_type, lead.insurance_type) }}</span>
             </span>
           </div>
-          <a v-if="lead.phone" :href="`tel:${dialNumber(lead.phone)}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
-            <Phone class="w-3.5 h-3.5" />{{ lead.phone }}
-          </a>
+          <PhoneCallLink v-if="lead.phone" :lead="lead" />
           <a v-if="lead.email" :href="`mailto:${lead.email}`" class="inline-flex items-center gap-1.5 text-[13px] text-gray-900 hover:text-primary min-w-0">
             <Mail class="w-3.5 h-3.5 shrink-0" /><span class="truncate">{{ lead.email }}</span>
           </a>

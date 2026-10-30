@@ -7,7 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import frLocale from '@fullcalendar/core/locales/fr'
-import { ChevronLeft, ChevronRight, X, Phone, Loader2 } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, X, Loader2 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUsersStore } from '@/stores/users.store'
 import { useAppointmentsStore } from '@/stores/appointments.store'
@@ -22,7 +22,7 @@ import AppSearchInput from '@/components/base/AppSearchInput.vue'
 import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import AppointmentStatusBadge from '@/components/modules/appointments/AppointmentStatusBadge.vue'
 import AppointmentRescheduleModal from '@/components/modules/appointments/AppointmentRescheduleModal.vue'
-import { dialNumber } from '@/utils/phone'
+import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
@@ -352,9 +352,7 @@ onMounted(async () => {
             <div v-if="selectedApt.lead?.phone" class="min-w-0 col-span-2">
               <dt class="text-xs text-gray-500">{{ t('calendar.phone') }}</dt>
               <dd class="mt-0.5">
-                <a :href="`tel:${dialNumber(selectedApt.lead.phone)}`" class="inline-flex items-center gap-1.5 font-mono text-[12.5px] text-gray-900 hover:text-primary">
-                  <Phone class="w-3.5 h-3.5" />{{ selectedApt.lead.phone }}
-                </a>
+                <PhoneCallLink :lead="selectedApt.lead" />
               </dd>
             </div>
           </dl>
