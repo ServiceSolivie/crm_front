@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
@@ -9,6 +9,7 @@ import LeadForm from '@/components/modules/leads/LeadForm.vue'
 import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
+const route = useRoute()
 const leadsStore = useLeadsStore()
 const toast = useToast()
 const { t } = useI18n()
@@ -16,6 +17,9 @@ const { t } = useI18n()
 const formRef = ref(null)
 const serverErrors = ref({})
 const createAnother = ref(false)
+
+// Creating a lead from an unknown caller (/leads/create?phone=…): prefill the number
+const prefill = typeof route.query.phone === 'string' ? { phone: route.query.phone } : null
 
 async function onSubmit(payload) {
   serverErrors.value = {}
@@ -67,7 +71,7 @@ async function onSubmit(payload) {
       </div>
     </div>
 
-    <LeadForm ref="formRef" mode="create" :server-errors="serverErrors" @submit="onSubmit">
+    <LeadForm ref="formRef" mode="create" :lead="prefill" :server-errors="serverErrors" @submit="onSubmit">
       <template #aside>
         <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">
           <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('leadForm.afterCreate') }}</h2>

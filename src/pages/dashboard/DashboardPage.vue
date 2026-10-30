@@ -34,6 +34,24 @@ const canViewRevenue = computed(() =>
 )
 const canViewAppointments = computed(() => auth.canAny('APPOINTMENTS_VIEW'))
 
+/* ── Calls (Ringover) ──────────────────────────────────────── */
+const callStats = computed(() => dash.calls)
+const showCalls = computed(() => auth.canAny('CALLS_VIEW') && callStats.value !== null)
+
+function formatTalkTime(seconds) {
+  if (seconds === null || seconds === undefined) return '—'
+  const h = Math.floor(seconds / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`
+}
+
+function formatAverage(seconds) {
+  if (!seconds) return '0 s'
+  const m = Math.floor(seconds / 60)
+  const s = Math.round(seconds % 60)
+  return m ? `${m} min ${String(s).padStart(2, '0')}` : `${s} s`
+}
+
 /* ── Header ────────────────────────────────────────────────── */
 const firstName = computed(() => (auth.user?.name ?? '').split(' ')[0])
 const todayLabel = computed(() => {
@@ -311,6 +329,39 @@ onMounted(() => {
         :value="fmtNumber(agents.active)"
         :hint="t('dashboard.activeOf', { n: agents.total })"
         :loading="dash.loading.kpis"
+      />
+    </section>
+
+    <!-- ── Calls (Ringover) ──────────────────────────────────── -->
+    <section
+      v-if="showCalls"
+      :aria-label="t('calls.title')"
+      class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 xl:divide-y-0 xl:divide-x"
+    >
+      <KpiStripCell
+        :label="t('dashboard.calls.outbound')"
+        :value="fmtNumber(callStats.outbound)"
+        :hint="t('dashboard.calls.totalWithInbound', { total: fmtNumber(callStats.total) })"
+        :loading="dash.loading.calls"
+      />
+      <KpiStripCell
+        :label="t('dashboard.calls.answerRate')"
+        :value="fmtRate(callStats.answer_rate)"
+        :progress="callStats.answer_rate ?? null"
+        :hint="t('dashboard.calls.answeredOf', { answered: callStats.outbound_answered ?? 0, total: callStats.outbound ?? 0 })"
+        :loading="dash.loading.calls"
+      />
+      <KpiStripCell
+        :label="t('dashboard.calls.talkTime')"
+        :value="formatTalkTime(callStats.talk_seconds)"
+        :hint="t('dashboard.calls.missedInbound', { count: callStats.inbound_missed ?? 0 })"
+        :hint-tone="callStats.inbound_missed ? 'danger' : 'muted'"
+        :loading="dash.loading.calls"
+      />
+      <KpiStripCell
+        :label="t('dashboard.calls.averageTalk')"
+        :value="formatAverage(callStats.average_talk_seconds)"
+        :loading="dash.loading.calls"
       />
     </section>
 

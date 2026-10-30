@@ -33,6 +33,8 @@ import {
   ClipboardCheck,
   Lock,
   FileSpreadsheet,
+  Phone,
+  PhoneCall,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -156,6 +158,7 @@ const navGroups = computed(() => [
         to: '/calendar',
         permission: 'APPOINTMENTS_VIEW_*',
       },
+      { icon: Phone, label: t('nav.calls'), to: '/calls', permission: 'CALLS_VIEW_*' },
       {
         icon: FileSignature,
         label: t('nav.contracts'),
@@ -222,6 +225,7 @@ const navGroups = computed(() => [
             role: 'super_admin',
           },
           { icon: FileSignature, label: t('nav.dvcTypes'), to: '/dvc-types', role: 'super_admin' },
+          { icon: PhoneCall, label: t('nav.ringover'), to: '/ringover', permission: 'RINGOVER_MANAGE' },
         ],
       },
       {
