@@ -1530,6 +1530,9 @@
     "noKey": "No key: every request is refused.",
     "createKey": "Generate a key",
     "howToSend": "Send the key in the X-Api-Key header, as an “Authorization: Bearer …” token, or at the end of the address: …/intake/leads?key=…",
+    "testAddress": "Test",
+    "howToTest": "No key, GET only: the data goes in the address, for example …/intake/test?first_name=Jean&phone=0612345678",
+    "noKeyNeeded": "No key (test address)",
     "retention": "Received requests are deleted automatically after {n} days.",
     "received": "Requests received · {n}",
     "refresh": "Refresh",
@@ -1570,6 +1573,7 @@
       "empty": "Empty",
       "form": "Form",
       "multipart": "Form + files",
+      "query": "Address",
       "other": "Other"
     },
     "loadError": "Couldn’t load the data.",
