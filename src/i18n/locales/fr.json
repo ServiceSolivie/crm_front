@@ -1530,6 +1530,9 @@
     "noKey": "Aucune clé : toutes les requêtes sont refusées.",
     "createKey": "Générer une clé",
     "howToSend": "La clé s’envoie dans l’en-tête X-Api-Key, en jeton « Authorization: Bearer … », ou à la fin de l’adresse : …/intake/leads?key=…",
+    "testAddress": "Test",
+    "howToTest": "Sans clé, GET uniquement : les données vont dans l’adresse, par exemple …/intake/test?prenom=Jean&telephone=0612345678",
+    "noKeyNeeded": "Sans clé (adresse de test)",
     "retention": "Les requêtes reçues sont supprimées automatiquement après {n} jours.",
     "received": "Requêtes reçues · {n}",
     "refresh": "Actualiser",
@@ -1570,6 +1573,7 @@
       "empty": "Vide",
       "form": "Formulaire",
       "multipart": "Formulaire + fichiers",
+      "query": "Adresse",
       "other": "Autre"
     },
     "loadError": "Impossible de charger les données.",

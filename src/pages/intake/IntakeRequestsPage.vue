@@ -150,6 +150,8 @@ onMounted(() => {
 function formatOf(r) {
   const type = (r.content_type ?? '').toLowerCase()
   if (!r.key_valid) return { label: t('intake.format.invalidKey'), cls: 'bg-danger-bg text-danger-text' }
+  // A GET has its data in the address, not in a body
+  if (!r.size && r.preview) return { label: t('intake.format.query'), cls: 'bg-primary-light text-primary-hover' }
   if (!r.size) return { label: t('intake.format.empty'), cls: 'bg-gray-100 text-gray-600' }
   if (type.includes('json')) return { label: 'JSON', cls: 'bg-primary-light text-primary-hover' }
   if (type.includes('x-www-form-urlencoded')) return { label: t('intake.format.form'), cls: 'bg-warning-bg text-warning-text' }
@@ -183,6 +185,9 @@ const prettyBody = computed(() => {
 })
 
 const keyVia = (via) => (via ? t('intake.keyVia.' + via) : t('intake.keyVia.none'))
+
+// Accepted with no key: it came through the test address
+const noKeyNeeded = (r) => r.key_valid && (!r.key_via || r.key_via === 'none')
 
 const card = 'bg-white border border-gray-200 rounded-xl'
 const smallBtn = 'h-8 px-2.5 rounded-lg border border-gray-200 bg-white text-[12.5px] text-gray-700 hover:bg-gray-50 inline-flex items-center gap-1.5 disabled:opacity-50'
@@ -234,6 +239,14 @@ const smallBtn = 'h-8 px-2.5 rounded-lg border border-gray-200 bg-white text-[12
           </template>
         </div>
         <p class="text-xs text-gray-500">{{ t('intake.howToSend') }}</p>
+        <div class="flex flex-wrap items-center gap-2.5 pt-1">
+          <span class="w-20 text-[12.5px] text-gray-600">{{ t('intake.testAddress') }}</span>
+          <code class="flex-1 min-w-[240px] px-2.5 py-1.5 rounded-md bg-gray-50 border border-gray-100 text-[12.5px] text-gray-900 break-all">GET {{ settings.test_url }}</code>
+          <button type="button" :class="smallBtn" @click="copy(settings.test_url, 'testUrl')">
+            <component :is="copied === 'testUrl' ? Check : Copy" class="w-3.5 h-3.5" />{{ copied === 'testUrl' ? t('intake.copied') : t('intake.copy') }}
+          </button>
+        </div>
+        <p class="text-xs text-gray-500">{{ t('intake.howToTest') }}</p>
         <p class="text-xs text-gray-500">{{ t('intake.retention', { n: settings.retention_days }) }}</p>
       </template>
     </section>
@@ -314,7 +327,8 @@ const smallBtn = 'h-8 px-2.5 rounded-lg border border-gray-200 bg-white text-[12
             <dt class="text-gray-500">{{ t('intake.meta.format') }}</dt><dd class="text-gray-900 break-all">{{ detail.content_type || '—' }}</dd>
             <dt class="text-gray-500">{{ t('intake.meta.size') }}</dt><dd class="text-gray-900">{{ size(detail.size) }}<span v-if="detail.truncated" class="text-warning-text"> · {{ t('intake.truncated') }}</span></dd>
             <dt class="text-gray-500">{{ t('intake.meta.key') }}</dt>
-            <dd :class="detail.key_valid ? 'text-success-text' : 'text-danger-text'">{{ detail.key_valid ? t('intake.keyOk') : t('intake.keyBad') }} · {{ keyVia(detail.key_via) }}</dd>
+            <dd v-if="noKeyNeeded(detail)" class="text-gray-900">{{ t('intake.noKeyNeeded') }}</dd>
+            <dd v-else :class="detail.key_valid ? 'text-success-text' : 'text-danger-text'">{{ detail.key_valid ? t('intake.keyOk') : t('intake.keyBad') }} · {{ keyVia(detail.key_via) }}</dd>
             <dt class="text-gray-500">{{ t('intake.meta.ip') }}</dt><dd class="text-gray-900 font-mono">{{ detail.ip || '—' }}</dd>
             <dt class="text-gray-500">{{ t('intake.meta.userAgent') }}</dt><dd class="text-gray-900 break-all">{{ detail.user_agent || '—' }}</dd>
           </dl>
