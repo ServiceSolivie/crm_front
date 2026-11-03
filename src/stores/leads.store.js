@@ -199,26 +199,6 @@ export const useLeadsStore = defineStore('leads', () => {
     }
   }
 
-  async function logCall(leadId, payload) {
-    loading.submitting = true
-    try {
-      const { data } = await leadsApi.calls.create(leadId, payload)
-      if (current.value?.id === Number(leadId)) {
-        current.value = { ...current.value, calls_count: (current.value.calls_count ?? 0) + 1 }
-      }
-      const idx = list.value.findIndex((l) => l.id === Number(leadId))
-      if (idx !== -1) {
-        list.value.splice(idx, 1, { ...list.value[idx], calls_count: (list.value[idx].calls_count ?? 0) + 1 })
-      }
-      return data
-    } catch (e) {
-      errors.value = e
-      throw e
-    } finally {
-      loading.submitting = false
-    }
-  }
-
   async function fetchLeadAppointments(leadId) {
     loading.appointments = true
     try {
@@ -465,7 +445,6 @@ export const useLeadsStore = defineStore('leads', () => {
     crossSell,
     updateStatus,
     addNote,
-    logCall,
     fetchLeadAppointments,
     createLeadAppointment,
     fetchPayments,

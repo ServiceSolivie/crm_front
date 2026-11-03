@@ -54,12 +54,17 @@ const ICONS = {
   document: { icon: FileText, cls: 'bg-gray-100 text-gray-600' },
 }
 
+// Ringover talk time, as 03:42
+function talkTime(seconds) {
+  return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+}
+
 /** API item → the shape each template branch reads */
 function toEvent(i) {
   const d = i.data ?? {}
   const raw = {
     note: { user: i.user, note: d.note },
-    call: { user: i.user, outcome: d.outcome, note: d.note },
+    call: { user: i.user, direction: d.direction, status: d.status, talk_seconds: d.talk_seconds, note: d.note },
     status: { changed_by: i.user, from_status: d.from, to_status: d.to, comment: d.comment },
     assignment: { assigned_by: i.user, to_user: d.to, from_user: d.from },
     appointment: { scheduled_at: d.scheduled_at, status: d.status, agent: d.agent, notes: d.notes },
@@ -195,9 +200,9 @@ function paymentMethod(p) {
             <!-- Call -->
             <template v-else-if="e.kind === 'call'">
               <p>
-                <span class="font-medium">{{ t('leadDetail.activity.call') }}</span>
+                <span class="font-medium">{{ e.raw.direction ? t('calls.direction.' + e.raw.direction) : t('leadDetail.activity.call') }}</span>
                 <span class="text-gray-600">
-                  · {{ e.raw.user?.name ?? '—' }}<template v-if="e.raw.outcome"> · {{ t('leads.callOutcomes.' + e.raw.outcome, e.raw.outcome) }}</template>
+                  · {{ e.raw.user?.name ?? t('calls.unknownAgent') }}<template v-if="e.raw.status"> · {{ t('calls.status.' + e.raw.status, e.raw.status) }}</template><template v-if="e.raw.talk_seconds"> · <span class="font-mono">{{ talkTime(e.raw.talk_seconds) }}</span></template>
                 </span>
               </p>
               <p v-if="e.raw.note" class="mt-1.5 text-[13px] leading-[19px] text-gray-900 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2 whitespace-pre-wrap break-words">{{ e.raw.note }}</p>

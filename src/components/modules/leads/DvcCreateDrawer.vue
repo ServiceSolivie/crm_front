@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { FilePenLine } from 'lucide-vue-next'
 import { useContractsStore } from '@/stores/contracts.store'
 import { useToast } from '@/composables/useToast'
-import AppModal from '@/components/base/AppModal.vue'
+import AppDrawer from '@/components/base/AppDrawer.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -17,6 +17,9 @@ import { formatDateTime } from '@/utils/formatters'
  * Create a DVC from the lead page: the agent picks the DVC type (the one of
  * the lead's insurance type is pre-selected), fills the form generated from
  * that type's schema and generates the PDF.
+ *
+ * It opens as a side drawer rather than a dialog: the form is long, and the
+ * lead it describes stays readable next to it.
  *
  * Each field takes the value of the lead's last DVC of the same type, else of
  * its most recent DVC of another type with a field of the same key, else of
@@ -45,6 +48,13 @@ const template = computed(() => store.templates.find((tpl) => tpl.key === templa
 const typeOptions = computed(() =>
   store.templates.map((tpl) => ({ value: tpl.key, label: tpl.label })),
 )
+// "Nadia Ouhibi · L-10482", so the drawer says which lead it is about
+const leadLine = computed(() => {
+  const lead = props.lead
+  if (!lead) return ''
+  const name = [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim()
+  return [name, lead.reference].filter(Boolean).join(' · ')
+})
 // "DVC Auto n°2 du 16/10/2026 14:02, DVC Décennale n°1 du …"
 const sourcesLabel = computed(() =>
   sourceDvcs.value
@@ -61,6 +71,20 @@ const sourcesLabel = computed(() =>
 const noTypeForLead = computed(
   () => !!props.lead?.insurance_type && !store.templates.some((tpl) => tpl.insurance_type === props.lead.insurance_type),
 )
+// Required fields still empty: shown in the footer, so the agent knows what the
+// server would reject before sending the form.
+const requiredLeft = computed(() => {
+  let left = 0
+  for (const section of template.value?.schema?.sections ?? []) {
+    if (section.type !== 'fields') continue
+    for (const field of section.fields ?? []) {
+      if (!field.required) continue
+      const value = form[field.key]
+      if (value === '' || value === null || value === undefined) left++
+    }
+  }
+  return left
+})
 
 watch(
   () => props.open,
@@ -149,29 +173,39 @@ async function generate() {
 </script>
 
 <template>
-  <AppModal
+  <AppDrawer
     :open="open"
     :title="t('dvc.create.title')"
+    :subtitle="leadLine"
     :description="t('dvc.create.description')"
     :icon="FilePenLine"
-    size="xl"
+    width="max-w-[640px]"
     @close="emit('close')"
   >
-    <div class="flex flex-col gap-5">
+    <!-- Type picker stays in view while the form scrolls -->
+    <template v-if="store.templates.length" #toolbar>
+      <div class="flex items-end gap-3">
+        <AppSelect
+          class="flex-1 min-w-0"
+          :model-value="templateKey"
+          :label="t('dvc.create.type')"
+          :placeholder="t('dvc.create.typePlaceholder')"
+          :options="typeOptions"
+          :hint="noTypeForLead ? t('dvc.create.noTypeForLead') : ''"
+          @update:model-value="selectType"
+        />
+        <p v-if="template" class="font-mono text-[11.5px] text-gray-500 shrink-0 pb-2.5">
+          {{ t('dvc.create.version', { version: template.version }) }}
+        </p>
+      </div>
+    </template>
+
+    <div class="flex flex-col gap-4">
       <AppSkeleton v-if="store.loading.templates && !store.templates.length" height="64px" />
 
       <template v-else>
         <p v-if="!store.templates.length" class="text-[13px] text-gray-600">{{ t('dvc.create.noTypes') }}</p>
         <template v-else>
-          <AppSelect
-            :model-value="templateKey"
-            :label="t('dvc.create.type')"
-            :placeholder="t('dvc.create.typePlaceholder')"
-            :options="typeOptions"
-            :hint="noTypeForLead ? t('dvc.create.noTypeForLead') : ''"
-            @update:model-value="selectType"
-          />
-
           <p
             v-if="sourceDvcs.length && !loadingForm"
             class="rounded-lg bg-info-bg/60 border border-info/30 px-3 py-2 text-[12.5px] leading-[18px] text-info-text"
@@ -188,19 +222,23 @@ async function generate() {
             :schema="template.schema"
             :errors="errors"
             :disabled="store.loading.generate"
+            :columns-max="2"
           />
         </template>
       </template>
     </div>
 
     <template #footer>
-      <p v-if="template" class="text-xs text-gray-400 mr-auto self-center">
-        {{ t('dvc.create.version', { version: template.version }) }}
+      <p
+        v-if="template && !loadingForm"
+        :class="['text-[12.5px] mr-auto self-center', requiredLeft ? 'text-warning-text' : 'text-gray-500']"
+      >
+        {{ t('dvc.create.requiredLeft', { count: requiredLeft }, requiredLeft) }}
       </p>
       <AppButton variant="secondary" @click="emit('close')">{{ t('common.cancel') }}</AppButton>
       <AppButton :disabled="!template || loadingForm" :loading="store.loading.generate" @click="generate">
         {{ t('contracts.generatePdf') }}
       </AppButton>
     </template>
-  </AppModal>
+  </AppDrawer>
 </template>

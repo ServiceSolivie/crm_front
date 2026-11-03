@@ -191,18 +191,6 @@
     "status": "Status",
     "createdAt": "Created",
     "calls": "Calls",
-    "logCall": "Log Call",
-    "callLogged": "Call logged",
-    "callOutcome": "Outcome",
-    "callNotePlaceholder": "Add a short note (optional)…",
-    "callOutcomes": {
-      "no_answer": "No answer",
-      "voicemail": "Left voicemail",
-      "interested": "Spoke — interested",
-      "not_interested": "Spoke — not interested",
-      "already_insured": "Already insured",
-      "other": "Other"
-    },
     "companyInfo": "Company Information",
     "companyName": "Company Name",
     "address": "Address",
@@ -1142,7 +1130,6 @@
     },
     "composer": {
       "addNote": "Add a note",
-      "logCall": "Log a call",
       "scheduleAppointment": "Schedule an appointment",
       "newNote": "New note",
       "notePlaceholder": "Write a note about this lead…",
@@ -1199,7 +1186,6 @@
     "errors": {
       "assign": "Failed to assign lead",
       "note": "Failed to add note",
-      "call": "Failed to log call",
       "appointmentDelete": "Failed to delete appointment",
       "paymentAdd": "Failed to record payment",
       "paymentDelete": "Failed to delete payment",
@@ -1395,7 +1381,8 @@
       "noTypeForLead": "This lead's insurance type has no DVC yet: pick another one or ask the super admin to create it.",
       "version": "Template version {version}",
       "fromPrevious": "Prefilled from: {sources}. Fields still empty come from the lead: check before generating.",
-      "source": "{type} DVC #{version} of {date}"
+      "source": "{type} DVC #{version} of {date}",
+      "requiredLeft": "All required fields are filled | 1 required field left | {count} required fields left"
     },
     "types": {
       "title": "DVC types",

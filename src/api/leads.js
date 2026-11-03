@@ -24,11 +24,6 @@ export const leadsApi = {
       client.post(`/leads/${leadId}/notes`, { note }).then((r) => r.data),
   },
 
-  calls: {
-    create: (leadId, payload) =>
-      client.post(`/leads/${leadId}/calls`, payload).then((r) => r.data),
-  },
-
   appointments: {
     list: (leadId) =>
       client.get(`/leads/${leadId}/appointments`).then((r) => r.data),
