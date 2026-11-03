@@ -32,7 +32,7 @@ import DossierTab from '@/components/modules/documents/DossierTab.vue'
 import FlagIssueModal from '@/components/modules/leads/FlagIssueModal.vue'
 import CrossSellModal from '@/components/modules/leads/CrossSellModal.vue'
 import DocumentPreviewModal from '@/components/modules/documents/DocumentPreviewModal.vue'
-import DvcCreateModal from '@/components/modules/leads/DvcCreateModal.vue'
+import DvcCreateDrawer from '@/components/modules/leads/DvcCreateDrawer.vue'
 import LeadCallsTab from '@/components/modules/calls/LeadCallsTab.vue'
 import CallButton from '@/components/modules/calls/CallButton.vue'
 import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
@@ -60,7 +60,6 @@ const isRingoverCaller = computed(() => auth.can('CALLS_MAKE'))
 const showAssignModal = ref(false)
 const statusChanging = ref(false)
 const noteSubmitting = ref(false)
-const callSubmitting = ref(false)
 const aptActionId = ref(null)
 const showRevenuePrompt = ref(false)
 const showRappelModal = ref(false)
@@ -77,7 +76,7 @@ const flagIssueLoading = ref(false)
 const showCrossSellModal = ref(false)
 const crossSellLoading = ref(false)
 const showDossierModal = ref(false)
-const showDvcModal = ref(false)
+const showDvcDrawer = ref(false)
 const showMoreMenu = ref(false)
 const showFormDetails = ref(false)
 
@@ -325,18 +324,6 @@ async function onAddNote(note) {
   }
 }
 
-async function onLogCall(payload) {
-  callSubmitting.value = true
-  try {
-    await leadsStore.logCall(id.value, payload)
-    toast.showSuccess(t('leads.callLogged'))
-    refreshActivity()
-  } catch (e) {
-    toast.showError(firstErrorMessage(e, t('leadDetail.errors.call')))
-  } finally {
-    callSubmitting.value = false
-  }
-}
 
 /* ── Appointments ──────────────────────────────────────────── */
 function isAptOverdue(apt) {
@@ -538,7 +525,7 @@ async function onDvcDownload(contract) {
 
 // Generated from the lead: the DVC status moves to "en attente de signature", then the PDF opens
 async function onDvcGenerated(contract) {
-  showDvcModal.value = false
+  showDvcDrawer.value = false
   leadsStore.fetchOne(id.value).catch(() => {})
   refreshActivity()
   loadLeadDvcs()
@@ -868,11 +855,8 @@ const companyFields = computed(() => {
 
           <LeadComposer
             :submitting-note="noteSubmitting"
-            :submitting-call="callSubmitting"
             :can-schedule="auth.can('APPOINTMENTS_CREATE')"
-            :can-log-call="auth.can('LEAD_CALLS_MANAGE')"
             @add-note="onAddNote"
-            @log-call="onLogCall"
             @schedule="scheduleAppointment"
           />
 
@@ -917,7 +901,7 @@ const companyFields = computed(() => {
                   v-if="lead.dvc_status !== 'SIGNE' && auth.can('CONTRACTS_GENERATE')"
                   type="button"
                   class="h-7.5 inline-flex items-center px-2.5 rounded-md bg-white border border-gray-300 text-[12.5px] text-gray-900 hover:bg-gray-50"
-                  @click="showDvcModal = true"
+                  @click="showDvcDrawer = true"
                 >{{ lead.dvc_status === 'EN_ATTENTE_SIGNATURE' ? t('leadDetail.dvc.regenerate') : t('leadDetail.dvc.generate') }}</button>
                 <button
                   v-if="lead.dvc_status !== 'SIGNE' && auth.can('DOCUMENTS_UPLOAD')"
@@ -1273,11 +1257,11 @@ const companyFields = computed(() => {
       @download="onPreviewDownload"
     />
 
-    <DvcCreateModal
-      :open="showDvcModal"
+    <DvcCreateDrawer
+      :open="showDvcDrawer"
       :lead="lead"
       :previous-dvcs="leadDvcs"
-      @close="showDvcModal = false"
+      @close="showDvcDrawer = false"
       @generated="onDvcGenerated"
     />
   </div>

@@ -16,6 +16,8 @@ const props = defineProps({
   // Field key → message (see dvcFieldErrors)
   errors: { type: Object, default: () => ({}) },
   disabled: { type: Boolean, default: false },
+  // Caps a section's columns, for narrow containers such as the DVC drawer
+  columnsMax: { type: Number, default: 3 },
 })
 
 const values = defineModel({ type: Object, required: true })
@@ -26,6 +28,10 @@ const sections = computed(() =>
 )
 
 const GRID_COLUMNS = { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3' }
+
+function gridColumns(section) {
+  return GRID_COLUMNS[Math.min(section.columns ?? 2, props.columnsMax)] ?? GRID_COLUMNS[1]
+}
 
 function inputType(field) {
   if (field.type === 'number' || field.type === 'money') return 'number'
@@ -73,7 +79,7 @@ function selectOptions(field) {
       </div>
 
       <!-- Fields grid -->
-      <div v-else :class="['grid grid-cols-1 gap-x-4 gap-y-3', GRID_COLUMNS[section.columns ?? 2]]">
+      <div v-else :class="['grid grid-cols-1 gap-x-4 gap-y-3', gridColumns(section)]">
         <div
           v-for="field in section.fields"
           :key="field.key"

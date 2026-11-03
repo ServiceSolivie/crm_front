@@ -191,18 +191,6 @@
     "status": "Statut",
     "createdAt": "Créé le",
     "calls": "Appels",
-    "logCall": "Enregistrer un appel",
-    "callLogged": "Appel enregistré",
-    "callOutcome": "Résultat",
-    "callNotePlaceholder": "Ajouter une courte note (optionnel)…",
-    "callOutcomes": {
-      "no_answer": "Pas de réponse",
-      "voicemail": "Message vocal laissé",
-      "interested": "Contacté — intéressé",
-      "not_interested": "Contacté — pas intéressé",
-      "already_insured": "Déjà assuré",
-      "other": "Autre"
-    },
     "companyInfo": "Informations sur l'entreprise",
     "companyName": "Nom de la société",
     "address": "Adresse",
@@ -1142,7 +1130,6 @@
     },
     "composer": {
       "addNote": "Ajouter une note",
-      "logCall": "Enregistrer un appel",
       "scheduleAppointment": "Planifier un RDV",
       "newNote": "Nouvelle note",
       "notePlaceholder": "Écrire une note sur ce lead…",
@@ -1199,7 +1186,6 @@
     "errors": {
       "assign": "Échec de l’assignation",
       "note": "Échec de l’ajout de la note",
-      "call": "Échec de l’enregistrement de l’appel",
       "appointmentDelete": "Échec de la suppression du rendez-vous",
       "paymentAdd": "Échec de l’enregistrement du paiement",
       "paymentDelete": "Échec de la suppression du paiement",
@@ -1395,7 +1381,8 @@
       "noTypeForLead": "Le type d'assurance de ce lead n'a pas encore de DVC : choisissez-en un autre ou demandez au super admin de le créer.",
       "version": "Modèle version {version}",
       "fromPrevious": "Pré-rempli depuis : {sources}. Les champs restés vides viennent du lead : vérifiez avant de générer.",
-      "source": "DVC {type} n°{version} du {date}"
+      "source": "DVC {type} n°{version} du {date}",
+      "requiredLeft": "Tous les champs obligatoires sont remplis | 1 champ obligatoire restant | {count} champs obligatoires restants"
     },
     "types": {
       "title": "Types de DVC",
