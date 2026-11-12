@@ -68,6 +68,7 @@ export const ROLES = {
   team_leader: {},
   agent: {},
   gestion: {},
+  marketing: {},
 }
 
 // Lead payment status, recalculated by the backend from its payments

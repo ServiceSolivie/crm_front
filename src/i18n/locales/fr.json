@@ -876,7 +876,8 @@
     "manager": "Manager",
     "team_leader": "Chef d'équipe",
     "agent": "Agent",
-    "gestion": "Gestion"
+    "gestion": "Gestion",
+    "marketing": "Marketing"
   },
   "payments": {
     "title": "Paiements"
