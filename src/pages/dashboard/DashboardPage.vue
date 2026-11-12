@@ -15,6 +15,7 @@ import KpiStripCell from '@/components/modules/dashboard/KpiStripCell.vue'
 import MyDayPanel from '@/components/modules/dashboard/MyDayPanel.vue'
 import DashboardDateFilter from '@/components/modules/dashboard/DashboardDateFilter.vue'
 import DashboardFilterPanel from '@/components/modules/dashboard/DashboardFilterPanel.vue'
+import SourceScopeBadge from '@/components/modules/reports/SourceScopeBadge.vue'
 
 import DailyBarsChart from '@/components/charts/DailyBarsChart.vue'
 import DonutChart from '@/components/charts/DonutChart.vue'
@@ -234,6 +235,7 @@ onMounted(() => {
         </h1>
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
+        <SourceScopeBadge />
         <DashboardDateFilter v-model="filterModel" />
         <button
           v-if="showTeamAgentFilters"

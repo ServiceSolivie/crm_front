@@ -177,11 +177,14 @@ async function onResetPassword(payload) {
           <span class="text-sm text-gray-500">{{ value }}</span>
         </template>
 
-        <template #cell-roles="{ value }">
+        <template #cell-roles="{ value, row }">
           <AppBadge
             :variant="value?.[0] === 'super_admin' ? 'danger' : value?.[0] === 'manager' ? 'warning' : 'info'"
             :label="value?.[0]?.replace(/_/g, ' ') ?? '—'"
           />
+          <p v-if="row.lead_sources?.length" class="mt-1 text-xs text-gray-500 truncate max-w-[180px]">
+            {{ row.lead_sources.map((s) => s.name).join(', ') }}
+          </p>
         </template>
 
         <template #cell-is_active="{ row }">

@@ -43,7 +43,7 @@
     "overdueCount": "{n} overdue appointment(s)",
     "todayCount": "{n} appointment(s) left today",
     "dvcTypes": "DVC types",
-    "importedLeadsExport": "Imported leads export",
+    "importedLeadsExport": "Leads feedback export",
     "intake": "API intake",
     "ringover": "Ringover",
     "calls": "Calls"
@@ -82,7 +82,9 @@
     "close": "Close",
     "noResults": "No results",
     "remove": "Remove",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "sourcesScope": "Sources: {names}",
+    "sourcesScopeHint": "The data shown covers only these sources"
   },
   "auth": {
     "login": "Sign In",
@@ -453,7 +455,9 @@
     "updateFailed": "Failed to update user",
     "statusFailed": "Failed to change status",
     "deleteNamed": "Delete “{name}”? This cannot be undone.",
-    "searchPlaceholder": "Name or e-mail"
+    "searchPlaceholder": "Name or e-mail",
+    "sources": "Sources",
+    "sourcesHint": "No selection = all sources"
   },
   "leadSources": {
     "title": "Lead Sources",
@@ -1441,7 +1445,7 @@
     }
   },
   "importedExport": {
-    "title": "Imported leads export",
+    "title": "Leads feedback export",
     "subtitle": "Leads that arrived from Google Sheets or a file in the period, with their current status.",
     "superAdmin": "Super admin",
     "period": {
