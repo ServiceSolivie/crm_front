@@ -43,7 +43,7 @@
     "overdueCount": "{n} rendez-vous en retard",
     "todayCount": "{n} rendez-vous restant(s) aujourd’hui",
     "dvcTypes": "Types de DVC",
-    "importedLeadsExport": "Export leads importés",
+    "importedLeadsExport": "Export retours leads",
     "intake": "Réception API",
     "ringover": "Ringover",
     "calls": "Appels"
@@ -82,7 +82,9 @@
     "close": "Fermer",
     "noResults": "Aucun résultat",
     "remove": "Retirer",
-    "refresh": "Actualiser"
+    "refresh": "Actualiser",
+    "sourcesScope": "Sources : {names}",
+    "sourcesScopeHint": "Les données affichées ne concernent que ces sources"
   },
   "auth": {
     "login": "Se connecter",
@@ -453,7 +455,9 @@
     "updateFailed": "Échec de la mise à jour de l’utilisateur",
     "statusFailed": "Échec du changement de statut",
     "deleteNamed": "Supprimer « {name} » ? Cette action est irréversible.",
-    "searchPlaceholder": "Nom ou e-mail"
+    "searchPlaceholder": "Nom ou e-mail",
+    "sources": "Sources",
+    "sourcesHint": "Aucune sélection = toutes les sources"
   },
   "leadSources": {
     "title": "Sources de leads",
@@ -1441,7 +1445,7 @@
     }
   },
   "importedExport": {
-    "title": "Export des leads importés",
+    "title": "Export des retours leads",
     "subtitle": "Les leads arrivés par Google Sheets ou par fichier sur la période, avec leur statut actuel.",
     "superAdmin": "Super admin",
     "period": {

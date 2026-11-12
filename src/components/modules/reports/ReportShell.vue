@@ -6,6 +6,7 @@ import { Download, CalendarDays } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useReportsStore } from '@/stores/reports.store'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
+import SourceScopeBadge from '@/components/modules/reports/SourceScopeBadge.vue'
 import { teamsApi } from '@/api/teams'
 
 /**
@@ -128,6 +129,7 @@ function setDate(key, value) {
         <p class="text-[13px] text-gray-500">{{ t('nav.reports') }}</p>
         <h1 class="font-display text-[28px] leading-[34px] font-semibold tracking-tight text-gray-900 mt-0.5">{{ title }}</h1>
         <p v-if="subtitle" class="text-[13px] text-gray-500 mt-0.5">{{ subtitle }}</p>
+        <SourceScopeBadge class="mt-2" />
       </div>
       <button
         v-if="canExport"

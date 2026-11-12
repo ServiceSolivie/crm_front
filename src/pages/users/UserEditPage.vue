@@ -10,6 +10,7 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import LeadSourcePicker from '@/components/modules/users/LeadSourcePicker.vue'
 import { ROLES } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { firstErrorMessage } from '@/utils/errors'
@@ -24,7 +25,7 @@ const { t } = useI18n()
 const roleOptions = useEnumOptions(ROLES, 'roles')
 
 const id = route.params.id
-const form = reactive({ name: '', email: '', role: '', team_id: '' })
+const form = reactive({ name: '', email: '', role: '', team_id: '', lead_source_ids: [] })
 const errors = ref({})
 const loaded = ref(false)
 const teamOptions = computed(() => [
@@ -41,6 +42,7 @@ onMounted(async () => {
       form.email = user.email ?? ''
       form.role = user.role ?? user.roles?.[0] ?? 'agent'
       form.team_id = user.team?.id ?? ''
+      form.lead_source_ids = (user.lead_sources ?? []).map((s) => s.id)
     }
     loaded.value = true
   } catch {
@@ -62,6 +64,7 @@ async function submit() {
   try {
     const payload = { ...form }
     if (!payload.team_id) delete payload.team_id
+    if (payload.role !== 'marketing') payload.lead_source_ids = []
     await store.update(id, payload)
     toast.showSuccess(t('users.updateSuccess'))
     router.push({ name: 'users.detail', params: { id } })
@@ -103,6 +106,7 @@ async function submit() {
             <AppSelect v-model="form.role" :label="t('users.role')" :options="roleOptions" :error="errors.role" required />
             <AppSelect v-model="form.team_id" :label="t('users.team')" :options="teamOptions" :error="errors.team_id" />
           </div>
+          <LeadSourcePicker v-if="form.role === 'marketing'" v-model="form.lead_source_ids" :error="errors.lead_source_ids" />
         </div>
       </form>
     </section>
