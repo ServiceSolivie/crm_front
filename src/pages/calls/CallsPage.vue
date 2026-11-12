@@ -14,6 +14,7 @@ import {
 } from 'lucide-vue-next'
 import { callsApi } from '@/api/calls'
 import { leadsApi } from '@/api/leads'
+import { usersApi } from '@/api/users'
 import { useAuthStore } from '@/stores/auth.store'
 import { useToast } from '@/composables/useToast'
 import { formatDateTime } from '@/utils/formatters'
@@ -41,6 +42,7 @@ const loading = ref(false)
 const page = ref(1)
 const expanded = ref(new Set())
 const filters = ref({
+  agent_id: '',
   direction: '',
   status: '',
   from: '',
@@ -49,6 +51,25 @@ const filters = ref({
 })
 
 const canSeeOthers = computed(() => auth.can('CALLS_VIEW_ALL') || auth.can('CALLS_VIEW_TEAM'))
+
+// Team-only viewers pick among their own team's agents
+const agents = ref([])
+const agentOptions = computed(() => [
+  { value: '', label: t('calls.allAgents') },
+  ...agents.value.map((u) => ({ value: String(u.id), label: u.name })),
+])
+
+async function loadAgents() {
+  if (!canSeeOthers.value) return
+  const params = { role: 'agent', per_page: 100 }
+  if (!auth.can('CALLS_VIEW_ALL')) params.team_id = auth.user?.team_id
+  try {
+    const { data } = await usersApi.list(params)
+    agents.value = data ?? []
+  } catch {
+    agents.value = []
+  }
+}
 
 const directionOptions = computed(() => [
   { value: '', label: t('calls.allDirections') },
@@ -79,7 +100,10 @@ async function load() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  load()
+  loadAgents()
+})
 watch(filters, () => {
   page.value = 1
   load()
@@ -185,7 +209,8 @@ async function confirmAssign() {
 
     <!-- Filters -->
     <AppCard padding="sm">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+      <div :class="['grid grid-cols-1 sm:grid-cols-2 gap-3 items-end', agents.length ? 'lg:grid-cols-6' : 'lg:grid-cols-5']">
+        <AppSelect v-if="agents.length" v-model="filters.agent_id" :options="agentOptions" :placeholder="t('calls.allAgents')" />
         <AppSelect v-model="filters.direction" :options="directionOptions" :placeholder="t('calls.allDirections')" />
         <AppSelect v-model="filters.status" :options="statusOptions" :placeholder="t('calls.allStatuses')" />
         <AppInput v-model="filters.from" type="date" :label="t('calls.fromDate')" />

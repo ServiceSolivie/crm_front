@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { teamsApi } from '@/api/teams'
 import { usersApi } from '@/api/users'
+import { useAuthStore } from '@/stores/auth.store'
 import AppSelect from '@/components/base/AppSelect.vue'
 
 const props = defineProps({
@@ -13,6 +14,10 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:teamId', 'update:agentId'])
 const { t } = useI18n()
+const auth = useAuthStore()
+
+// Report-only roles (marketing) may not list users: no agent filter for them
+const canListAgents = computed(() => auth.can('USERS_VIEW'))
 
 const teams = ref([])
 const agents = ref([])
@@ -43,7 +48,7 @@ async function loadTeams() {
 }
 
 async function loadAgents(teamId) {
-  if (!teamId) {
+  if (!teamId || !canListAgents.value) {
     agents.value = []
     return
   }
@@ -81,7 +86,7 @@ function onAgentChange(v) {
       @update:model-value="onTeamChange"
     />
     <AppSelect
-      v-if="effectiveTeamId"
+      v-if="effectiveTeamId && canListAgents"
       :model-value="agentId ? String(agentId) : ''"
       :options="agentOptions"
       :disabled="loadingAgents"
@@ -89,7 +94,7 @@ function onAgentChange(v) {
       @update:model-value="onAgentChange"
     />
     <span
-      v-else-if="showTeamSelect"
+      v-else-if="showTeamSelect && canListAgents"
       class="text-xs text-gray-400 italic"
     >{{ t('dashboard.selectTeamFirst') }}</span>
   </div>

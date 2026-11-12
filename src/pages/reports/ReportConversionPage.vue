@@ -23,20 +23,31 @@ function changeGroupBy(val) {
   store.fetchConversion()
 }
 
-// Insurance types come back as enum keys; show their label
+// Insurance types come back as enum keys (dimension_id); show their label
 function rowName(item) {
-  if (store.filters.group_by === 'insurance_type' && item.name) return t('insuranceTypes.' + item.name, item.name)
+  if (store.filters.group_by === 'insurance_type' && item.id) return t('insuranceTypes.' + item.id, item.name ?? item.id)
   return item.name ?? '—'
 }
 
-const rows = computed(() =>
-  [...store.conversionData].sort((a, b) => (b.conversion_rate ?? 0) - (a.conversion_rate ?? 0)),
+// API rows: dimension_id, dimension_name, total_leads, validated_leads, conversion_rate
+const items = computed(() =>
+  store.conversionData.map((r) => ({
+    id: r.dimension_id,
+    name: r.dimension_name,
+    total: r.total_leads ?? 0,
+    won: r.validated_leads ?? 0,
+    conversion_rate: r.conversion_rate ?? 0,
+  })),
 )
-const maxRate = computed(() => Math.max(1, ...rows.value.map((r) => r.conversion_rate ?? 0)))
+
+const rows = computed(() =>
+  [...items.value].sort((a, b) => b.conversion_rate - a.conversion_rate),
+)
+const maxRate = computed(() => Math.max(1, ...rows.value.map((r) => r.conversion_rate)))
 
 const totals = computed(() => {
-  const total = store.conversionData.reduce((s, r) => s + (r.total ?? 0), 0)
-  const won = store.conversionData.reduce((s, r) => s + (r.won ?? 0), 0)
+  const total = items.value.reduce((s, r) => s + r.total, 0)
+  const won = items.value.reduce((s, r) => s + r.won, 0)
   return { total, won, rate: total ? (won / total) * 100 : null }
 })
 
