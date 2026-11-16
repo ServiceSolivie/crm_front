@@ -3,7 +3,7 @@ import client from './client'
 export const leadsApi = {
   list: (params) => client.get('/leads', { params }).then((r) => r.data),
   search: (q, limit = 8) => client.get('/leads/search', { params: { q, limit } }).then((r) => r.data),
-  counts: () => client.get('/leads/counts').then((r) => r.data),
+  counts: (params) => client.get('/leads/counts', { params }).then((r) => r.data),
   duplicates: (params) => client.get('/leads/duplicates', { params }).then((r) => r.data),
   bulk: (payload) => client.post('/leads/bulk', payload).then((r) => r.data),
   activity: (id, params) => client.get(`/leads/${id}/activity`, { params }).then((r) => r.data),

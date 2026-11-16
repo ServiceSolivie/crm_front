@@ -2,6 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Clock, Pencil, Trash2, Check, X } from 'lucide-vue-next'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -24,6 +25,7 @@ const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
 const { t, locale } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 
 const id = route.params.id
 const showReschedule = ref(false)
@@ -228,7 +230,7 @@ async function handleDelete() {
             </div>
             <div v-if="apt.lead.insurance_type">
               <dt class="text-xs text-gray-500">{{ t('leads.filterInsurance') }}</dt>
-              <dd class="mt-0.5 text-[13px] text-gray-900">{{ t('insuranceTypes.' + apt.lead.insurance_type, apt.lead.insurance_type) }}</dd>
+              <dd class="mt-0.5 text-[13px] text-gray-900">{{ typeLabel(apt.lead.insurance_type) }}</dd>
             </div>
           </dl>
           <RouterLink

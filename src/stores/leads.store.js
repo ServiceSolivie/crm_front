@@ -16,6 +16,8 @@ export const useLeadsStore = defineStore('leads', () => {
 
   // status / insurance_type / source_id hold arrays (multi-select chips)
   const filters = reactive({
+    // Leads page: 'general' (« Leads ») or an extra page slug; '' = every lead
+    section: '',
     search: '',
     status: [],
     stage: '',
@@ -74,7 +76,7 @@ export const useLeadsStore = defineStore('leads', () => {
 
   async function fetchCounts() {
     try {
-      counts.value = (await leadsApi.counts()).data
+      counts.value = (await leadsApi.counts(filters.section ? { section: filters.section } : undefined)).data
     } catch {
       // the tabs still work without their counts
     }
@@ -392,7 +394,7 @@ export const useLeadsStore = defineStore('leads', () => {
     fetchList()
   }
 
-  function resetFilters() {
+  function clearFilters() {
     Object.assign(filters, {
       search: '',
       status: [],
@@ -411,7 +413,22 @@ export const useLeadsStore = defineStore('leads', () => {
       sort_by: 'created_at',
       sort_dir: 'desc',
     })
+  }
+
+  function resetFilters() {
+    clearFilters()
     fetchList()
+  }
+
+  /**
+   * Opening another leads page: its filters start clean, so a filter picked
+   * on « Décennale » doesn't follow you to « Leads ». Same page: kept.
+   */
+  function enterSection(section) {
+    if (filters.section === section) return
+    clearFilters()
+    filters.section = section
+    counts.value = null
   }
 
   function _buildParams() {
@@ -423,6 +440,7 @@ export const useLeadsStore = defineStore('leads', () => {
   }
 
   return {
+    enterSection,
     list,
     current,
     leadAppointments,

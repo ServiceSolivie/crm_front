@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { useReportsStore } from '@/stores/reports.store'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
@@ -11,6 +12,7 @@ import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
 
 const { t } = useI18n()
+const { typeLabel, typeShort } = useInsuranceTypes()
 const store = useReportsStore()
 const { num, pct, dateTime } = useReportFormat()
 
@@ -38,7 +40,7 @@ const CSV_COLUMNS = [
   { key: 'scheduled_at', label: 'Planifié le' },
   { key: 'status', label: 'Statut', value: (r) => t('statuses.appointment.' + r.status, r.status) },
   { key: 'agent', label: 'Agent', value: (r) => r.agent?.name },
-  { key: 'insurance_type', label: 'Assurance', value: (r) => (r.lead?.insurance_type ? t('insuranceTypes.' + r.lead.insurance_type, r.lead.insurance_type) : '') },
+  { key: 'insurance_type', label: 'Assurance', value: (r) => (r.lead?.insurance_type ? typeLabel(r.lead.insurance_type) : '') },
 ]
 
 const exporting = ref(false)
@@ -104,8 +106,8 @@ onMounted(() => store.fetchAppointments())
           <span
             v-if="row.lead?.insurance_type"
             class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700"
-            :title="t('insuranceTypes.' + row.lead.insurance_type, row.lead.insurance_type)"
-          >{{ t('insuranceTypesShort.' + row.lead.insurance_type, row.lead.insurance_type) }}</span>
+            :title="typeLabel(row.lead.insurance_type)"
+          >{{ typeShort(row.lead.insurance_type) }}</span>
           <span v-else class="text-gray-400">—</span>
         </template>
       </AppTable>

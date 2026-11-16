@@ -5,7 +5,8 @@ import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
-import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
+import { CLIENT_TYPE } from '@/utils/enums'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 
 const props = defineProps({
@@ -17,7 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'confirm'])
 const { t } = useI18n()
 
-const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+const { options: insuranceTypeOptions } = useInsuranceTypes()
 const clientTypeOptions = useEnumOptions(CLIENT_TYPE, 'clientTypes')
 
 const insuranceType = ref('')

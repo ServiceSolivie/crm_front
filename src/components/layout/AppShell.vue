@@ -4,14 +4,18 @@ import { useI18n } from 'vue-i18n'
 import { Menu } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
 import { useLeadStatusesStore } from '@/stores/leadStatuses.store'
+import { useInsuranceTypesStore } from '@/stores/insuranceTypes.store'
 import TheSidebar from './TheSidebar.vue'
 import RingoverPhone from '@/components/modules/calls/RingoverPhone.vue'
 
 const ui = useUiStore()
 const { t } = useI18n()
 
-// Custom lead statuses are shown on most pages: load them once per session
-onMounted(() => useLeadStatusesStore().fetchList())
+// Custom lead statuses and insurance types are shown on most pages: load them once per session
+onMounted(() => {
+  useLeadStatusesStore().fetchList()
+  useInsuranceTypesStore().fetchAll()
+})
 </script>
 
 <template>

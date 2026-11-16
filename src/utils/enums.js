@@ -48,20 +48,6 @@ export const APPOINTMENT_STATUS = {
   REPORTE: { color: 'warning' },
 }
 
-export const INSURANCE_TYPE = {
-  AUTO: {},
-  MOTO: {},
-  RC_PRO: {},
-  MUTUELLE_SANTE: {},
-  EMPRUNTEUR: {},
-  CREDIT_CONSOMMATION: {},
-  RACHAT_CREDIT: {},
-  CREDIT_IMMOBILIER: {},
-  DECENNALE: {},
-  TAXI_VTC: {},
-  AUTRE: {},
-}
-
 export const ROLES = {
   super_admin: {},
   manager: {},

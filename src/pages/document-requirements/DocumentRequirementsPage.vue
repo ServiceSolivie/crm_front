@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Plus, Pencil, Trash2, FileText, Lock, Info } from 'lucide-vue-next'
 import { useDocumentRequirementsStore } from '@/stores/documentRequirements.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -19,6 +20,7 @@ import { firstErrorMessage } from '@/utils/errors'
  * The signed DVC is a system type: required for every product, locked.
  */
 const { t } = useI18n()
+const { typeShort } = useInsuranceTypes()
 const store = useDocumentRequirementsStore()
 const ui = useUiStore()
 const toast = useToast()
@@ -108,7 +110,7 @@ const columns = computed(() =>
       key: `${entry.insurance_type}-${group.client_type ?? 'all'}`,
       entry,
       gi,
-      label: t('insuranceTypesShort.' + entry.insurance_type, entry.insurance_type),
+      label: typeShort(entry.insurance_type),
       title: entry.insurance_type_label,
       sub: entry.requires_client_type
         ? (group.client_type ? t('clientTypes.' + group.client_type, group.client_type_label) : t('documentRequirements.allClients'))

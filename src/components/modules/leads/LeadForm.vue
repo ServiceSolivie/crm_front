@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { AlertTriangle } from 'lucide-vue-next'
 import { leadsApi } from '@/api/leads'
 import { useLeadSourcesStore } from '@/stores/leadSources.store'
@@ -11,7 +12,7 @@ import AppSelect from '@/components/base/AppSelect.vue'
 import AppTextarea from '@/components/base/AppTextarea.vue'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import LeadStatusBadge from './LeadStatusBadge.vue'
-import { INSURANCE_TYPE, CLIENT_TYPE } from '@/utils/enums'
+import { CLIENT_TYPE } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 
 /**
@@ -23,15 +24,18 @@ const props = defineProps({
   lead: { type: Object, default: null }, // edit: the lead to prefill
   serverErrors: { type: Object, default: () => ({}) },
   formId: { type: String, default: 'lead-form' },
+  // Leads page the form was opened from: only its insurance types are offered
+  section: { type: String, default: null },
 })
 const emit = defineEmits(['submit'])
 
 const { t } = useI18n()
+const { typeShort, optionsFor, requiresCompanyInfo } = useInsuranceTypes()
 const sourcesStore = useLeadSourcesStore()
 const usersStore = useUsersStore()
 const auth = useAuthStore()
 
-const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+const insuranceTypeOptions = computed(() => optionsFor(props.section, props.lead?.insurance_type ?? null))
 const clientTypeOptions = useEnumOptions(CLIENT_TYPE, 'clientTypes')
 
 const EMPTY = {
@@ -57,7 +61,7 @@ const localErrors = ref({})
 const errors = computed(() => ({ ...props.serverErrors, ...localErrors.value }))
 
 const showClientType = computed(() => ['AUTO', 'MOTO'].includes(form.insurance_type))
-const showCompanyFields = computed(() => form.insurance_type === 'DECENNALE')
+const showCompanyFields = computed(() => requiresCompanyInfo(form.insurance_type))
 const canAssign = computed(() => auth.can('LEADS_ASSIGN'))
 
 const sourceOptions = computed(() => [
@@ -327,7 +331,7 @@ const cardTitle = 'font-display text-[15px] font-semibold text-gray-900'
             <div class="flex items-center gap-1.5 mt-0.5 min-w-0">
               <LeadStatusBadge :status="d.status" />
               <span class="text-xs text-gray-500 truncate">
-                {{ d.insurance_type ? t('insuranceTypesShort.' + d.insurance_type, d.insurance_type) : '' }}<template v-if="d.assigned_agent"> · {{ d.assigned_agent.name }}</template>
+                {{ d.insurance_type ? typeShort(d.insurance_type) : '' }}<template v-if="d.assigned_agent"> · {{ d.assigned_agent.name }}</template>
               </span>
             </div>
             <p v-if="!d.can_open" class="text-[11.5px] text-gray-500 mt-0.5">{{ t('leadForm.duplicateOtherScope') }}</p>

@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { ChevronLeft, ChevronRight, ChevronDown, CalendarDays, Download, FileSpreadsheet, ArrowDown, ArrowUp } from 'lucide-vue-next'
 import { leadExportsApi } from '@/api/leadExports'
 import { useToast } from '@/composables/useToast'
@@ -16,6 +17,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
  * The API cuts weeks and months on French time.
  */
 const { t } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 const toast = useToast()
 const { statusStage, statusLabel } = useLeadStatuses()
 
@@ -163,7 +165,7 @@ const untouchedAlert = (a) => a.agent_id && a.received && a.untouched / a.receiv
 
 const GROUP_BLOCKS = [
   { key: 'sources', id: 'source_id', label: (g) => g.name ?? t('common.noSource') },
-  { key: 'insurances', id: 'code', label: (g) => (g.code ? t('insuranceTypes.' + g.code, g.label ?? g.code) : t('importedExport.insurances.none')) },
+  { key: 'insurances', id: 'code', label: (g) => (g.code ? typeLabel(g.code) : t('importedExport.insurances.none')) },
 ]
 const maxOf = (key) => Math.max(1, ...(summary.value?.[key] ?? []).map((g) => g.received))
 const rate = (value) => `${(Math.round((value ?? 0) * 10) / 10).toLocaleString('fr-FR')} %`

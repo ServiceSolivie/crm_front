@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ChevronRight } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useToast } from '@/composables/useToast'
 import LeadForm from '@/components/modules/leads/LeadForm.vue'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { firstErrorMessage } from '@/utils/errors'
 
 const router = useRouter()
@@ -18,8 +19,23 @@ const formRef = ref(null)
 const serverErrors = ref({})
 const createAnother = ref(false)
 
-// Creating a lead from an unknown caller (/leads/create?phone=…): prefill the number
-const prefill = typeof route.query.phone === 'string' ? { phone: route.query.phone } : null
+// Opened from a leads page (/leads/create?page=decennale): only its types are offered,
+// and a page with a single type preselects it
+const section = typeof route.query.page === 'string' ? route.query.page : null
+const { optionsFor, pageBySlug } = useInsuranceTypes()
+const listLink = section ? { name: 'leads.page', params: { slug: section } } : { name: 'leads' }
+const listName = computed(() => (section ? (pageBySlug(section)?.name ?? t('leads.title')) : t('leads.title')))
+
+// Creating a lead from an unknown caller (/leads/create?phone=…): prefill the number.
+// Computed: the insurance types may still be loading when the page opens.
+const prefill = computed(() => {
+  const sectionTypes = section ? optionsFor(section) : []
+  const data = {
+    ...(typeof route.query.phone === 'string' ? { phone: route.query.phone } : {}),
+    ...(sectionTypes.length === 1 ? { insurance_type: sectionTypes[0].value } : {}),
+  }
+  return Object.keys(data).length ? data : null
+})
 
 async function onSubmit(payload) {
   serverErrors.value = {}
@@ -46,7 +62,7 @@ async function onSubmit(payload) {
 <template>
   <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
     <nav :aria-label="t('leadDetail.breadcrumb')" class="flex items-center gap-1.5 text-[13px] text-gray-500">
-      <RouterLink :to="{ name: 'leads' }" class="text-gray-600 hover:text-gray-900">{{ t('leads.title') }}</RouterLink>
+      <RouterLink :to="listLink" class="text-gray-600 hover:text-gray-900">{{ listName }}</RouterLink>
       <ChevronRight class="w-3.5 h-3.5" />
       <span class="text-gray-900">{{ t('leads.newLead') }}</span>
     </nav>
@@ -71,7 +87,7 @@ async function onSubmit(payload) {
       </div>
     </div>
 
-    <LeadForm ref="formRef" mode="create" :lead="prefill" :server-errors="serverErrors" @submit="onSubmit">
+    <LeadForm ref="formRef" mode="create" :lead="prefill" :section="section" :server-errors="serverErrors" @submit="onSubmit">
       <template #aside>
         <section class="bg-white border border-gray-200 rounded-xl px-4.5 py-4 flex flex-col gap-2.5">
           <h2 class="font-display text-[15px] font-semibold text-gray-900">{{ t('leadForm.afterCreate') }}</h2>

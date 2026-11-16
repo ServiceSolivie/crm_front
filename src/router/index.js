@@ -32,6 +32,15 @@ const router = createRouter({
       path: '/leads',
       name: 'leads',
       component: () => import('@/pages/leads/LeadsPage.vue'),
+      props: { section: 'general' },
+      meta: { requiresAuth: true, layout: 'dashboard', permission: '', title: 'Leads' },
+    },
+    {
+      // Extra leads pages (Décennale, Flotte & Camion…), set up in the CRM settings
+      path: '/leads/p/:slug',
+      name: 'leads.page',
+      component: () => import('@/pages/leads/LeadsPage.vue'),
+      props: (route) => ({ section: String(route.params.slug) }),
       meta: { requiresAuth: true, layout: 'dashboard', permission: '', title: 'Leads' },
     },
     {
@@ -191,6 +200,12 @@ const router = createRouter({
       name: 'lead-statuses',
       component: () => import('@/pages/lead-statuses/LeadStatusesPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Lead Statuses' },
+    },
+    {
+      path: '/insurance-types',
+      name: 'insurance-types',
+      component: () => import('@/pages/insurance-types/InsuranceTypesPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Insurance Types' },
     },
 
     /* DVC types (one per insurance type, JSON schema) */

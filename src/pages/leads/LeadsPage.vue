@@ -2,6 +2,7 @@
 import { onMounted, computed, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import {
   Plus, Search, Pencil, Trash2, X, SearchX, ChevronUp, ChevronDown, CalendarClock, FileWarning,
 } from 'lucide-vue-next'
@@ -20,14 +21,25 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
 import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
-import { LEAD_STAGES, INSURANCE_TYPE, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
+import { LEAD_STAGES, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { formatDateTime } from '@/utils/formatters'
 
+/**
+ * One list for every leads page: « Leads » (section "general") and the extra
+ * pages set up in the CRM settings (Décennale, Flotte & Camion…, by slug).
+ */
+const props = defineProps({
+  section: { type: String, default: 'general' },
+})
+
 const router = useRouter()
 const route = useRoute()
 const leadsStore = useLeadsStore()
+// Each page starts with its own clean filters (same page: kept, e.g. back from a lead).
+// Done before anything below reads the filters.
+leadsStore.enterSection(props.section)
 const sourcesStore = useLeadSourcesStore()
 const usersStore = useUsersStore()
 const ui = useUiStore()
@@ -35,6 +47,11 @@ const auth = useAuthStore()
 const toast = useToast()
 
 const { t, locale } = useI18n()
+const { typeLabel, typeShort, optionsFor, pageBySlug } = useInsuranceTypes()
+
+const pageTitle = computed(() =>
+  props.section === 'general' ? t('leads.title') : (pageBySlug(props.section)?.name ?? t('leads.title')),
+)
 
 const statusChangingId = ref(null)
 const showRevenuePrompt = ref(false)
@@ -89,7 +106,8 @@ const stageOptions = computed(() =>
     .sort(([, a], [, b]) => a.order - b.order)
     .map(([key]) => ({ value: key, label: t('stages.' + key) })),
 )
-const insuranceTypeOptions = useEnumOptions(INSURANCE_TYPE, 'insuranceTypes')
+// Only the types of this page; no chip when the page holds a single type
+const insuranceTypeOptions = computed(() => optionsFor(props.section, null))
 const dvcOptions = useEnumOptions(DVC_STATUS, 'statuses.dvc')
 const paymentOptions = useEnumOptions(PAYMENT_STATUS, 'statuses.payment')
 const sourceOptions = computed(() => sourcesStore.list.map((s) => ({ value: s.id, label: s.name })))
@@ -140,6 +158,15 @@ function clearChips() {
   leadsStore.resetFilters()
   if (view !== 'all') selectView(view)
 }
+
+// Another leads page opened while this one is shown (/leads/p/a → /leads/p/b)
+watch(() => props.section, (section) => {
+  leadsStore.enterSection(section)
+  createdPreset.value = ''
+  searchText.value = ''
+  leadsStore.fetchList()
+  leadsStore.fetchCounts()
+})
 
 onMounted(() => {
   // Dashboard pipeline links open the list on one stage (?stage=follow_up)
@@ -381,13 +408,13 @@ const gridCols = computed(() =>
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-baseline gap-2.5">
-        <h1 class="font-display text-[28px] leading-[34px] font-semibold tracking-tight text-gray-900">{{ t('leads.title') }}</h1>
+        <h1 class="font-display text-[28px] leading-[34px] font-semibold tracking-tight text-gray-900">{{ pageTitle }}</h1>
         <span class="font-mono text-sm text-gray-500">{{ leadsStore.meta.total }}</span>
       </div>
       <div class="flex items-center gap-2.5">
         <RouterLink
           v-if="auth.can('LEADS_CREATE')"
-          :to="{ name: 'leads.create' }"
+          :to="{ name: 'leads.create', query: section === 'general' ? {} : { page: section } }"
           class="h-9 inline-flex items-center gap-1.5 px-3.5 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary-hover"
         >
           <Plus class="w-4 h-4" />{{ t('leads.newLead') }}
@@ -441,6 +468,7 @@ const gridCols = computed(() =>
         @update:model-value="leadsStore.setFilter('status', $event)"
       />
       <AppFilterChip
+        v-if="insuranceTypeOptions.length > 1"
         multiple
         :label="t('leads.filterInsurance')"
         :model-value="leadsStore.filters.insurance_type"
@@ -615,8 +643,8 @@ const gridCols = computed(() =>
               <span
                 v-if="row.insurance_type"
                 class="inline-block max-w-full truncate px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700"
-                :title="t('insuranceTypes.' + row.insurance_type, row.insurance_type)"
-              >{{ t('insuranceTypesShort.' + row.insurance_type, row.insurance_type) }}</span>
+                :title="typeLabel(row.insurance_type)"
+              >{{ typeShort(row.insurance_type) }}</span>
               <span v-else class="text-gray-400">—</span>
             </div>
             <div role="cell" class="px-3" @click.stop>

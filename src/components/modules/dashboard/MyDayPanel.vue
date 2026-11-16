@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Phone, ChevronRight, FileWarning, Check } from 'lucide-vue-next'
 import { meApi } from '@/api/me'
 import { useAuthStore } from '@/stores/auth.store'
@@ -15,6 +16,7 @@ import { dialNumber } from '@/utils/phone'
  */
 const auth = useAuthStore()
 const { t, locale } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 
 const agenda = ref(null)
 const loading = ref(false)
@@ -55,7 +57,7 @@ function when(a) {
 }
 
 function subtitle(a) {
-  const type = a.lead?.insurance_type ? t('insuranceTypes.' + a.lead.insurance_type, a.lead.insurance_type) : null
+  const type = a.lead?.insurance_type ? typeLabel(a.lead.insurance_type) : null
   const status = isDone(a) ? t('statuses.appointment.' + a.status, a.status) : t('dashboard.appointmentShort')
   return [status, type].filter(Boolean).join(' · ')
 }
