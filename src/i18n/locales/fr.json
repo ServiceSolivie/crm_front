@@ -295,7 +295,29 @@
       "missingDocument": "Document manquant"
     },
     "filterDvc": "DVC",
-    "filterPayment": "Paiement"
+    "filterPayment": "Paiement",
+    "qualification": {
+      "title": "Réponses du formulaire",
+      "open": "Voir les réponses du formulaire",
+      "timing": "Délai",
+      "insured": "Assuré actuellement",
+      "reason": "Raison du changement",
+      "companyName": "Société",
+      "sector": "Secteur",
+      "seniority": "Ancienneté",
+      "companyStatus": "Statut",
+      "timings": {
+        "now": "Immédiat",
+        "week": "7 jours",
+        "month": "Ce mois",
+        "comparing": "Compare"
+      },
+      "insureds": {
+        "yes": "Assuré",
+        "no": "Non assuré",
+        "cancelled": "Résilié"
+      }
+    }
   },
   "appointments": {
     "title": "Rendez-vous",

@@ -106,6 +106,14 @@ function humanizeKey(key) {
  * render like every other field instead of as raw text.
  * Falls back to null (raw text) for any older, pre-JSON comment value.
  */
+// « prix_trop_cher » → « Prix trop cher », {"Non": true} → « Non » (same as the leads list)
+function readableAnswer(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) value = Object.keys(value).filter((k) => value[k]).join(', ')
+  if (typeof value !== 'string') return JSON.stringify(value)
+  const text = value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 const sheetExtraFields = computed(() => {
   const raw = leadsStore.current?.comment
   if (!raw) return null
@@ -115,7 +123,7 @@ const sheetExtraFields = computed(() => {
     return Object.entries(parsed).map(([key, value]) => ({
       key,
       label: humanizeKey(key),
-      value: typeof value === 'string' ? value : JSON.stringify(value),
+      value: readableAnswer(value),
     }))
   } catch {
     return null

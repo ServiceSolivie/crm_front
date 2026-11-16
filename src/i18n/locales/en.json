@@ -295,7 +295,29 @@
       "missingDocument": "Missing document"
     },
     "filterDvc": "DVC",
-    "filterPayment": "Payment"
+    "filterPayment": "Payment",
+    "qualification": {
+      "title": "Form answers",
+      "open": "Show the form answers",
+      "timing": "Timing",
+      "insured": "Currently insured",
+      "reason": "Reason for switching",
+      "companyName": "Company",
+      "sector": "Sector",
+      "seniority": "Years in business",
+      "companyStatus": "Status",
+      "timings": {
+        "now": "Now",
+        "week": "7 days",
+        "month": "This month",
+        "comparing": "Comparing"
+      },
+      "insureds": {
+        "yes": "Insured",
+        "no": "Not insured",
+        "cancelled": "Cancelled"
+      }
+    }
   },
   "appointments": {
     "title": "Appointments",

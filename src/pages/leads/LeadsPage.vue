@@ -21,6 +21,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import LeadStatusDropdown from '@/components/modules/leads/LeadStatusDropdown.vue'
 import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
+import LeadQualification from '@/components/modules/leads/LeadQualification.vue'
 import { LEAD_STAGES, REVIEW_STATUSES, DVC_STATUS, PAYMENT_STATUS } from '@/utils/enums'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { useEnumOptions } from '@/composables/useEnumOptions'
@@ -68,6 +69,8 @@ const showAssignmentViews = computed(() => auth.can('LEADS_ASSIGN'))
 const showDueView = computed(() => !auth.hasRole('gestion'))
 // Duplicates are for the super admin only (the API doesn't send them to anyone else)
 const seesDoublons = computed(() => auth.hasRole('super_admin'))
+// Row stripe colour by how soon the lead wants to switch (comparing: none)
+const HEAT = { now: 'bg-danger', week: 'bg-warning', month: 'bg-info' }
 const views = computed(() => [
   { key: 'all', label: t('leads.views.all'), count: leadsStore.counts?.all },
   ...(showAssignmentViews.value ? [{ key: 'mine', label: t('leads.views.mine'), count: leadsStore.counts?.mine }] : []),
@@ -599,13 +602,19 @@ const gridCols = computed(() =>
             :key="row.id"
             role="row"
             :class="[
-              'grid items-center h-[54px] border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors',
+              'relative grid items-center h-[54px] border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors',
               gridCols,
               selected.has(row.id) ? 'bg-primary-light/60' : 'hover:bg-gray-50',
             ]"
             @click="router.push({ name: 'leads.detail', params: { id: row.id } })"
           >
             <div role="cell" class="pl-4" @click.stop>
+              <!-- Super admin: how soon the lead wants to switch, as a stripe on the row's edge -->
+              <span
+                v-if="seesDoublons && HEAT[row.qualification?.timing?.code]"
+                :class="['absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r', HEAT[row.qualification.timing.code]]"
+                aria-hidden="true"
+              />
               <input
                 v-if="canSelect"
                 type="checkbox"
@@ -630,7 +639,14 @@ const gridCols = computed(() =>
                     :title="row.doublon_of ? t('leads.doublonOf', { ref: row.doublon_of.reference }) : ''"
                   >{{ t('leads.doublon') }}</span>
                 </div>
-                <p class="text-xs text-gray-500 truncate">
+                <!-- Super admin: the form answers (Détaillés, Décennale) to choose who gets the lead -->
+                <LeadQualification
+                  v-if="seesDoublons"
+                  :qualification="row.qualification"
+                  :fallback="row.lead_source?.name || row.reference || '—'"
+                  :source-name="row.lead_source?.name || ''"
+                />
+                <p v-else class="text-xs text-gray-500 truncate">
                   {{ row.lead_source?.name || row.reference || '—' }}
                 </p>
               </div>
