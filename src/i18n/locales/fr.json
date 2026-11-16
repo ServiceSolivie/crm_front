@@ -296,6 +296,7 @@
     },
     "filterDvc": "DVC",
     "filterPayment": "Paiement",
+    "statusHeldByGestion": "Lead en gestion : seule la gestion peut changer son statut",
     "qualification": {
       "title": "Réponses du formulaire",
       "open": "Voir les réponses du formulaire",

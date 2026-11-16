@@ -296,6 +296,7 @@
     },
     "filterDvc": "DVC",
     "filterPayment": "Payment",
+    "statusHeldByGestion": "Lead in back office: only gestion can change its status",
     "qualification": {
       "title": "Form answers",
       "open": "Show the form answers",

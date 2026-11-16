@@ -7,7 +7,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Check, Lock } from 'lucide-vue-next'
 import LeadStatusBadge from './LeadStatusBadge.vue'
-import { LEAD_STAGES, REVIEW_STATUSES } from '@/utils/enums'
+import { LEAD_STAGES, REVIEW_STATUSES, GESTION_LOCKED_STATUSES } from '@/utils/enums'
 import { useAuthStore } from '@/stores/auth.store'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
@@ -18,6 +18,11 @@ const { allCodes, selectableCodes, statusStage } = useLeadStatuses()
 // Back-office statuses (Validé, Call2, PDG, À corriger) are for gestion and
 // managers only; agents send the lead to GESTION instead.
 const canReview = computed(() => auth.can('LEADS_SET_REVIEW_STATUS'))
+
+// Once gestion holds the lead, the agent can't move it; sent back « À
+// corriger », the agent may only return it to Gestion
+const heldByGestion = computed(() => !canReview.value && GESTION_LOCKED_STATUSES.includes(props.status))
+const onlyBackToGestion = computed(() => !canReview.value && props.status === 'A_CORRIGER')
 
 // Statuses grouped under their pipeline stage, in pipeline order: the system
 // ones, then the custom ones still active (a deactivated one only shows on
@@ -32,7 +37,8 @@ const stageGroups = computed(() =>
         (k) =>
           statusStage(k) === stage &&
           (selectableCodes.value.includes(k) || k === props.status) &&
-          (canReview.value || !REVIEW_STATUSES.includes(k) || k === props.status),
+          (canReview.value || !REVIEW_STATUSES.includes(k) || k === props.status) &&
+          (!onlyBackToGestion.value || k === 'GESTION' || k === props.status),
       ),
     }))
     .filter((g) => g.statuses.length),
@@ -132,6 +138,7 @@ onBeforeUnmount(() => {
   <div class="relative inline-block">
     <button
       ref="triggerRef"
+      v-if="!heldByGestion"
       class="inline-flex items-center rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-50"
       :disabled="loading"
       :aria-expanded="open"
@@ -140,6 +147,10 @@ onBeforeUnmount(() => {
     >
       <LeadStatusBadge :status="status" dot caret />
     </button>
+    <span v-else class="inline-flex items-center gap-1" :title="t('leads.statusHeldByGestion')">
+      <LeadStatusBadge :status="status" dot />
+      <Lock class="w-3 h-3 text-gray-400 shrink-0" />
+    </span>
 
     <Teleport to="body">
       <Transition
