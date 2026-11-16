@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { ChevronRight } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useToast } from '@/composables/useToast'
@@ -22,6 +23,12 @@ const serverErrors = ref({})
 const lead = computed(() =>
   leadsStore.current && String(leadsStore.current.id) === String(id) ? leadsStore.current : null,
 )
+// Back to the leads page this lead shows on
+const { pageOf, pageBySlug } = useInsuranceTypes()
+const listSlug = computed(() => (lead.value?.insurance_type ? pageOf(lead.value.insurance_type) : null))
+const listLink = computed(() => (listSlug.value ? { name: 'leads.page', params: { slug: listSlug.value } } : { name: 'leads' }))
+const listName = computed(() => (listSlug.value ? (pageBySlug(listSlug.value)?.name ?? t('leads.title')) : t('leads.title')))
+
 const fullName = computed(() =>
   lead.value ? [lead.value.first_name, lead.value.last_name].filter(Boolean).join(' ') || lead.value.reference : '',
 )
@@ -55,7 +62,7 @@ async function onSubmit(payload) {
 <template>
   <div class="flex flex-col gap-4 max-w-[1440px] mx-auto">
     <nav :aria-label="t('leadDetail.breadcrumb')" class="flex items-center gap-1.5 text-[13px] text-gray-500">
-      <RouterLink :to="{ name: 'leads' }" class="text-gray-600 hover:text-gray-900">{{ t('leads.title') }}</RouterLink>
+      <RouterLink :to="listLink" class="text-gray-600 hover:text-gray-900">{{ listName }}</RouterLink>
       <ChevronRight class="w-3.5 h-3.5" />
       <RouterLink v-if="lead" :to="{ name: 'leads.detail', params: { id } }" class="text-gray-600 hover:text-gray-900 truncate">{{ fullName }}</RouterLink>
       <ChevronRight v-if="lead" class="w-3.5 h-3.5" />

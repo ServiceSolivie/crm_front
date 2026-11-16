@@ -1,12 +1,12 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { useRoute, useRouter } from 'vue-router'
 import { CheckCircle2, Eye, Send, Trash2, History, AlertTriangle } from 'lucide-vue-next'
 import { dvcTypesApi } from '@/api/dvcTypes'
 import { useToast } from '@/composables/useToast'
 import { useUiStore } from '@/stores/ui.store'
-import { INSURANCE_TYPE } from '@/utils/enums'
 import { formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
@@ -23,6 +23,7 @@ import DocumentPreviewModal from '@/components/modules/documents/DocumentPreview
  * DVCs already generated keep the version they were made with.
  */
 const { t } = useI18n()
+const { typeLabel, typesFor } = useInsuranceTypes()
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -95,7 +96,7 @@ const preview = ref(null)
 const previewUrl = ref(null)
 
 const insuranceOptions = computed(() =>
-  Object.keys(INSURANCE_TYPE).map((value) => ({ value, label: t('insuranceTypes.' + value) })),
+  typesFor().map((type) => ({ value: type.code, label: type.label })),
 )
 
 onMounted(load)
@@ -110,7 +111,7 @@ async function load() {
     const insuranceType = route.query.insurance_type ?? ''
     meta.value = {
       insurance_type: insuranceType,
-      label: insuranceType ? `Devoir de Conseil — ${t('insuranceTypes.' + insuranceType)}` : '',
+      label: insuranceType ? `Devoir de Conseil — ${typeLabel(insuranceType)}` : '',
       filename_prefix: insuranceType ? `DVC-${insuranceType.replace(/_/g, '-')}` : 'DVC',
       is_active: true,
     }
@@ -310,7 +311,7 @@ async function remove() {
     <AppPageHeader
       :title="isNew ? t('dvc.editor.newTitle') : (dvcType?.label ?? t('dvc.types.title'))"
       :subtitle="t('dvc.editor.subtitle')"
-      :breadcrumb="[{ label: t('dvc.types.title'), to: '/dvc-types' }, { label: isNew ? t('dvc.editor.newTitle') : (dvcType ? t('insuranceTypes.' + dvcType.insurance_type) : '…') }]"
+      :breadcrumb="[{ label: t('dvc.types.title'), to: '/dvc-types' }, { label: isNew ? t('dvc.editor.newTitle') : (dvcType ? typeLabel(dvcType.insurance_type) : '…') }]"
     />
 
     <div v-if="loading" class="space-y-3">

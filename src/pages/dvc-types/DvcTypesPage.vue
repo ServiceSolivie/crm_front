@@ -1,10 +1,10 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Plus, EyeOff, ChevronRight } from 'lucide-vue-next'
 import { dvcTypesApi } from '@/api/dvcTypes'
 import { useToast } from '@/composables/useToast'
-import { INSURANCE_TYPE } from '@/utils/enums'
 import { formatDateTime } from '@/utils/formatters'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
@@ -14,6 +14,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
  * its DVC, or a link to create it.
  */
 const { t } = useI18n()
+const { typeLabel, typesFor } = useInsuranceTypes()
 const toast = useToast()
 
 const types = ref([])
@@ -30,7 +31,7 @@ onMounted(async () => {
 })
 
 const rows = computed(() =>
-  Object.keys(INSURANCE_TYPE).map((insuranceType) => ({
+  typesFor().map(({ code: insuranceType }) => ({
     insuranceType,
     type: types.value.find((type) => type.insurance_type === insuranceType) ?? null,
   })),
@@ -52,7 +53,7 @@ const rows = computed(() =>
           :key="row.insuranceType"
           class="flex items-center gap-4 px-5 py-3.5 border-b border-gray-100 last:border-b-0"
         >
-          <p class="w-44 shrink-0 text-[13px] font-medium text-gray-900">{{ t('insuranceTypes.' + row.insuranceType) }}</p>
+          <p class="w-44 shrink-0 text-[13px] font-medium text-gray-900">{{ typeLabel(row.insuranceType) }}</p>
 
           <RouterLink
             v-if="row.type"

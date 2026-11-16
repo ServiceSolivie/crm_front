@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { useReportsStore } from '@/stores/reports.store'
 import AppTable from '@/components/base/AppTable.vue'
 import AppPagination from '@/components/base/AppPagination.vue'
@@ -12,6 +13,7 @@ import { useReportFormat } from '@/composables/useReportFormat'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 const { t } = useI18n()
+const { typeLabel, typeShort } = useInsuranceTypes()
 const { statusLabel } = useLeadStatuses()
 const store = useReportsStore()
 const { num, pct, dateTime } = useReportFormat()
@@ -42,7 +44,7 @@ const CSV_COLUMNS = [
   { key: 'phone', label: 'Téléphone' },
   { key: 'email', label: 'E-mail' },
   { key: 'status', label: 'Statut', value: (r) => statusLabel(r.status) },
-  { key: 'insurance_type', label: 'Assurance', value: (r) => (r.insurance_type ? t('insuranceTypes.' + r.insurance_type, r.insurance_type) : '') },
+  { key: 'insurance_type', label: 'Assurance', value: (r) => (r.insurance_type ? typeLabel(r.insurance_type) : '') },
   { key: 'source', label: 'Source', value: (r) => r.lead_source?.name },
   { key: 'agent', label: 'Agent', value: (r) => r.assigned_agent?.name },
   { key: 'created_at', label: 'Reçu le' },
@@ -96,8 +98,8 @@ onMounted(() => store.fetchLeads())
           <LeadStatusBadge :status="value" />
         </template>
         <template #cell-insurance_type="{ value }">
-          <span v-if="value" class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700" :title="t('insuranceTypes.' + value, value)">
-            {{ t('insuranceTypesShort.' + value, value) }}
+          <span v-if="value" class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700" :title="typeLabel(value)">
+            {{ typeShort(value) }}
           </span>
           <span v-else class="text-gray-400">—</span>
         </template>

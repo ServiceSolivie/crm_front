@@ -32,10 +32,13 @@ import {
   FileSpreadsheet,
   Phone,
   PhoneCall,
+  Layers,
+  ShieldCheck,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
 import { useUiStore } from '@/stores/ui.store'
 import { useDevicesStore } from '@/stores/devices.store'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { setLocale } from '@/i18n'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import TheNotificationBell from './TheNotificationBell.vue'
@@ -48,6 +51,7 @@ const ui = useUiStore()
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
+const { menuPages } = useInsuranceTypes()
 
 /* Counters next to menu items (GET /me/counters), refreshed on navigation and focus */
 const counters = ref(null)
@@ -121,6 +125,14 @@ const navGroups = computed(() => [
     label: t('nav.crm'),
     items: [
       { icon: Users, label: t('nav.leads'), to: '/leads', permission: 'LEADS_VIEW_*', count: counters.value?.leads_total },
+      // Extra leads pages (Décennale, Flotte & Camion…), in the admin's order
+      ...menuPages.value.map((page) => ({
+        icon: Layers,
+        label: page.name,
+        to: `/leads/p/${page.slug}`,
+        permission: 'LEADS_VIEW_*',
+        count: counters.value?.leads_by_page?.[page.slug] || null,
+      })),
       {
         icon: CalendarClock,
         label: t('nav.appointments'),
@@ -170,6 +182,7 @@ const navGroups = computed(() => [
         children: [
           { icon: Tag, label: t('nav.leadSources'), to: '/lead-sources', role: 'super_admin' },
           { icon: ListChecks, label: t('nav.leadStatuses'), to: '/lead-statuses', role: 'super_admin' },
+          { icon: ShieldCheck, label: t('nav.insuranceTypes'), to: '/insurance-types', role: 'super_admin' },
           { icon: FileSignature, label: t('nav.dvcTypes'), to: '/dvc-types', role: 'super_admin' },
           { icon: FileCog, label: t('nav.documentRequirements'), to: '/document-requirements', role: 'super_admin' },
           { icon: PhoneCall, label: t('nav.ringover'), to: '/ringover', permission: 'RINGOVER_MANAGE' },
@@ -202,6 +215,8 @@ function isVisible(item) {
 }
 
 function isActive(to) {
+  // The extra leads pages live under /leads/p/…: they light up themselves, not « Leads »
+  if (to === '/leads' && route.path.startsWith('/leads/p/')) return false
   return route.path === to || (to !== '/dashboard' && route.path.startsWith(to + '/'))
 }
 

@@ -2,6 +2,7 @@
 import { onMounted, computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Calendar, Pencil, Trash2 } from 'lucide-vue-next'
 import { useAppointmentsStore } from '@/stores/appointments.store'
 import { useUiStore } from '@/stores/ui.store'
@@ -25,6 +26,7 @@ const ui = useUiStore()
 const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
+const { typeLabel, typeShort } = useInsuranceTypes()
 
 function isOverdue(row) {
   if (!row.scheduled_at) return false
@@ -194,8 +196,8 @@ async function handleDelete(row) {
           <span
             v-if="row.lead?.insurance_type"
             class="px-1.5 rounded text-xs leading-5 font-medium bg-gray-100 text-gray-700"
-            :title="t('insuranceTypes.' + row.lead.insurance_type, row.lead.insurance_type)"
-          >{{ t('insuranceTypesShort.' + row.lead.insurance_type, row.lead.insurance_type) }}</span>
+            :title="typeLabel(row.lead.insurance_type)"
+          >{{ typeShort(row.lead.insurance_type) }}</span>
           <span v-else class="text-gray-400">—</span>
         </template>
 

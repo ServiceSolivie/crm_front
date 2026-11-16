@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Phone, RefreshCw, Inbox } from 'lucide-vue-next'
 import { useGestionDashboardStore } from '@/stores/gestionDashboard.store'
 import { useAuthStore } from '@/stores/auth.store'
@@ -20,6 +21,7 @@ import { dialNumber } from '@/utils/phone'
  * this gestion user — oldest in its status first — with the next step.
  */
 const { t, locale } = useI18n()
+const { typeShort } = useInsuranceTypes()
 const router = useRouter()
 const auth = useAuthStore()
 const store = useGestionDashboardStore()
@@ -194,7 +196,7 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
                     @click.stop
                   >{{ fullName(lead) }}</RouterLink>
                   <p class="text-xs text-gray-500 truncate">
-                    {{ lead.insurance_type ? t('insuranceTypesShort.' + lead.insurance_type, lead.insurance_type) : '' }}
+                    {{ lead.insurance_type ? typeShort(lead.insurance_type) : '' }}
                     <span class="font-mono">· {{ lead.reference }}</span>
                   </p>
                 </div>

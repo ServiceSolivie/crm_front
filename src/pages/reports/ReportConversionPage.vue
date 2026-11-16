@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { useReportsStore } from '@/stores/reports.store'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import ReportShell from '@/components/modules/reports/ReportShell.vue'
@@ -8,6 +9,7 @@ import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
 
 const { t } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 const store = useReportsStore()
 const { num, pct } = useReportFormat()
 
@@ -25,7 +27,7 @@ function changeGroupBy(val) {
 
 // Insurance types come back as enum keys (dimension_id); show their label
 function rowName(item) {
-  if (store.filters.group_by === 'insurance_type' && item.id) return t('insuranceTypes.' + item.id, item.name ?? item.id)
+  if (store.filters.group_by === 'insurance_type' && item.id) return typeLabel(item.id)
   return item.name ?? '—'
 }
 

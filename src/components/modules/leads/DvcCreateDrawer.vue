@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { FilePenLine } from 'lucide-vue-next'
 import { useContractsStore } from '@/stores/contracts.store'
 import { useToast } from '@/composables/useToast'
@@ -34,6 +35,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'generated'])
 const { t } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 const store = useContractsStore()
 const toast = useToast()
 
@@ -61,7 +63,7 @@ const sourcesLabel = computed(() =>
     .map((dvc) => {
       const insuranceType = dvc.template_key?.replace(/_dvc$/, '').toUpperCase()
       return t('dvc.create.source', {
-        type: t('insuranceTypes.' + insuranceType, insuranceType),
+        type: typeLabel(insuranceType),
         version: dvc.version,
         date: formatDateTime(dvc.created_at),
       })

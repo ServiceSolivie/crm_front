@@ -2,6 +2,7 @@
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import {
   ChevronLeft, ChevronRight, Phone, Mail, Clock, MoreHorizontal, UserPlus, PackagePlus,
   Pencil, Trash2, Flag, AlertTriangle, Check, CalendarDays, Plus, ChevronDown,
@@ -46,6 +47,7 @@ import { dialNumber } from '@/utils/phone'
 const route = useRoute()
 const router = useRouter()
 const { t, locale } = useI18n()
+const { typeLabel, typeShort, requiresCompanyInfo, pageOf, pageBySlug } = useInsuranceTypes()
 const leadsStore = useLeadsStore()
 const appointmentsStore = useAppointmentsStore()
 const ui = useUiStore()
@@ -104,6 +106,14 @@ function humanizeKey(key) {
  * render like every other field instead of as raw text.
  * Falls back to null (raw text) for any older, pre-JSON comment value.
  */
+// « prix_trop_cher » → « Prix trop cher », {"Non": true} → « Non » (same as the leads list)
+function readableAnswer(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) value = Object.keys(value).filter((k) => value[k]).join(', ')
+  if (typeof value !== 'string') return JSON.stringify(value)
+  const text = value.replace(/_/g, ' ').replace(/\s+/g, ' ').trim()
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 const sheetExtraFields = computed(() => {
   const raw = leadsStore.current?.comment
   if (!raw) return null
@@ -113,7 +123,7 @@ const sheetExtraFields = computed(() => {
     return Object.entries(parsed).map(([key, value]) => ({
       key,
       label: humanizeKey(key),
-      value: typeof value === 'string' ? value : JSON.stringify(value),
+      value: readableAnswer(value),
     }))
   } catch {
     return null
@@ -179,6 +189,11 @@ const activityKey = ref(0)
 function refreshActivity() {
   activityKey.value++
 }
+
+/* The leads page this lead shows on (Décennale, Flotte & Camion… or « Leads ») */
+const listSlug = computed(() => (lead.value?.insurance_type ? pageOf(lead.value.insurance_type) : null))
+const listLink = computed(() => (listSlug.value ? { name: 'leads.page', params: { slug: listSlug.value } } : { name: 'leads' }))
+const listName = computed(() => (listSlug.value ? (pageBySlug(listSlug.value)?.name ?? t('leads.title')) : t('leads.title')))
 
 /* ── Loading ───────────────────────────────────────────────── */
 async function loadLead() {
@@ -504,7 +519,7 @@ async function loadLeadDvcs() {
 // "auto_dvc" → the label of the AUTO insurance type
 function dvcTypeLabel(contract) {
   const insuranceType = contract.template_key?.replace(/_dvc$/, '').toUpperCase()
-  return t('insuranceTypes.' + insuranceType, insuranceType)
+  return typeLabel(insuranceType)
 }
 
 async function onDvcDownload(contract) {
@@ -591,9 +606,10 @@ async function handleDelete() {
   const ok = await ui.confirm(t('leads.deleteTitle'), t('leads.deleteNamed', { name: leadFullName.value }), { confirmLabel: t('common.delete') })
   if (!ok) return
   try {
+    const back = listLink.value
     await leadsStore.remove(id.value)
     toast.showSuccess(t('leads.deleteSuccess'))
-    router.replace({ name: 'leads' })
+    router.replace(back)
   } catch (e) {
     toast.showError(firstErrorMessage(e, t('leads.errors.delete')))
   }
@@ -624,7 +640,7 @@ const infoFields = computed(() => {
   const l = leadsStore.current
   if (!l) return []
   const rows = [
-    { label: t('leads.filterInsurance'), value: l.insurance_type ? t('insuranceTypes.' + l.insurance_type, l.insurance_type) : '—' },
+    { label: t('leads.filterInsurance'), value: l.insurance_type ? typeLabel(l.insurance_type) : '—' },
     { label: t('leadDetail.info.clientType'), value: l.client_type ? t('clientTypes.' + l.client_type, l.client_type) : '—' },
     { label: t('leads.filterSource'), value: l.lead_source?.name ?? '—' },
     { label: t('leads.receivedAt'), value: formatDateTime(l.created_at), mono: true },
@@ -638,7 +654,7 @@ const infoFields = computed(() => {
 
 const companyFields = computed(() => {
   const l = leadsStore.current
-  if (!l || l.insurance_type !== 'DECENNALE') return []
+  if (!l || !requiresCompanyInfo(l.insurance_type)) return []
   return [
     { label: t('leads.companyName'), value: l.company_name },
     { label: t('leads.address'), value: l.address },
@@ -656,7 +672,7 @@ const companyFields = computed(() => {
 
     <!-- Breadcrumb + prev/next -->
     <nav :aria-label="t('leadDetail.breadcrumb')" class="flex items-center gap-1.5 text-[13px] text-gray-500">
-      <RouterLink :to="{ name: 'leads' }" class="text-gray-600 hover:text-gray-900">{{ t('leads.title') }}</RouterLink>
+      <RouterLink :to="listLink" class="text-gray-600 hover:text-gray-900">{{ listName }}</RouterLink>
       <ChevronRight class="w-3.5 h-3.5" />
       <span class="text-gray-900 truncate">{{ leadFullName || '…' }}</span>
       <div class="flex-1" />
@@ -708,7 +724,7 @@ const companyFields = computed(() => {
               </a>
               <span class="flex flex-wrap gap-1.5">
                 <span v-if="lead.insurance_type" class="px-2 rounded-[5px] text-xs leading-5 bg-gray-100 text-gray-700">
-                  {{ t('insuranceTypesShort.' + lead.insurance_type, lead.insurance_type) }}
+                  {{ typeShort(lead.insurance_type) }}
                 </span>
                 <span v-if="lead.client_type" class="px-2 rounded-[5px] text-xs leading-5 bg-gray-100 text-gray-700">
                   {{ t('clientTypes.' + lead.client_type, lead.client_type) }}

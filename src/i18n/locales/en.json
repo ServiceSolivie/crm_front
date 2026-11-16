@@ -46,7 +46,8 @@
     "importedLeadsExport": "Leads feedback export",
     "intake": "API intake",
     "ringover": "Ringover",
-    "calls": "Calls"
+    "calls": "Calls",
+    "insuranceTypes": "Insurance types"
   },
   "common": {
     "save": "Save",
@@ -294,7 +295,29 @@
       "missingDocument": "Missing document"
     },
     "filterDvc": "DVC",
-    "filterPayment": "Payment"
+    "filterPayment": "Payment",
+    "qualification": {
+      "title": "Form answers",
+      "open": "Show the form answers",
+      "timing": "Timing",
+      "insured": "Currently insured",
+      "reason": "Reason for switching",
+      "companyName": "Company",
+      "sector": "Sector",
+      "seniority": "Years in business",
+      "companyStatus": "Status",
+      "timings": {
+        "now": "Now",
+        "week": "7 days",
+        "month": "This month",
+        "comparing": "Comparing"
+      },
+      "insureds": {
+        "yes": "Insured",
+        "no": "Not insured",
+        "cancelled": "Cancelled"
+      }
+    }
   },
   "appointments": {
     "title": "Appointments",
@@ -853,17 +876,55 @@
     }
   },
   "insuranceTypes": {
-    "AUTO": "Auto Insurance",
-    "MOTO": "Motorcycle Insurance",
-    "RC_PRO": "Professional Liability",
-    "MUTUELLE_SANTE": "Health Insurance",
-    "EMPRUNTEUR": "Borrower Insurance",
-    "CREDIT_CONSOMMATION": "Consumer Credit",
-    "RACHAT_CREDIT": "Debt Consolidation",
-    "CREDIT_IMMOBILIER": "Mortgage Credit",
-    "DECENNALE": "Décennale",
-    "TAXI_VTC": "Taxi / VTC",
-    "AUTRE": "Other"
+    "title": "Insurance types",
+    "subtitle": "The types offered on leads, and the leads page each one shows on.",
+    "newType": "New type",
+    "editType": "Edit type",
+    "name": "Name",
+    "namePlaceholder": "E.g. Fleet insurance",
+    "shortName": "Short name",
+    "shortNameHint": "Shown in lists (e.g. \"Fleet\").",
+    "code": "Code",
+    "codeHint": "Made from the name; it never changes afterwards.",
+    "codeLocked": "Leads store the code: it doesn't change.",
+    "leads": "Leads",
+    "page": "Page",
+    "pageHint": "The leads page this type shows on. \"Leads\" = the main page.",
+    "pageOf": "Page of {name}",
+    "companyInfo": "Company info",
+    "companyInfoHint": "The lead form asks for the company (name, legal form, sector…).",
+    "companyInfoOf": "Company info for {name}",
+    "active": "Active",
+    "activeOf": "{name} active",
+    "system": "system",
+    "labelRequired": "The name is required.",
+    "labelUnusable": "This name doesn't make a usable code: add letters.",
+    "createSuccess": "Insurance type created",
+    "updateSuccess": "Insurance type updated",
+    "deactivate": "Deactivate",
+    "deactivateTitle": "Deactivate this type?",
+    "deactivateConfirmMsg": "\"{name}\" will no longer be offered for new leads. Existing leads keep it.",
+    "deleteTitle": "Delete this type?",
+    "deleteConfirmMsg": "\"{name}\" will be deleted for good.",
+    "deleteSuccess": "Insurance type deleted",
+    "leadsCount": "{n} lead | {n} leads",
+    "usedHint": "A system type or one used by leads can't be deleted: deactivate it.",
+    "pagesTitle": "Leads pages",
+    "pagesHint": "Each page shows in the menu and holds the types placed on it. The other types stay on \"Leads\".",
+    "leadsPage": "Leads",
+    "leadsPageHint": "Main page: every type not placed on another page.",
+    "addPage": "New page",
+    "editPage": "Edit page",
+    "pageName": "Page name",
+    "pageNamePlaceholder": "E.g. Fleet & Truck",
+    "pageNameRequired": "The name is required.",
+    "pageAssignHint": "Then place types on this page from the table.",
+    "pageCreated": "Page created",
+    "pageUpdated": "Page updated",
+    "pageDeleted": "Page deleted",
+    "deletePageTitle": "Delete this page?",
+    "deletePageConfirmMsg": "The \"{name}\" page leaves the menu. Its types and their leads go back to \"Leads\".",
+    "deletePageHint": "Its types go back to \"Leads\"; no lead is deleted."
   },
   "clientTypes": {
     "INDIVIDUAL": "Individual",
@@ -1086,19 +1147,6 @@
     "of": "of",
     "noResults": "No results",
     "perPage": "Show"
-  },
-  "insuranceTypesShort": {
-    "AUTO": "Auto",
-    "MOTO": "Moto",
-    "RC_PRO": "Pro liability",
-    "MUTUELLE_SANTE": "Health",
-    "EMPRUNTEUR": "Borrower",
-    "CREDIT_CONSOMMATION": "Consumer credit",
-    "RACHAT_CREDIT": "Consolidation",
-    "CREDIT_IMMOBILIER": "Mortgage",
-    "DECENNALE": "Décennale",
-    "TAXI_VTC": "Taxi/VTC",
-    "AUTRE": "Other"
   },
   "leadDetail": {
     "breadcrumb": "Breadcrumb",

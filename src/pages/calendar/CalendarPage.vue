@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import FullCalendar from '@fullcalendar/vue3'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -25,6 +26,7 @@ import AppointmentRescheduleModal from '@/components/modules/appointments/Appoin
 import PhoneCallLink from '@/components/modules/calls/PhoneCallLink.vue'
 
 const { t, locale } = useI18n()
+const { typeShort } = useInsuranceTypes()
 const auth = useAuthStore()
 const usersStore = useUsersStore()
 const appointmentsStore = useAppointmentsStore()
@@ -337,7 +339,7 @@ onMounted(async () => {
             </div>
             <div v-if="selectedApt.lead?.insurance_type" class="min-w-0">
               <dt class="text-xs text-gray-500">{{ t('calendar.insurance') }}</dt>
-              <dd class="mt-0.5 text-[13px] text-gray-900 truncate">{{ t('insuranceTypesShort.' + selectedApt.lead.insurance_type, selectedApt.lead.insurance_type) }}</dd>
+              <dd class="mt-0.5 text-[13px] text-gray-900 truncate">{{ typeShort(selectedApt.lead.insurance_type) }}</dd>
             </div>
             <div class="min-w-0">
               <dt class="text-xs text-gray-500">{{ t('calendar.agent') }}</dt>

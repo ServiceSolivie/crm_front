@@ -2,6 +2,7 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Mail } from 'lucide-vue-next'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useUsersStore } from '@/stores/users.store'
@@ -27,6 +28,7 @@ const usersStore = useUsersStore()
 const auth = useAuthStore()
 const toast = useToast()
 const { t } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 
 const leadId = route.params.leadId
 
@@ -157,7 +159,7 @@ function goBack() {
             <AppAvatar :name="leadFullName" size="md" tone="soft" />
             <span class="min-w-0">
               <span class="block text-[14px] font-medium truncate">{{ leadFullName }}</span>
-              <span v-if="lead.insurance_type" class="block text-xs text-gray-500">{{ t('insuranceTypes.' + lead.insurance_type, lead.insurance_type) }}</span>
+              <span v-if="lead.insurance_type" class="block text-xs text-gray-500">{{ typeLabel(lead.insurance_type) }}</span>
             </span>
           </div>
           <PhoneCallLink v-if="lead.phone" :lead="lead" />

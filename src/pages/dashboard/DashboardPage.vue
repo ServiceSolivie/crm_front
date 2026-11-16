@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
 import { Plus, SlidersHorizontal, AlertCircle } from 'lucide-vue-next'
 
 import { useAuthStore } from '@/stores/auth.store'
@@ -24,6 +25,7 @@ import DonutChart from '@/components/charts/DonutChart.vue'
 const auth = useAuthStore()
 const dash = useDashboardStore()
 const { t, locale } = useI18n()
+const { typeLabel } = useInsuranceTypes()
 const { statusLabel, statusStage } = useLeadStatuses()
 
 /* ── Permissions ───────────────────────────────────────────── */
@@ -171,7 +173,7 @@ const insuranceRows = computed(() => {
   if (!raw) return []
   const entries = Object.entries(raw).map(([key, value]) => ({
     key,
-    label: t('insuranceTypes.' + key, key),
+    label: typeLabel(key),
     value,
   }))
   const max = Math.max(...entries.map((e) => e.value), 1)
