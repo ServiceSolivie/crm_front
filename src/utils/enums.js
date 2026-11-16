@@ -37,6 +37,11 @@ export const LEAD_STATUS = {
 // Back-office statuses: need the LEADS_SET_REVIEW_STATUS permission (gestion, managers)
 export const REVIEW_STATUSES = ['VALIDE', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO', 'A_CORRIGER']
 
+// Once a lead is in one of these, only LEADS_SET_REVIEW_STATUS may change it;
+// from A_CORRIGER the agent may only send it back to GESTION.
+// Mirrors LeadStatusEnum::gestionLockedStatuses() in the backend.
+export const GESTION_LOCKED_STATUSES = ['GESTION', 'VALIDE', 'CALL2_OK', 'CALL2_KO', 'PDG_OK', 'PDG_KO']
+
 export function leadStage(status) {
   return LEAD_STATUS[status]?.stage ?? 'contact'
 }
