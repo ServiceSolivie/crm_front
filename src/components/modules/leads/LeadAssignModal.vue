@@ -39,11 +39,14 @@ async function loadAgents() {
   loadingAgents.value = true
   try {
     if (auth.hasRole('team_leader')) {
+      // Deactivated agents can't receive leads
       const data = await teamLeaderApi.agents()
-      agents.value = data.map((a) => ({ id: a.id, name: a.name, email: a.email, roles: a.roles }))
+      agents.value = data
+        .filter((a) => a.is_active !== false)
+        .map((a) => ({ id: a.id, name: a.name, email: a.email, roles: a.roles }))
     } else {
-      const { data } = await usersApi.list({ role: 'agent', per_page: 100 })
-      agents.value = data.filter((u) => u.roles.includes('agent'))
+      const { data } = await usersApi.list({ role: 'agent', is_active: 1, per_page: 100 })
+      agents.value = data.filter((u) => u.roles.includes('agent') && u.is_active !== false)
     }
   } finally {
     loadingAgents.value = false

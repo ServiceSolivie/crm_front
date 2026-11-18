@@ -116,8 +116,6 @@
     "activeAgents": "Agents actifs",
     "leadsByInsuranceType": "Leads par type d'assurance",
     "appointmentsByStatus": "Rendez-vous par statut",
-    "performanceByTeam": "Performance par équipe",
-    "performanceByAgent": "Performance par agent",
     "noDataPeriod": "Aucune donnée pour cette période",
     "today": "Aujourd'hui",
     "days7": "7 jours",
@@ -140,9 +138,10 @@
     "noInsuranceData": "Aucune donnée d'assurance",
     "noPaymentData": "Aucune donnée",
     "noPayments": "Aucun paiement",
-    "validatedCol": "Validés",
-    "conversionCol": "Conv.",
     "hello": "Bonjour {name}",
+    "scopeMe": "Moi",
+    "scopeTeam": "Mon équipe",
+    "teamScopeHint": "Statistiques de toute votre équipe. Le CA et les appels restent visibles dans « Moi ».",
     "period": "Période",
     "myDay": "Ma journée",
     "todayAgenda": "Agenda du jour",
@@ -157,8 +156,6 @@
     "leadsAndAppointments": "Leads et rendez-vous par jour",
     "leadsSeries": "Leads",
     "appointmentsSeries": "Rendez-vous",
-    "topAgents": "Meilleurs agents",
-    "validatedCount": "{n} validés",
     "collectedOf": "{pct} % de {total} attendus",
     "details": "Détails",
     "revenueTitle": "Encaissements",
@@ -181,7 +178,11 @@
       "talkTime": "Temps de conversation",
       "missedInbound": "{count} appels entrants manqués",
       "averageTalk": "Durée moyenne d'un appel"
-    }
+    },
+    "aptTotal": "Total",
+    "aptCompletion": "Taux de réalisation",
+    "aptLost": "Annulés / non venus",
+    "aptCompletionHint": "Réalisés sur les rendez-vous terminés (réalisés, annulés, non venus)"
   },
   "leads": {
     "title": "Leads",
@@ -318,6 +319,11 @@
         "no": "Non assuré",
         "cancelled": "Résilié"
       }
+    },
+    "doublonFilter": {
+      "label": "Doublons",
+      "no": "Sans les doublons",
+      "yes": "Doublons uniquement"
     }
   },
   "appointments": {
@@ -455,6 +461,11 @@
     "noUsers": "Aucun utilisateur trouvé",
     "inviteFirst": "Invitez le premier membre de l'équipe.",
     "roleAndTeam": "Rôle & Équipe",
+    "supervisor": {
+      "label": "Superviseur d’équipe",
+      "hint": "Reste un agent (seulement ses leads), et voit en plus les statistiques de son équipe sur le tableau de bord.",
+      "badge": "Superviseur"
+    },
     "accountDetails": "Détails du compte",
     "statusUpdateFailed": "Échec de la mise à jour du statut",
     "deleteFailed": "Échec de la suppression de l’utilisateur",
@@ -848,7 +859,9 @@
       "PLANIFIE": "Planifié",
       "REALISE": "Réalisé",
       "ANNULE": "Annulé",
-      "REPORTE": "Reporté"
+      "REPORTE": "Reporté",
+      "CONFIRME": "Confirmé",
+      "NON_VENU": "Non venu"
     },
     "payment": {
       "NON_PAYE": "Non payé",

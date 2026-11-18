@@ -182,6 +182,7 @@ async function onResetPassword(payload) {
             :variant="value?.[0] === 'super_admin' ? 'danger' : value?.[0] === 'manager' ? 'warning' : 'info'"
             :label="value?.[0]?.replace(/_/g, ' ') ?? '—'"
           />
+          <AppBadge v-if="row.is_supervisor" variant="success" :label="t('users.supervisor.badge')" class="ml-1" />
           <p v-if="row.lead_sources?.length" class="mt-1 text-xs text-gray-500 truncate max-w-[180px]">
             {{ row.lead_sources.map((s) => s.name).join(', ') }}
           </p>
