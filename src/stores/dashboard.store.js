@@ -5,7 +5,6 @@ import { dashboardApi } from '@/api/dashboard'
 export const useDashboardStore = defineStore('dashboard', () => {
   const kpis = ref(null)
   const statistics = ref(null)
-  const aggregations = ref(null)
   const charts = ref(null)
   const revenue = ref(null)
   const calls = ref(null)
@@ -15,7 +14,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
   const loading = reactive({
     kpis: false,
     statistics: false,
-    aggregations: false,
     charts: false,
     revenue: false,
     calls: false,
@@ -45,15 +43,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
       statistics.value = await dashboardApi.statistics(_params())
     } finally {
       loading.statistics = false
-    }
-  }
-
-  async function fetchAggregations() {
-    loading.aggregations = true
-    try {
-      aggregations.value = await dashboardApi.aggregations(_params())
-    } finally {
-      loading.aggregations = false
     }
   }
 
@@ -90,7 +79,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
   }
 
   async function fetchAll() {
-    await Promise.all([fetchKpis(), fetchStatistics(), fetchAggregations(), fetchCharts(), fetchRevenue(), fetchCalls()])
+    await Promise.all([fetchKpis(), fetchStatistics(), fetchCharts(), fetchRevenue(), fetchCalls()])
   }
 
   function setFilter(key, value) {
@@ -109,7 +98,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
   return {
     kpis,
     statistics,
-    aggregations,
     charts,
     revenue,
     calls,

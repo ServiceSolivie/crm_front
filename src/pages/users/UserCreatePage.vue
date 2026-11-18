@@ -11,6 +11,7 @@ import AppButton from '@/components/base/AppButton.vue'
 import AppInput from '@/components/base/AppInput.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
 import LeadSourcePicker from '@/components/modules/users/LeadSourcePicker.vue'
+import SupervisorToggle from '@/components/modules/users/SupervisorToggle.vue'
 import { ROLES } from '@/utils/enums'
 import { useEnumOptions } from '@/composables/useEnumOptions'
 import { firstErrorMessage } from '@/utils/errors'
@@ -31,6 +32,7 @@ const form = reactive({
   role: 'agent',
   team_id: '',
   lead_source_ids: [],
+  is_supervisor: false,
 })
 const errors = ref({})
 const teamOptions = ref([])
@@ -61,6 +63,7 @@ async function submit() {
     const payload = { ...form }
     if (!payload.team_id) delete payload.team_id
     if (payload.role !== 'marketing') delete payload.lead_source_ids
+    if (payload.role !== 'agent') payload.is_supervisor = false
     const user = await store.create(payload)
     toast.showSuccess(t('users.createSuccess'))
     router.push({ name: 'users.detail', params: { id: user.id } })
@@ -141,6 +144,7 @@ async function submit() {
             />
           </div>
           <LeadSourcePicker v-if="form.role === 'marketing'" v-model="form.lead_source_ids" :error="errors.lead_source_ids" class="mt-4" />
+          <SupervisorToggle v-if="form.role === 'agent'" v-model="form.is_supervisor" class="mt-4" />
         </div>
 
         <div class="flex items-center justify-end gap-3">

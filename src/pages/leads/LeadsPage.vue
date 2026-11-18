@@ -82,7 +82,8 @@ const activeView = computed(() => {
   const f = leadsStore.filters
   if (f.due === 'today') return 'due'
   if (f.unassigned) return 'unassigned'
-  if (f.is_doublon) return 'doublons'
+  // The view sets 1; the « Doublons » chip sets 'yes' / 'no' inside the other views
+  if (f.is_doublon === 1) return 'doublons'
   if (myId.value && String(f.assigned_to) === myId.value) return 'mine'
   return 'all'
 })
@@ -148,10 +149,18 @@ watch(searchText, (v) => {
 })
 
 // Chips other than the view tabs (assigned_to is shown as the "Agent" chip only when not "Mine")
+// Super admin, outside the « Doublons » view: keep or hide duplicates (e.g. to assign only the others)
+const showDoublonChip = computed(() => seesDoublons.value && activeView.value !== 'doublons')
+const doublonOptions = computed(() => [
+  { value: 'no', label: t('leads.doublonFilter.no') },
+  { value: 'yes', label: t('leads.doublonFilter.yes') },
+])
+
 const hasChipFilters = computed(() => {
   const f = leadsStore.filters
   return !!(f.status.length || f.stage || f.insurance_type.length || f.source_id.length || f.from || f.to
     || f.dvc_status.length || f.payment_status.length
+    || (f.is_doublon && f.is_doublon !== 1)
     || (f.assigned_to && activeView.value !== 'mine'))
 })
 function clearChips() {
@@ -508,6 +517,14 @@ const gridCols = computed(() =>
         :options="paymentOptions"
         :searchable="false"
         @update:model-value="leadsStore.setFilter('payment_status', $event)"
+      />
+      <AppFilterChip
+        v-if="showDoublonChip"
+        :label="t('leads.doublonFilter.label')"
+        :model-value="leadsStore.filters.is_doublon === 1 ? '' : leadsStore.filters.is_doublon"
+        :options="doublonOptions"
+        :searchable="false"
+        @update:model-value="leadsStore.setFilter('is_doublon', $event)"
       />
       <AppFilterChip
         :label="t('leads.createdAt')"

@@ -116,8 +116,6 @@
     "activeAgents": "Active Agents",
     "leadsByInsuranceType": "Leads by Insurance Type",
     "appointmentsByStatus": "Appointments by Status",
-    "performanceByTeam": "Performance by Team",
-    "performanceByAgent": "Performance by Agent",
     "noDataPeriod": "No data for this period",
     "today": "Today",
     "days7": "7 days",
@@ -140,9 +138,10 @@
     "noInsuranceData": "No insurance data available",
     "noPaymentData": "No data",
     "noPayments": "No payments",
-    "validatedCol": "Validated",
-    "conversionCol": "Conv.",
     "hello": "Hello {name}",
+    "scopeMe": "Me",
+    "scopeTeam": "My team",
+    "teamScopeHint": "Numbers for your whole team. Revenue and calls stay under « Me ».",
     "period": "Period",
     "myDay": "My day",
     "todayAgenda": "Today’s agenda",
@@ -157,8 +156,6 @@
     "leadsAndAppointments": "Leads and appointments per day",
     "leadsSeries": "Leads",
     "appointmentsSeries": "Appointments",
-    "topAgents": "Top agents",
-    "validatedCount": "{n} validated",
     "collectedOf": "{pct}% of {total} expected",
     "details": "Details",
     "revenueTitle": "Collections",
@@ -181,7 +178,11 @@
       "talkTime": "Talk time",
       "missedInbound": "{count} missed incoming calls",
       "averageTalk": "Average call length"
-    }
+    },
+    "aptTotal": "Total",
+    "aptCompletion": "Completion rate",
+    "aptLost": "Cancelled / no-show",
+    "aptCompletionHint": "Completed out of finished appointments (completed, cancelled, no-show)"
   },
   "leads": {
     "title": "Leads",
@@ -318,6 +319,11 @@
         "no": "Not insured",
         "cancelled": "Cancelled"
       }
+    },
+    "doublonFilter": {
+      "label": "Duplicates",
+      "no": "Hide duplicates",
+      "yes": "Duplicates only"
     }
   },
   "appointments": {
@@ -455,6 +461,11 @@
     "noUsers": "No users found",
     "inviteFirst": "Invite the first team member.",
     "roleAndTeam": "Role & Team",
+    "supervisor": {
+      "label": "Team supervisor",
+      "hint": "Stays an agent (own leads only), and also sees the team’s numbers on the dashboard.",
+      "badge": "Supervisor"
+    },
     "accountDetails": "Account Details",
     "statusUpdateFailed": "Failed to update status",
     "deleteFailed": "Failed to delete user",
@@ -848,7 +859,9 @@
       "PLANIFIE": "Scheduled",
       "REALISE": "Completed",
       "ANNULE": "Cancelled",
-      "REPORTE": "Rescheduled"
+      "REPORTE": "Rescheduled",
+      "CONFIRME": "Confirmed",
+      "NON_VENU": "No-show"
     },
     "payment": {
       "NON_PAYE": "Unpaid",

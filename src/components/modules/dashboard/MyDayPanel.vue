@@ -177,6 +177,5 @@ function taskLabel(task) {
       </template>
     </div>
 
-    <slot name="footer" />
   </section>
 </template>

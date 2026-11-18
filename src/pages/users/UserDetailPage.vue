@@ -94,6 +94,7 @@ async function handleDelete() {
                 :variant="store.current.roles?.[0] === 'super_admin' ? 'danger' : store.current.roles?.[0] === 'manager' ? 'warning' : 'info'"
                 :label="store.current.roles?.[0] ? t('roles.' + store.current.roles[0], store.current.roles[0]) : '—'"
               />
+              <AppBadge v-if="store.current.is_supervisor" variant="success" :label="t('users.supervisor.badge')" />
               <span v-if="store.current.team" class="flex items-center gap-1 text-xs text-gray-500">
                 <Users class="w-3.5 h-3.5" />
                 {{ store.current.team.name }}

@@ -14,6 +14,7 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
 
 import KpiStripCell from '@/components/modules/dashboard/KpiStripCell.vue'
 import MyDayPanel from '@/components/modules/dashboard/MyDayPanel.vue'
+import AppointmentStatusCard from '@/components/modules/dashboard/AppointmentStatusCard.vue'
 import DashboardDateFilter from '@/components/modules/dashboard/DashboardDateFilter.vue'
 import DashboardFilterPanel from '@/components/modules/dashboard/DashboardFilterPanel.vue'
 import SourceScopeBadge from '@/components/modules/reports/SourceScopeBadge.vue'
@@ -31,15 +32,28 @@ const { statusLabel, statusStage } = useLeadStatuses()
 /* ── Permissions ───────────────────────────────────────────── */
 const canViewGlobal = computed(() => auth.can('DASHBOARD_VIEW_GLOBAL'))
 const canViewTeam = computed(() => auth.can('DASHBOARD_VIEW_TEAM'))
-const showAggregations = computed(() => canViewGlobal.value || canViewTeam.value)
 const canViewRevenue = computed(() =>
   auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
 )
 const canViewAppointments = computed(() => auth.canAny('APPOINTMENTS_VIEW'))
 
+/* Supervisor agent: « Moi » (their own numbers) or « Mon équipe » (the
+   team's leads and appointments, counted only). Revenue and calls stay
+   personal, so they're hidden on the team view. */
+const myTeamId = computed(() => auth.user?.team_id ?? auth.user?.team?.id ?? null)
+const isSupervisor = computed(() =>
+  auth.can('DASHBOARD_VIEW_TEAM_STATS') && !canViewGlobal.value && !canViewTeam.value && !!myTeamId.value,
+)
+const teamView = computed(() => isSupervisor.value && dash.filters.team_id === myTeamId.value)
+function setTeamView(on) {
+  if (on === teamView.value) return
+  dash.setFilter('team_id', on ? myTeamId.value : null)
+}
+const showRevenue = computed(() => canViewRevenue.value && !teamView.value)
+
 /* ── Calls (Ringover) ──────────────────────────────────────── */
 const callStats = computed(() => dash.calls)
-const showCalls = computed(() => auth.canAny('CALLS_VIEW') && callStats.value !== null)
+const showCalls = computed(() => auth.canAny('CALLS_VIEW') && callStats.value !== null && !teamView.value)
 
 function formatTalkTime(seconds) {
   if (seconds === null || seconds === undefined) return '—'
@@ -77,7 +91,7 @@ const filterModel = computed({
 })
 
 /* ── Team / Agent filters ──────────────────────────────────── */
-const showTeamAgentFilters = computed(() => canViewGlobal.value || (canViewTeam.value && !auth.hasRole('team_leader')))
+const showTeamAgentFilters = computed(() => !isSupervisor.value && (canViewGlobal.value || (canViewTeam.value && !auth.hasRole('team_leader'))))
 const showFilterPanel = ref(false)
 const fixedTeamId = computed(() => (!canViewGlobal.value && canViewTeam.value) ? auth.user?.team_id : null)
 const activeTeamAgentCount = computed(
@@ -126,7 +140,7 @@ const collectedPct = computed(() => {
   return Math.round((Number(k.total_received) / Number(k.total_expected)) * 100)
 })
 
-const kpiColumns = computed(() => (canViewRevenue.value || agents.value ? 5 : 4))
+const kpiColumns = computed(() => (showRevenue.value || agents.value ? 5 : 4))
 
 /* ── Pipeline (lead statuses grouped into stages) ──────────── */
 const pipeline = computed(() => {
@@ -158,15 +172,6 @@ const dailySeries = computed(() => [
 ])
 const hasDailyData = computed(() => dailySeries.value.some((s) => s.data.length))
 
-/* ── Top agents ────────────────────────────────────────────── */
-const agentRows = computed(() => dash.aggregations?.by_agent ?? [])
-const topAgents = computed(() =>
-  [...agentRows.value]
-    .map((r) => ({ ...r, rate: r.leads_total ? (r.leads_validated / r.leads_total) * 100 : 0 }))
-    .sort((a, b) => b.leads_validated - a.leads_validated)
-    .slice(0, 3),
-)
-
 /* ── Details section ───────────────────────────────────────── */
 const insuranceRows = computed(() => {
   const raw = dash.statistics?.leads?.by_insurance_type
@@ -180,15 +185,6 @@ const insuranceRows = computed(() => {
   return entries
     .sort((a, b) => b.value - a.value)
     .map((e) => ({ ...e, pct: (e.value / max) * 100 }))
-})
-
-const APT_STATUS_COLORS = { PLANIFIE: '#3B82F6', REALISE: '#10B981', ANNULE: '#EF4444', REPORTE: '#F59E0B' }
-const aptByStatusSegments = computed(() => {
-  const raw = dash.statistics?.appointments_by_status
-  if (!raw) return []
-  return Object.entries(raw)
-    .map(([key, value]) => ({ label: t('statuses.appointment.' + key, key), value, color: APT_STATUS_COLORS[key] ?? '#9CA3AF' }))
-    .sort((a, b) => b.value - a.value)
 })
 
 const PAYMENT_STATUS_COLORS = { NON_PAYE: '#EF4444', PARTIELLEMENT_PAYE: '#F59E0B', PAYE: '#10B981' }
@@ -212,12 +208,6 @@ const paymentMethodSegments = computed(() => {
   }))
 })
 
-const teamRows = computed(() =>
-  (dash.aggregations?.by_team ?? []).map((row) => ({
-    ...row,
-    conversion: row.leads_total > 0 ? (row.leads_validated / row.leads_total) * 100 : null,
-  })),
-)
 
 /* ── Lifecycle ─────────────────────────────────────────────── */
 onMounted(() => {
@@ -238,6 +228,25 @@ onMounted(() => {
       </div>
       <div class="flex flex-wrap items-center gap-2.5">
         <SourceScopeBadge />
+        <div
+          v-if="isSupervisor"
+          role="radiogroup"
+          :aria-label="t('users.supervisor.badge')"
+          class="h-9 inline-flex items-center p-0.5 rounded-lg border border-gray-300 bg-white text-[13px]"
+        >
+          <button
+            v-for="opt in [{ team: false, label: t('dashboard.scopeMe') }, { team: true, label: t('dashboard.scopeTeam') }]"
+            :key="opt.label"
+            type="button"
+            role="radio"
+            :aria-checked="teamView === opt.team"
+            :class="[
+              'h-full px-3 rounded-md font-medium transition-colors',
+              teamView === opt.team ? 'bg-primary text-white' : 'text-gray-600 hover:text-gray-900',
+            ]"
+            @click="setTeamView(opt.team)"
+          >{{ opt.label }}</button>
+        </div>
         <DashboardDateFilter v-model="filterModel" />
         <button
           v-if="showTeamAgentFilters"
@@ -277,6 +286,8 @@ onMounted(() => {
         @update:agent-id="(v) => dash.setFilter('agent_id', v)"
       />
     </div>
+
+    <p v-if="teamView" class="-mt-2 text-[13px] text-gray-500">{{ t('dashboard.teamScopeHint') }}</p>
 
     <!-- ── KPI strip ─────────────────────────────────────────── -->
     <section
@@ -320,7 +331,7 @@ onMounted(() => {
         :loading="dash.loading.kpis"
       />
       <KpiStripCell
-        v-if="canViewRevenue"
+        v-if="showRevenue"
         :label="t('dashboard.receivedRevenue')"
         :value="revenueKpis ? formatCurrency(revenueKpis.total_received) : '—'"
         :progress="collectedPct"
@@ -439,29 +450,14 @@ onMounted(() => {
       <!-- Right column: today. Out of the flow on xl so a long agenda
            can't make the row taller than the left column (it scrolls instead). -->
       <div v-if="canViewAppointments" class="xl:col-span-4 xl:relative min-w-0">
-        <MyDayPanel class="xl:absolute xl:inset-0">
-          <template v-if="topAgents.length" #footer>
-            <div class="mt-auto shrink-0 px-5 py-3.5 border-t border-gray-100">
-              <p class="text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500 mb-2.5">
-                {{ t('dashboard.topAgents') }}
-              </p>
-              <div class="flex flex-col gap-2 text-[13px]">
-                <div v-for="a in topAgents" :key="a.agent_id" class="flex items-center gap-2.5">
-                  <span class="flex-1 truncate">{{ a.agent_name }}</span>
-                  <span class="font-mono text-gray-600">{{ t('dashboard.validatedCount', { n: a.leads_validated }) }}</span>
-                  <span class="w-12 text-right font-mono">{{ fmtRate(a.rate) }}</span>
-                </div>
-              </div>
-            </div>
-          </template>
-        </MyDayPanel>
+        <MyDayPanel class="xl:absolute xl:inset-0" />
       </div>
     </div>
 
     <!-- ── Details ───────────────────────────────────────────── -->
     <h2 class="font-display text-base font-semibold text-gray-900 mt-2">{{ t('dashboard.details') }}</h2>
 
-    <div v-if="canViewRevenue" class="grid grid-cols-1 xl:grid-cols-3 gap-5">
+    <div v-if="showRevenue" class="grid grid-cols-1 xl:grid-cols-3 gap-5">
       <section class="bg-white border border-gray-200 rounded-xl px-5 py-4.5">
         <h3 class="font-display text-[15px] font-semibold text-gray-900 mb-3">{{ t('dashboard.revenueTitle') }}</h3>
         <div v-if="dash.loading.revenue" class="space-y-3">
@@ -524,62 +520,8 @@ onMounted(() => {
         <p v-else class="py-8 text-center text-sm text-gray-500">{{ t('dashboard.noInsuranceData') }}</p>
       </section>
 
-      <section class="bg-white border border-gray-200 rounded-xl px-5 py-4.5">
-        <h3 class="font-display text-[15px] font-semibold text-gray-900 mb-4">{{ t('dashboard.appointmentsByStatus') }}</h3>
-        <AppSkeleton v-if="dash.loading.statistics" height="144px" />
-        <DonutChart v-else-if="aptByStatusSegments.length" :segments="aptByStatusSegments" :center-label="t('dashboard.appointmentsSeries')" />
-        <p v-else class="py-8 text-center text-sm text-gray-500">{{ t('dashboard.noDataPeriod') }}</p>
-      </section>
+      <AppointmentStatusCard :by-status="dash.statistics?.appointments?.by_status" :loading="dash.loading.statistics" />
     </div>
 
-    <!-- Team / agent tables -->
-    <template v-if="showAggregations">
-      <section
-        v-for="table in [
-          { key: 'team', show: teamRows.length || dash.loading.aggregations, title: t('dashboard.performanceByTeam'), rows: teamRows },
-          { key: 'agent', show: canViewGlobal && (agentRows.length || dash.loading.aggregations), title: t('dashboard.performanceByAgent'), rows: agentRows },
-        ]"
-        v-show="table.show"
-        :key="table.key"
-        class="bg-white border border-gray-200 rounded-xl overflow-hidden"
-      >
-        <h3 class="px-5 py-4 font-display text-[15px] font-semibold text-gray-900">{{ table.title }}</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-[13px]">
-            <thead>
-              <tr class="bg-gray-50 border-y border-gray-200 text-xs font-medium text-gray-600">
-                <th class="px-5 h-9 text-left font-medium">{{ table.key === 'team' ? t('teams.name') : t('appointments.agent') }}</th>
-                <th class="px-5 h-9 text-right font-medium">{{ t('leads.title') }}</th>
-                <th class="px-5 h-9 text-right font-medium">{{ t('dashboard.validatedCol') }}</th>
-                <th class="px-5 h-9 text-right font-medium">{{ t('appointments.title') }}</th>
-                <th v-if="table.key === 'team'" class="px-5 h-9 text-right font-medium">{{ t('dashboard.conversionCol') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <template v-if="dash.loading.aggregations">
-                <tr v-for="n in 3" :key="n" class="border-b border-gray-100">
-                  <td v-for="c in 4" :key="c" class="px-5 py-3"><AppSkeleton height="14px" /></td>
-                </tr>
-              </template>
-              <template v-else>
-              <tr
-                v-for="row in table.rows"
-                :key="row.team_id ?? row.agent_id"
-                class="border-b border-gray-100 last:border-b-0 hover:bg-gray-50"
-              >
-                <td class="px-5 py-3 font-medium text-gray-900">{{ row.team_name ?? row.agent_name }}</td>
-                <td class="px-5 py-3 text-right font-mono">{{ row.leads_total }}</td>
-                <td class="px-5 py-3 text-right font-mono">{{ row.leads_validated }}</td>
-                <td class="px-5 py-3 text-right font-mono">{{ row.appointments_completed }}</td>
-                <td v-if="table.key === 'team'" class="px-5 py-3 text-right font-mono">
-                  {{ row.conversion === null ? '—' : fmtRate(row.conversion) }}
-                </td>
-              </tr>
-              </template>
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </template>
   </div>
 </template>
