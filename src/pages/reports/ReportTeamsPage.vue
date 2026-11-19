@@ -6,9 +6,11 @@ import ReportShell from '@/components/modules/reports/ReportShell.vue'
 import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import ReportPerformanceTable from '@/components/modules/reports/ReportPerformanceTable.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
+import { useReportAccess } from '@/composables/useReportAccess'
 
 const { t } = useI18n()
 const store = useReportsStore()
+const { hidesRevenue } = useReportAccess()
 const { num, pct } = useReportFormat()
 
 const kpis = computed(() => {
@@ -34,6 +36,8 @@ const CSV_COLUMNS = [
   { key: 'revenue', label: 'CA encaissé', value: (r) => r.revenue?.received },
 ]
 
+const csvColumns = computed(() => (hidesRevenue.value ? CSV_COLUMNS.filter((c) => c.key !== 'revenue') : CSV_COLUMNS))
+
 onMounted(() => store.fetchTeams())
 </script>
 
@@ -43,7 +47,7 @@ onMounted(() => store.fetchTeams())
     :title="t('reports.titles.teams')"
     :subtitle="t('reports.performanceByTeam')"
     @refresh="store.fetchTeams()"
-    @export="store.exportCsv(store.teamsData, CSV_COLUMNS, 'rapport-equipes.csv')"
+    @export="store.exportCsv(store.teamsData, csvColumns, 'rapport-equipes.csv')"
   >
     <ReportKpis :items="kpis" :loading="store.loading.teams" />
     <ReportPerformanceTable

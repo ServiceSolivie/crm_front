@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { Download, CalendarDays } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth.store'
+import { useReportAccess } from '@/composables/useReportAccess'
 import { useReportsStore } from '@/stores/reports.store'
 import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import SourceScopeBadge from '@/components/modules/reports/SourceScopeBadge.vue'
@@ -29,7 +30,7 @@ const route = useRoute()
 const auth = useAuthStore()
 const store = useReportsStore()
 
-const canViewReports = computed(() => auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM'))
+const { canViewReports } = useReportAccess()
 const canViewRevenue = computed(() =>
   auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
 )

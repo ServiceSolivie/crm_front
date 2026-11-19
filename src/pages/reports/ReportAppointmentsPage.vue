@@ -10,10 +10,13 @@ import AppointmentStatusBadge from '@/components/modules/appointments/Appointmen
 import ReportShell from '@/components/modules/reports/ReportShell.vue'
 import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
+import { useReportAccess } from '@/composables/useReportAccess'
 
 const { t } = useI18n()
 const { typeLabel, typeShort } = useInsuranceTypes()
 const store = useReportsStore()
+// A supervisor sees his team's leads but only opens his own
+const { canOpenLead } = useReportAccess()
 const { num, pct, dateTime } = useReportFormat()
 
 const summary = computed(() => store.appointmentsSummary)
@@ -80,13 +83,17 @@ onMounted(() => store.fetchAppointments())
       >
         <template #cell-lead="{ row }">
           <RouterLink
-            v-if="row.lead?.id"
+            v-if="row.lead?.id && canOpenLead(row.agent?.id)"
             :to="{ name: 'leads.detail', params: { id: row.lead.id } }"
             class="flex items-center gap-2.5 min-w-0 hover:text-primary"
           >
             <AppAvatar :name="leadName(row)" size="xs" tone="soft" />
             <span class="font-medium truncate">{{ leadName(row) }}</span>
           </RouterLink>
+          <span v-else-if="row.lead?.id" class="flex items-center gap-2.5 min-w-0">
+            <AppAvatar :name="leadName(row)" size="xs" tone="soft" />
+            <span class="font-medium truncate">{{ leadName(row) }}</span>
+          </span>
           <span v-else class="text-gray-400">—</span>
         </template>
         <template #cell-scheduled_at="{ value }">

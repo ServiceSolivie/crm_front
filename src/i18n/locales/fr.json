@@ -463,7 +463,7 @@
     "roleAndTeam": "Rôle & Équipe",
     "supervisor": {
       "label": "Superviseur d’équipe",
-      "hint": "Reste un agent (seulement ses leads), et voit en plus les statistiques de son équipe sur le tableau de bord.",
+      "hint": "Travaille comme un agent (seulement ses leads), et voit en plus les statistiques de son équipe : tableau de bord et rapports, sans le chiffre d’affaires.",
       "badge": "Superviseur"
     },
     "accountDetails": "Détails du compte",
