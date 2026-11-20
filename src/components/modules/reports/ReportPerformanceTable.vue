@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from 'lucide-vue-next'
 import AppAvatar from '@/components/base/AppAvatar.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { formatCurrency } from '@/utils/formatters'
+import { useReportAccess } from '@/composables/useReportAccess'
 
 /**
  * Sortable performance table shared by the Agents and Teams reports.
@@ -18,6 +19,9 @@ const props = defineProps({
   emptyText: { type: String, default: '' },
 })
 const { t, locale } = useI18n()
+// Supervisors see their team without the money column
+const { hidesRevenue } = useReportAccess()
+const showRevenue = computed(() => !hidesRevenue.value)
 
 const sortKey = ref('conversion')
 const sortDir = ref('desc')
@@ -77,11 +81,15 @@ const columns = computed(() => [
   { key: 'validated', label: t('reports.validated'), align: 'right' },
   { key: 'calls', label: t('reports.callsCol'), align: 'right' },
   { key: 'appointments', label: t('reports.appts'), align: 'right' },
-  { key: 'revenue', label: t('reports.revenueCol'), align: 'right' },
+  ...(showRevenue.value ? [{ key: 'revenue', label: t('reports.revenueCol'), align: 'right' }] : []),
   { key: 'conversion', label: t('reports.convCol'), align: 'left' },
 ])
 
-const GRID = 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px_72px_110px_minmax(170px,1.3fr)] items-center gap-x-4'
+const GRID = computed(() =>
+  showRevenue.value
+    ? 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px_72px_110px_minmax(170px,1.3fr)] items-center gap-x-4'
+    : 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px_72px_minmax(170px,1.3fr)] items-center gap-x-4',
+)
 </script>
 
 <template>
@@ -108,7 +116,7 @@ const GRID = 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px
             <div class="flex items-center gap-2.5"><AppSkeleton width="28px" height="28px" rounded="rounded-full" /><AppSkeleton height="12px" width="60%" /></div>
             <AppSkeleton height="10px" width="70%" />
             <AppSkeleton height="10px" /><AppSkeleton height="10px" /><AppSkeleton height="10px" />
-            <AppSkeleton height="10px" /><AppSkeleton height="10px" />
+            <AppSkeleton height="10px" /><AppSkeleton v-if="showRevenue" height="10px" />
             <AppSkeleton height="8px" />
           </div>
         </template>
@@ -128,7 +136,7 @@ const GRID = 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px
             <div role="cell" class="text-right font-mono text-success-text">{{ num(r.leads?.validated) }}</div>
             <div role="cell" class="text-right font-mono">{{ num(r.calls?.total) }}</div>
             <div role="cell" class="text-right font-mono">{{ num(r.appointments?.total) }}</div>
-            <div role="cell" class="text-right font-mono">{{ formatCurrency(r.revenue?.received ?? 0) }}</div>
+            <div v-if="showRevenue" role="cell" class="text-right font-mono">{{ formatCurrency(r.revenue?.received ?? 0) }}</div>
             <div role="cell" class="flex items-center gap-2.5">
               <span class="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
                 <span
@@ -147,7 +155,7 @@ const GRID = 'grid grid-cols-[minmax(200px,2fr)_minmax(110px,1fr)_72px_72px_72px
             <div role="cell" class="text-right font-mono text-success-text">{{ num(totals.validated) }}</div>
             <div role="cell" class="text-right font-mono">{{ num(totals.calls) }}</div>
             <div role="cell" class="text-right font-mono">{{ num(totals.appointments) }}</div>
-            <div role="cell" class="text-right font-mono">{{ formatCurrency(totals.revenue) }}</div>
+            <div v-if="showRevenue" role="cell" class="text-right font-mono">{{ formatCurrency(totals.revenue) }}</div>
             <div role="cell" class="flex justify-end"><span class="w-14 text-right font-mono">{{ pct(totals.conversion) }}</span></div>
           </div>
         </template>

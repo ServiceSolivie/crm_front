@@ -10,12 +10,15 @@ import LeadStatusBadge from '@/components/modules/leads/LeadStatusBadge.vue'
 import ReportShell from '@/components/modules/reports/ReportShell.vue'
 import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
+import { useReportAccess } from '@/composables/useReportAccess'
 import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 const { t } = useI18n()
 const { typeLabel, typeShort } = useInsuranceTypes()
 const { statusLabel } = useLeadStatuses()
 const store = useReportsStore()
+// A supervisor sees his team's leads but only opens his own
+const { canOpenLead } = useReportAccess()
 const { num, pct, dateTime } = useReportFormat()
 
 const summary = computed(() => store.leadsSummary)
@@ -86,10 +89,18 @@ onMounted(() => store.fetchLeads())
         :empty-description="t('reports.adjustDate')"
       >
         <template #cell-name="{ row }">
-          <RouterLink :to="{ name: 'leads.detail', params: { id: row.id } }" class="flex items-center gap-2.5 min-w-0 hover:text-primary">
+          <RouterLink
+            v-if="canOpenLead(row.assigned_agent?.id)"
+            :to="{ name: 'leads.detail', params: { id: row.id } }"
+            class="flex items-center gap-2.5 min-w-0 hover:text-primary"
+          >
             <AppAvatar :name="fullName(row)" size="xs" tone="soft" />
             <span class="font-medium truncate">{{ fullName(row) }}</span>
           </RouterLink>
+          <span v-else class="flex items-center gap-2.5 min-w-0">
+            <AppAvatar :name="fullName(row)" size="xs" tone="soft" />
+            <span class="font-medium truncate">{{ fullName(row) }}</span>
+          </span>
         </template>
         <template #cell-phone="{ value }">
           <span class="font-mono text-[12.5px]">{{ value || '—' }}</span>

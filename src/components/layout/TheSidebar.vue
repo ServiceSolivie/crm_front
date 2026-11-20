@@ -85,7 +85,7 @@ watch(() => route.path, () => loadCounters())
 const canSearchLeads = computed(() => auth.canAny('LEADS_VIEW'))
 
 const canViewReports = computed(() =>
-  auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM'),
+  auth.can('REPORTS_VIEW_ALL') || auth.can('REPORTS_VIEW_TEAM') || auth.can('DASHBOARD_VIEW_TEAM_STATS'),
 )
 const canViewRevenue = computed(() =>
   auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM') || auth.can('REVENUE_VIEW_PERSONAL'),
@@ -246,6 +246,7 @@ function toggleGroup(key) {
 
 const roleLabel = computed(() => {
   const role = auth.user?.roles?.[0] ?? auth.user?.role ?? ''
+  if (role === 'agent' && auth.can('DASHBOARD_VIEW_TEAM_STATS')) return t('users.supervisor.badge')
   return role ? t('roles.' + role, role.replace(/_/g, ' ')) : ''
 })
 

@@ -6,9 +6,11 @@ import ReportShell from '@/components/modules/reports/ReportShell.vue'
 import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import ReportPerformanceTable from '@/components/modules/reports/ReportPerformanceTable.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
+import { useReportAccess } from '@/composables/useReportAccess'
 
 const { t } = useI18n()
 const store = useReportsStore()
+const { hidesRevenue } = useReportAccess()
 const { num, pct } = useReportFormat()
 
 const kpis = computed(() => {
@@ -59,6 +61,8 @@ const callKpis = computed(() => {
   ]
 })
 
+const csvColumns = computed(() => (hidesRevenue.value ? CSV_COLUMNS.filter((c) => c.key !== 'revenue') : CSV_COLUMNS))
+
 onMounted(() => store.fetchAgents())
 </script>
 
@@ -68,7 +72,7 @@ onMounted(() => store.fetchAgents())
     :title="t('reports.titles.agents')"
     :subtitle="t('reports.performanceByAgent')"
     @refresh="store.fetchAgents()"
-    @export="store.exportCsv(store.agentsData, CSV_COLUMNS, 'rapport-agents.csv')"
+    @export="store.exportCsv(store.agentsData, csvColumns, 'rapport-agents.csv')"
   >
     <ReportKpis :items="kpis" :loading="store.loading.agents" />
     <ReportKpis v-if="callKpis.length" :items="callKpis" :loading="store.loading.agents" />

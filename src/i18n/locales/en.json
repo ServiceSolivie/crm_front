@@ -463,7 +463,7 @@
     "roleAndTeam": "Role & Team",
     "supervisor": {
       "label": "Team supervisor",
-      "hint": "Stays an agent (own leads only), and also sees the team’s numbers on the dashboard.",
+      "hint": "Works like an agent (own leads only), and also sees the team’s numbers: dashboard and reports, without revenue.",
       "badge": "Supervisor"
     },
     "accountDetails": "Account Details",

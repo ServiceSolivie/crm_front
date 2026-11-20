@@ -35,6 +35,7 @@ const savingPassword = ref(false)
 
 const roleLabel = computed(() => {
   const r = auth.user?.roles?.[0] ?? auth.user?.role ?? ''
+  if (r === 'agent' && auth.can('DASHBOARD_VIEW_TEAM_STATS')) return t('users.supervisor.badge')
   return r ? t('roles.' + r, r) : '—'
 })
 
