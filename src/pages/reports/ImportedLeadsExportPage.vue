@@ -9,6 +9,7 @@ import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import { LEAD_STAGES } from '@/utils/enums'
 import { formatNumber } from '@/utils/formatters'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
+import { useAuthStore } from '@/stores/auth.store'
 
 /**
  * Super admin: the imported leads (Google Sheets, files) of a week, a month
@@ -17,6 +18,9 @@ import AppSkeleton from '@/components/base/AppSkeleton.vue'
  * The API cuts weeks and months on French time.
  */
 const { t } = useI18n()
+// A supervisor sees the same page for his own team only
+const auth = useAuthStore()
+const teamOnly = computed(() => !auth.can('LEADS_EXPORT_IMPORTED'))
 const { typeLabel } = useInsuranceTypes()
 const toast = useToast()
 const { statusStage, statusLabel } = useLeadStatuses()
@@ -183,7 +187,7 @@ const th = 'py-2 px-2 font-medium whitespace-nowrap select-none cursor-pointer h
       <span>{{ t('nav.reports') }}</span>
       <ChevronRight class="w-3.5 h-3.5" />
       <span class="text-gray-900">{{ t('importedExport.title') }}</span>
-      <span class="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary-light text-primary-hover">{{ t('importedExport.superAdmin') }}</span>
+      <span class="ml-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary-light text-primary-hover">{{ teamOnly ? t('importedExport.teamOnly', { team: summary?.team ?? '—' }) : t('importedExport.superAdmin') }}</span>
     </nav>
 
     <div class="flex flex-wrap items-end justify-between gap-4">

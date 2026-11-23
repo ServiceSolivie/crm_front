@@ -334,7 +334,8 @@ const router = createRouter({
       path: '/reports/imported-leads',
       name: 'reports.imported-leads',
       component: () => import('@/pages/reports/ImportedLeadsExportPage.vue'),
-      meta: { requiresAuth: true, layout: 'dashboard', permission: 'LEADS_EXPORT_IMPORTED', title: 'Imported Leads Export' },
+      // supervisor: his team's leads only
+      meta: { requiresAuth: true, layout: 'dashboard', permission: 'LEADS_EXPORT_IMPORTED', supervisor: true, title: 'Imported Leads Export' },
     },
 
     /* Profile */
