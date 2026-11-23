@@ -1577,7 +1577,8 @@
     "groups": {
       "leads": "Leads",
       "conversion": "Conversion"
-    }
+    },
+    "teamOnly": "Équipe {team}"
   },
   "intake": {
     "title": "Réception API",

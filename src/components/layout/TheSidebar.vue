@@ -109,7 +109,7 @@ const reportChildren = computed(() => {
       { label: t('revenueByAgent.menu'), to: '/reports/agent-revenue', icon: Wallet },
     )
   }
-  if (auth.can('LEADS_EXPORT_IMPORTED')) {
+  if (auth.can('LEADS_EXPORT_IMPORTED') || auth.isSupervisor()) {
     items.push({ label: t('nav.importedLeadsExport'), to: '/reports/imported-leads', icon: FileSpreadsheet })
   }
   return items

@@ -43,7 +43,7 @@ export function registerGuards(router) {
         p.endsWith('_*') ? auth.canAny(p.slice(0, -2)) : auth.can(p),
       )
 
-      if (!hasPermission) return { name: 'forbidden' }
+      if (!hasPermission && !(to.meta.supervisor && auth.isSupervisor())) return { name: 'forbidden' }
     }
 
     /* Role guard */
