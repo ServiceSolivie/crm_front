@@ -69,16 +69,22 @@ async function loadCounters(force = false) {
     // counters are a convenience; the menu works without them
   }
 }
+// A lead received: its counter moves at once
+function onLiveNotification(e) {
+  if (e.detail?.type === 'LeadReceivedNotification') loadCounters(true)
+}
 function onFocus() {
   if (document.visibilityState !== 'hidden') loadCounters()
 }
 onMounted(() => {
   loadCounters(true)
   window.addEventListener('focus', onFocus)
+  window.addEventListener('crm:notification', onLiveNotification)
   document.addEventListener('visibilitychange', onFocus)
 })
 onBeforeUnmount(() => {
   window.removeEventListener('focus', onFocus)
+  window.removeEventListener('crm:notification', onLiveNotification)
   document.removeEventListener('visibilitychange', onFocus)
 })
 watch(() => route.path, () => loadCounters())

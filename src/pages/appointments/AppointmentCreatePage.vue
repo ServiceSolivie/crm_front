@@ -63,7 +63,7 @@ const leadFullName = computed(() =>
 onMounted(async () => {
   try {
     const promises = [leadsStore.fetchOne(leadId)]
-    if (!isSelfScoped.value) promises.push(usersStore.fetchList({ role: 'agent', per_page: 100 }))
+    if (!isSelfScoped.value) promises.push(usersStore.fetchList({ role: 'agent', is_active: 1, per_page: 100 }))
     await Promise.all(promises)
     form.agent_id = isSelfScoped.value ? (auth.user?.id ?? '') : (leadsStore.current?.assigned_agent?.id ?? '')
   } catch {

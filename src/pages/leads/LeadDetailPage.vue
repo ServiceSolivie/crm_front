@@ -43,6 +43,7 @@ import { leadsApi } from '@/api/leads'
 import { formatCurrency, formatDateTime } from '@/utils/formatters'
 import { firstErrorMessage } from '@/utils/errors'
 import { dialNumber } from '@/utils/phone'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 
 const route = useRoute()
 const router = useRouter()
@@ -133,9 +134,10 @@ const sheetExtraFields = computed(() => {
 // The contract total is set with the first payment (or by gestion when validating)
 const hasRevenue = computed(() => leadsStore.current?.expected_revenue != null)
 // Payments can be recorded before or after the DVC signature — not on lost leads
-const LOST_STATUSES = ['PERDU', 'PAS_INTERESSE', 'MAUVAIS_NUMERO', 'LEAD_INVALIDE']
+// (any status of the « Perdu » stage, the ones added in the CRM included)
+const { statusStage } = useLeadStatuses()
 const canAddPayment = computed(() =>
-  auth.can('PAYMENTS_CREATE') && !LOST_STATUSES.includes(leadsStore.current?.status),
+  auth.can('PAYMENTS_CREATE') && !!leadsStore.current?.status && statusStage(leadsStore.current.status) !== 'lost',
 )
 const paymentListRef = ref(null)
 

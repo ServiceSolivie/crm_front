@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed, ref, watch } from 'vue'
+import { onBeforeUnmount, onMounted, computed, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
@@ -180,6 +180,23 @@ watch(() => props.section, (section) => {
   leadsStore.fetchCounts()
 })
 
+/* Live: a lead received (assigned to me) shows up without reloading the page.
+   Several at once (bulk dispatch) give a single reload. */
+let liveTimer = null
+function onLiveNotification(e) {
+  if (e.detail?.type !== 'LeadReceivedNotification') return
+  clearTimeout(liveTimer)
+  liveTimer = setTimeout(() => {
+    leadsStore.fetchList({ silent: true })
+    leadsStore.fetchCounts()
+  }, 800)
+}
+onMounted(() => window.addEventListener('crm:notification', onLiveNotification))
+onBeforeUnmount(() => {
+  window.removeEventListener('crm:notification', onLiveNotification)
+  clearTimeout(liveTimer)
+})
+
 onMounted(() => {
   // Dashboard pipeline links open the list on one stage (?stage=follow_up)
   if (route.query.stage && LEAD_STAGES[route.query.stage]) {
@@ -191,8 +208,8 @@ onMounted(() => {
   leadsStore.fetchList()
   leadsStore.fetchCounts()
   sourcesStore.fetchList()
-  // Agent filter: every agent, deactivated ones included (their leads are still there)
-  if (auth.can('LEADS_ASSIGN')) usersStore.fetchList({ role: 'agent', per_page: 100 })
+  // Agent filter: active agents only
+  if (auth.can('LEADS_ASSIGN')) usersStore.fetchList({ role: 'agent', is_active: 1, per_page: 100 })
 })
 
 /* Sorting  */
@@ -275,6 +292,10 @@ function receivedDay(value) {
   return d.toLocaleDateString(locale.value === 'fr' ? 'fr-FR' : 'en-GB', {
     day: '2-digit', month: '2-digit', ...(sameYear ? {} : { year: '2-digit' }),
   })
+}
+function dateTitle(row) {
+  const received = t('leads.receivedAt') + ' ' + formatDateTime(row.created_at)
+  return row.assigned_at ? t('leads.assignedAt') + ' ' + formatDateTime(row.assigned_at) + ' · ' + received : received
 }
 function receivedTime(value) {
   const d = new Date(value)
@@ -568,8 +589,8 @@ const gridCols = computed(() =>
             <button role="columnheader" class="px-3 h-full flex items-center gap-1 text-left hover:text-gray-900" @click="toggleSort('next_action')">
               {{ t('leads.nextAction') }} <component :is="sortIcon('next_action')" v-if="sortIcon('next_action')" class="w-3.5 h-3.5" />
             </button>
-            <button role="columnheader" class="px-3 h-full flex items-center gap-1 text-left hover:text-gray-900" @click="toggleSort('created_at')">
-              {{ t('leads.receivedAt') }} <component :is="sortIcon('created_at')" v-if="sortIcon('created_at')" class="w-3.5 h-3.5" />
+            <button role="columnheader" class="px-3 h-full flex items-center gap-1 text-left hover:text-gray-900" @click="toggleSort('assigned_at')">
+              {{ t('leads.assignedAt') }} <component :is="sortIcon('assigned_at')" v-if="sortIcon('assigned_at')" class="w-3.5 h-3.5" />
             </button>
             <div role="columnheader" class=" text-left">{{ t('leads.calls') }}</div>
             <div role="columnheader"><span class="sr-only">{{ t('common.actions') }}</span></div>
@@ -621,7 +642,7 @@ const gridCols = computed(() =>
             :class="[
               'relative grid items-center h-[54px] border-b border-gray-100 last:border-b-0 cursor-pointer transition-colors',
               gridCols,
-              selected.has(row.id) ? 'bg-primary-light/60' : 'hover:bg-gray-50',
+              selected.has(row.id) ? 'bg-primary-light/60' : leadsStore.freshIds.has(row.id) ? 'bg-success-bg/60' : 'hover:bg-gray-50',
             ]"
             @click="router.push({ name: 'leads.detail', params: { id: row.id } })"
           >
@@ -709,9 +730,13 @@ const gridCols = computed(() =>
               </span>
               <span v-else class="text-gray-400">—</span>
             </div>
-            <div role="cell" class="px-3 min-w-0" :title="formatDateTime(row.created_at)">
-              <p class="font-mono text-[12.5px] text-gray-900 whitespace-nowrap">{{ receivedDay(row.created_at) }}</p>
-              <p class="font-mono text-[11.5px] text-gray-500">{{ receivedTime(row.created_at) }}</p>
+            <div role="cell" class="px-3 min-w-0" :title="dateTitle(row)">
+              <!-- Dispatched date (received date for a lead never assigned) -->
+              <p class="font-mono text-[12.5px] text-gray-900 whitespace-nowrap">{{ receivedDay(row.assigned_at ?? row.created_at) }}</p>
+              <p v-if="row.assigned_at && receivedDay(row.assigned_at) !== receivedDay(row.created_at)" class="text-[11.5px] text-gray-500 whitespace-nowrap">
+                {{ t('leads.receivedOn', { d: receivedDay(row.created_at) }) }}
+              </p>
+              <p v-else class="font-mono text-[11.5px] text-gray-500">{{ receivedTime(row.assigned_at ?? row.created_at) }}</p>
             </div>
             <div role="cell" class="px-3 font-mono text-gray-600">{{ row.calls_count ?? 0 }}</div>
             <div role="cell" class="pr-3 flex items-center justify-end gap-0.5" @click.stop>

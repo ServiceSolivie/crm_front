@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onBeforeUnmount, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Menu } from 'lucide-vue-next'
 import { useUiStore } from '@/stores/ui.store'
@@ -11,10 +11,28 @@ import RingoverPhone from '@/components/modules/calls/RingoverPhone.vue'
 const ui = useUiStore()
 const { t } = useI18n()
 
-// Custom lead statuses and insurance types are shown on most pages: load them once per session
+// Custom lead statuses and insurance types are shown on most pages: loaded
+// once, then again when the tab comes back (at most every 2 min), so a status
+// added in Paramètres shows up everywhere without reloading the page.
+let lastCatalogs = 0
+function loadCatalogs() {
+  const force = lastCatalogs > 0
+  if (force && Date.now() - lastCatalogs < 120000) return
+  lastCatalogs = Date.now()
+  useLeadStatusesStore().fetchList(force)
+  useInsuranceTypesStore().fetchAll(force)
+}
+function onVisible() {
+  if (document.visibilityState !== 'hidden') loadCatalogs()
+}
 onMounted(() => {
-  useLeadStatusesStore().fetchList()
-  useInsuranceTypesStore().fetchAll()
+  loadCatalogs()
+  window.addEventListener('focus', onVisible)
+  document.addEventListener('visibilitychange', onVisible)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', onVisible)
+  document.removeEventListener('visibilitychange', onVisible)
 })
 </script>
 

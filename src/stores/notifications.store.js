@@ -94,6 +94,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
     list.value.unshift(item)
     unreadCount.value += 1
+    // Open pages (leads table, menu counters) refresh themselves
+    window.dispatchEvent(new CustomEvent('crm:notification', { detail: item }))
     useUiStore().showInfo(notificationTitle(item))
     useNotificationSound().play()
   }
