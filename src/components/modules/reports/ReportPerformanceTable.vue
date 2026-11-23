@@ -17,6 +17,8 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   kind: { type: String, default: 'agent' }, // agent | team
   emptyText: { type: String, default: '' },
+  // Optional: (row) => route location, makes the name a link
+  rowLink: { type: Function, default: null },
 })
 const { t, locale } = useI18n()
 // Supervisors see their team without the money column
@@ -127,7 +129,8 @@ const GRID = computed(() =>
           <div v-for="(r, i) in sorted" :key="r.id ?? i" role="row" :class="[GRID, 'h-[52px] px-5 border-b border-gray-100 hover:bg-gray-50']">
             <div role="cell" class="flex items-center gap-2.5 min-w-0">
               <AppAvatar :name="r.name" size="sm" :tone="kind === 'team' ? 'brand' : 'color'" />
-              <span class="font-medium text-gray-900 truncate">{{ r.name }}</span>
+              <RouterLink v-if="rowLink" :to="rowLink(r)" class="font-medium text-gray-900 truncate hover:text-primary">{{ r.name }}</RouterLink>
+              <span v-else class="font-medium text-gray-900 truncate">{{ r.name }}</span>
             </div>
             <div role="cell" :class="['min-w-0 truncate', kind === 'agent' ? 'text-gray-600' : 'text-right font-mono']">
               {{ kind === 'agent' ? (r.team?.name ?? '—') : num(r.members_count) }}

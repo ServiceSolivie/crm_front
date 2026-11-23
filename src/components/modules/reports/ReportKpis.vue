@@ -7,7 +7,7 @@ defineProps({
   loading: { type: Boolean, default: false },
 })
 
-const TONES = { success: 'text-success-text', danger: 'text-danger-text', default: 'text-gray-900' }
+const TONES = { success: 'text-success-text', danger: 'text-danger-text', warning: 'text-warning-text', default: 'text-gray-900' }
 </script>
 
 <template>

@@ -22,6 +22,7 @@ import {
   ChevronRight,
   UserCheck,
   Banknote,
+  Wallet,
   ClipboardList,
   FileSignature,
   KeyRound,
@@ -103,7 +104,10 @@ const reportChildren = computed(() => {
     )
   }
   if (canViewRevenue.value) {
-    items.push({ label: t('revenue.title'), to: '/reports/revenue', icon: Banknote })
+    items.push(
+      { label: t('revenue.title'), to: '/reports/revenue', icon: Banknote },
+      { label: t('revenueByAgent.menu'), to: '/reports/agent-revenue', icon: Wallet },
+    )
   }
   if (auth.can('LEADS_EXPORT_IMPORTED')) {
     items.push({ label: t('nav.importedLeadsExport'), to: '/reports/imported-leads', icon: FileSpreadsheet })
