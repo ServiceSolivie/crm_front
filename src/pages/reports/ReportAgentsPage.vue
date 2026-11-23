@@ -16,7 +16,7 @@ const auth = useAuthStore()
 // Name → that agent's « CA par agent » page (people who see others' revenue)
 const agentLink = computed(() =>
   !hidesRevenue.value && (auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM'))
-    ? (r) => ({ name: 'reports.agent-revenue', query: { agent: r.id } })
+    ? (r) => (r.is_active === false ? null : { name: 'reports.agent-revenue', query: { agent: r.id } })
     : null,
 )
 const { num, pct } = useReportFormat()
