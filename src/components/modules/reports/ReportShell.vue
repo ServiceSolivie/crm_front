@@ -45,7 +45,12 @@ const tabs = computed(() => [
         { to: '/reports/conversion', label: t('reports.conversion') },
       ]
     : []),
-  ...(canViewRevenue.value ? [{ to: '/reports/revenue', label: t('revenue.title') }] : []),
+  ...(canViewRevenue.value
+    ? [
+        { to: '/reports/revenue', label: t('revenue.title') },
+        { to: '/reports/agent-revenue', label: t('revenueByAgent.menu') },
+      ]
+    : []),
 ])
 
 /* ── Period ────────────────────────────────────────────────── */
@@ -60,6 +65,7 @@ const PRESETS = {
   month: () => { const n = new Date(); return [new Date(n.getFullYear(), n.getMonth(), 1), n] },
   lastMonth: () => { const n = new Date(); return [new Date(n.getFullYear(), n.getMonth() - 1, 1), new Date(n.getFullYear(), n.getMonth(), 0)] },
   year: () => { const n = new Date(); return [new Date(n.getFullYear(), 0, 1), n] },
+  '12m': () => { const n = new Date(); return [new Date(n.getFullYear(), n.getMonth() - 11, 1), n] },
 }
 
 const periodOptions = computed(() => [
@@ -68,6 +74,7 @@ const periodOptions = computed(() => [
   { value: 'month', label: t('reports.period.thisMonth') },
   { value: 'lastMonth', label: t('reports.period.lastMonth') },
   { value: 'year', label: t('reports.period.thisYear') },
+  { value: '12m', label: t('reports.period.last12Months') },
   { value: 'custom', label: t('reports.period.custom') },
 ])
 

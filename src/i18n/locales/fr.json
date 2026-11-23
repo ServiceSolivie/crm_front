@@ -766,7 +766,8 @@
       "thisMonth": "Ce mois-ci",
       "lastMonth": "Le mois dernier",
       "thisYear": "Cette année",
-      "custom": "Dates personnalisées"
+      "custom": "Dates personnalisées",
+      "last12Months": "12 derniers mois"
     },
     "kpi": {
       "leads": "Leads traités",
@@ -1763,5 +1764,38 @@
       "saved": "Suivi de l'appel enregistré",
       "saveError": "Impossible d'enregistrer le suivi"
     }
+  },
+  "revenueByAgent": {
+    "menu": "CA par agent",
+    "title": "Chiffre d’affaires par agent",
+    "subtitle": "Ce que chaque agent a fait rentrer, mois par mois (12 derniers mois par défaut)",
+    "agent": "Agent",
+    "inactive": "désactivé",
+    "noTeam": "Sans équipe",
+    "loadError": "Impossible de charger le chiffre d’affaires",
+    "received": "CA encaissé",
+    "receivedHint": "paiements réussis de la période",
+    "vsPrevious": "{n} % vs période précédente",
+    "expected": "CA attendu",
+    "onValidated": "sur {n} leads validés",
+    "remaining": "Reste à encaisser",
+    "clientsOwing": "{n} client(s) doivent encore",
+    "collectionRate": "Taux d’encaissement",
+    "averageBasket": "Panier moyen {v}",
+    "byMonth": "CA par mois",
+    "monthlyDetail": "Détail mensuel",
+    "month": "Mois",
+    "leads": "Leads reçus",
+    "validated": "Validés",
+    "conversion": "Conv.",
+    "topClients": "Meilleurs clients",
+    "topClientsHint": "Les plus gros encaissements de la période",
+    "noPayment": "Aucun paiement sur la période",
+    "toFollowUp": "À relancer (impayés)",
+    "toFollowUpHint": "Leads validés qui doivent encore de l’argent, toutes dates",
+    "nothingOwed": "Aucun impayé",
+    "left": "reste",
+    "ranking": "Classement dans l’équipe",
+    "rankingHint": "CA encaissé sur la période"
   }
 }

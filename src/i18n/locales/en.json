@@ -766,7 +766,8 @@
       "thisMonth": "This month",
       "lastMonth": "Last month",
       "thisYear": "This year",
-      "custom": "Custom dates"
+      "custom": "Custom dates",
+      "last12Months": "Last 12 months"
     },
     "kpi": {
       "leads": "Leads handled",
@@ -1763,5 +1764,38 @@
       "saved": "Call follow-up saved",
       "saveError": "Could not save the follow-up"
     }
+  },
+  "revenueByAgent": {
+    "menu": "Revenue by agent",
+    "title": "Revenue by agent",
+    "subtitle": "What each agent brought in, month by month (last 12 months by default)",
+    "agent": "Agent",
+    "inactive": "deactivated",
+    "noTeam": "No team",
+    "loadError": "Couldn’t load the revenue",
+    "received": "Received",
+    "receivedHint": "successful payments in the period",
+    "vsPrevious": "{n} % vs previous period",
+    "expected": "Expected",
+    "onValidated": "on {n} validated leads",
+    "remaining": "Still to collect",
+    "clientsOwing": "{n} client(s) still owe",
+    "collectionRate": "Collection rate",
+    "averageBasket": "Average deal {v}",
+    "byMonth": "Revenue by month",
+    "monthlyDetail": "Monthly detail",
+    "month": "Month",
+    "leads": "Leads received",
+    "validated": "Validated",
+    "conversion": "Conv.",
+    "topClients": "Best clients",
+    "topClientsHint": "Biggest payments in the period",
+    "noPayment": "No payment in the period",
+    "toFollowUp": "To follow up (unpaid)",
+    "toFollowUpHint": "Validated leads still owing money, any date",
+    "nothingOwed": "Nothing owed",
+    "left": "left",
+    "ranking": "Rank in the team",
+    "rankingHint": "Received in the period"
   }
 }

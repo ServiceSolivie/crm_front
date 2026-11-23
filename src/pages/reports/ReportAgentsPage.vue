@@ -7,10 +7,18 @@ import ReportKpis from '@/components/modules/reports/ReportKpis.vue'
 import ReportPerformanceTable from '@/components/modules/reports/ReportPerformanceTable.vue'
 import { useReportFormat } from '@/composables/useReportFormat'
 import { useReportAccess } from '@/composables/useReportAccess'
+import { useAuthStore } from '@/stores/auth.store'
 
 const { t } = useI18n()
 const store = useReportsStore()
 const { hidesRevenue } = useReportAccess()
+const auth = useAuthStore()
+// Name → that agent's « CA par agent » page (people who see others' revenue)
+const agentLink = computed(() =>
+  !hidesRevenue.value && (auth.can('REVENUE_VIEW_ALL') || auth.can('REVENUE_VIEW_TEAM'))
+    ? (r) => ({ name: 'reports.agent-revenue', query: { agent: r.id } })
+    : null,
+)
 const { num, pct } = useReportFormat()
 
 const kpis = computed(() => {
@@ -78,6 +86,7 @@ onMounted(() => store.fetchAgents())
     <ReportKpis v-if="callKpis.length" :items="callKpis" :loading="store.loading.agents" />
     <ReportPerformanceTable
       kind="agent"
+      :row-link="agentLink"
       :rows="store.agentsData"
       :loading="store.loading.agents"
       :empty-text="t('reports.noAgentData')"
