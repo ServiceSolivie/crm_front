@@ -35,6 +35,7 @@ const showResetPasswordModal = ref(false)
 const resetPasswordTarget = ref(null)
 
 const COLUMNS = computed(() => [
+  { key: 'id', label: 'ID', width: '72px' },
   { key: 'name', label: t('users.name'), sortable: false },
   { key: 'email', label: t('users.email') },
   { key: 'roles', label: t('users.role') },
@@ -166,6 +167,10 @@ async function onResetPassword(payload) {
         :empty-description="t('users.inviteFirst')"
         @row-click="(row) => router.push({ name: 'users.detail', params: { id: row.id } })"
       >
+        <template #cell-id="{ value }">
+          <span class="font-mono text-xs text-gray-500">#{{ value }}</span>
+        </template>
+
         <template #cell-name="{ row }">
           <div class="flex items-center gap-2.5">
             <AppAvatar :name="row.name" size="sm" />
