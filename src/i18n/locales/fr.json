@@ -47,7 +47,8 @@
     "intake": "Réception API",
     "ringover": "Ringover",
     "calls": "Appels",
-    "insuranceTypes": "Types d'assurance"
+    "insuranceTypes": "Types d'assurance",
+    "gestionFollowUp": "Suivi gestion"
   },
   "common": {
     "save": "Enregistrer",
@@ -1043,7 +1044,8 @@
       "todo": "À traiter",
       "control": "Call2 · PDG",
       "blocked": "Bloqués",
-      "agent": "Attente agent"
+      "agent": "Attente agent",
+      "validated": "Validés"
     },
     "kpi": {
       "todo": "À traiter",
@@ -1072,6 +1074,16 @@
       "call2Again": "Rappeler le client (Call2 KO)",
       "pdgKo": "PDG KO : revoir avec l’agent",
       "waitingAgent": "En attente de l’agent"
+    },
+    "supervisor": {
+      "title": "Gestion · {team}",
+      "subtitle": "Où en sont les leads de votre équipe chez la gestion.",
+      "readOnly": "Lecture seule",
+      "gestionnaire": "Gestionnaire",
+      "validatedAt": "Validé le",
+      "validatedSubtitle": "Leads de votre équipe validés ces 30 derniers jours.",
+      "validatedEmpty": "Aucun lead validé ces 30 derniers jours.",
+      "validatedTitle": "Leads validés"
     }
   },
   "teamLeader": {

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
-import { Phone, RefreshCw, Inbox } from 'lucide-vue-next'
+import { Eye, Phone, RefreshCw, Inbox } from 'lucide-vue-next'
 import { useGestionDashboardStore } from '@/stores/gestionDashboard.store'
 import { useAuthStore } from '@/stores/auth.store'
 import AppPageHeader from '@/components/base/AppPageHeader.vue'
@@ -15,6 +15,7 @@ import DvcStatusBadge from '@/components/modules/leads/DvcStatusBadge.vue'
 import { formatDateTime } from '@/utils/formatters'
 import CallButton from '@/components/modules/calls/CallButton.vue'
 import { dialNumber } from '@/utils/phone'
+import { useReportAccess } from '@/composables/useReportAccess'
 
 /**
  * Gestion's workspace: headline figures, then every lead currently with
@@ -48,9 +49,24 @@ const tabs = computed(() => [
     label: t('gestion.tabs.' + key),
     count: queue.value.filter((l) => statuses.includes(l.status)).length,
   })),
+  ...(readOnly.value ? [{ key: 'validated', label: t('gestion.tabs.validated'), count: validated.value.length }] : []),
 ])
 const rows = computed(() =>
-  activeGroup.value === 'all' ? queue.value : queue.value.filter((l) => GROUPS[activeGroup.value].includes(l.status)),
+  activeGroup.value === 'all' ? queue.value : queue.value.filter((l) => GROUPS[activeGroup.value]?.includes(l.status)),
+)
+
+/* ── Supervisor: his team's leads, read-only ───────────────── */
+const readOnly = computed(() => !!stats.value?.read_only)
+const validated = computed(() => stats.value?.validated ?? [])
+const { canOpenLead } = useReportAccess()
+const opensLead = (lead) => !readOnly.value || canOpenLead(lead.agent?.id)
+function openLead(lead) {
+  if (opensLead(lead)) router.push({ name: 'leads.detail', params: { id: lead.id } })
+}
+const pageTitle = computed(() =>
+  readOnly.value
+    ? t('gestion.supervisor.title', { team: stats.value?.team?.name ?? '—' })
+    : t('gestion.dashboardTitle'),
 )
 
 /* ── What gestion has to do next on each lead ──────────────── */
@@ -88,13 +104,20 @@ function since(lead) {
 
 const fullName = (l) => [l.first_name, l.last_name].filter(Boolean).join(' ') || l.reference
 
-const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(140px,1fr)_110px_minmax(190px,1.3fr)_44px] items-center gap-x-4 px-5'
+const GRID_FULL = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(140px,1fr)_110px_minmax(190px,1.3fr)_44px] items-center gap-x-4 px-5'
+// Read-only: a « Gestionnaire » column instead of the call button
+const GRID_READ = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px,1fr)_minmax(140px,1fr)_minmax(140px,1fr)_110px_minmax(190px,1.3fr)] items-center gap-x-4 px-5'
+const GRID = computed(() => (readOnly.value ? GRID_READ : GRID_FULL))
+const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_minmax(140px,1fr)_minmax(150px,1fr)_minmax(110px,0.8fr)] items-center gap-x-4 px-5'
 </script>
 
 <template>
   <div class="flex flex-col gap-5 max-w-[1440px] mx-auto">
-    <AppPageHeader :title="t('gestion.dashboardTitle')" :subtitle="t('gestion.dashboardSubtitle')">
+    <AppPageHeader :title="pageTitle" :subtitle="readOnly ? t('gestion.supervisor.subtitle') : t('gestion.dashboardSubtitle')">
       <template #actions>
+        <span v-if="readOnly" class="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg bg-gray-100 text-[13px] text-gray-700">
+          <Eye class="w-4 h-4 text-gray-500" />{{ t('gestion.supervisor.readOnly') }}
+        </span>
         <button
           type="button"
           :disabled="store.loading"
@@ -134,8 +157,8 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
     <section class="bg-white border border-gray-200 rounded-xl overflow-hidden">
       <div class="px-5 pt-4 flex flex-wrap items-end justify-between gap-3 border-b border-gray-200">
         <div class="pb-3">
-          <h2 class="font-display text-base font-semibold text-gray-900">{{ t('gestion.queueTitle') }}</h2>
-          <p class="text-[12.5px] text-gray-500 mt-0.5">{{ t('gestion.queueSubtitle') }}</p>
+          <h2 class="font-display text-base font-semibold text-gray-900">{{ activeGroup === 'validated' ? t('gestion.supervisor.validatedTitle') : t('gestion.queueTitle') }}</h2>
+          <p class="text-[12.5px] text-gray-500 mt-0.5">{{ activeGroup === 'validated' ? t('gestion.supervisor.validatedSubtitle') : t('gestion.queueSubtitle') }}</p>
         </div>
         <div role="tablist" class="flex items-end gap-5 overflow-x-auto whitespace-nowrap">
           <button
@@ -155,16 +178,57 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
         </div>
       </div>
 
-      <div class="overflow-x-auto">
+      <!-- Supervisor: his team's leads validated lately -->
+      <div v-if="activeGroup === 'validated'" class="overflow-x-auto">
+        <div class="min-w-[880px] text-[13px]" role="table" :aria-label="t('gestion.tabs.validated')">
+          <div role="row" :class="[GRID_VALIDATED, 'h-10 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600']">
+            <span role="columnheader">{{ t('leads.lead') }}</span>
+            <span role="columnheader">{{ t('leads.filterAgent') }}</span>
+            <span role="columnheader">{{ t('gestion.supervisor.gestionnaire') }}</span>
+            <span role="columnheader">{{ t('gestion.supervisor.validatedAt') }}</span>
+            <span role="columnheader">{{ t('leads.status') }}</span>
+          </div>
+          <div v-if="!validated.length" class="flex flex-col items-center gap-2 py-14 text-center">
+            <span class="w-12 h-12 rounded-full bg-primary-light text-primary flex items-center justify-center"><Inbox class="w-5 h-5" /></span>
+            <p class="text-[13px] text-gray-600">{{ t('gestion.supervisor.validatedEmpty') }}</p>
+          </div>
+          <div
+            v-for="lead in validated"
+            v-else
+            :key="lead.id"
+            role="row"
+            :class="[GRID_VALIDATED, 'min-h-[52px] py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50', opensLead(lead) ? 'cursor-pointer' : '']"
+            @click="openLead(lead)"
+          >
+            <div role="cell" class="flex items-center gap-2.5 min-w-0">
+              <AppAvatar :name="fullName(lead)" size="sm" tone="soft" />
+              <div class="min-w-0">
+                <p :class="['font-medium text-gray-900 truncate', opensLead(lead) ? 'hover:text-primary' : '']">{{ fullName(lead) }}</p>
+                <p class="text-xs text-gray-500 truncate">
+                  {{ lead.insurance_type ? typeShort(lead.insurance_type) : '' }}
+                  <span class="font-mono">· {{ lead.reference }}</span>
+                </p>
+              </div>
+            </div>
+            <span role="cell" class="truncate">{{ lead.agent?.name ?? t('common.unassigned') }}</span>
+            <span role="cell" class="truncate text-gray-700">{{ lead.gestionnaire?.name ?? '—' }}</span>
+            <span role="cell" class="font-mono text-[12.5px] text-gray-700">{{ formatDateTime(lead.validated_at) }}</span>
+            <span role="cell"><LeadStatusBadge :status="lead.status" /></span>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="overflow-x-auto">
         <div class="min-w-[1080px] text-[13px]" role="table" :aria-label="t('gestion.queueTitle')">
           <div role="row" :class="[GRID, 'h-10 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-600']">
             <span role="columnheader">{{ t('leads.lead') }}</span>
             <span role="columnheader">{{ t('leads.status') }}</span>
             <span role="columnheader">{{ t('leadDetail.dvc.label') }}</span>
             <span role="columnheader">{{ t('leads.filterAgent') }}</span>
+            <span v-if="readOnly" role="columnheader">{{ t('gestion.supervisor.gestionnaire') }}</span>
             <span role="columnheader">{{ t('gestion.since.column') }}</span>
             <span role="columnheader">{{ t('gestion.next.column') }}</span>
-            <span role="columnheader"><span class="sr-only">{{ t('common.actions') }}</span></span>
+            <span v-if="!readOnly" role="columnheader"><span class="sr-only">{{ t('common.actions') }}</span></span>
           </div>
 
           <template v-if="store.loading && !stats">
@@ -184,17 +248,19 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
               v-for="lead in rows"
               :key="lead.id"
               role="row"
-              :class="[GRID, 'min-h-[56px] py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer']"
-              @click="router.push({ name: 'leads.detail', params: { id: lead.id } })"
+              :class="[GRID, 'min-h-[56px] py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50', opensLead(lead) ? 'cursor-pointer' : '']"
+              @click="openLead(lead)"
             >
               <div role="cell" class="flex items-center gap-2.5 min-w-0">
                 <AppAvatar :name="fullName(lead)" size="sm" tone="soft" />
                 <div class="min-w-0">
                   <RouterLink
+                    v-if="opensLead(lead)"
                     :to="{ name: 'leads.detail', params: { id: lead.id } }"
                     class="block font-medium text-gray-900 hover:text-primary truncate"
                     @click.stop
                   >{{ fullName(lead) }}</RouterLink>
+                  <p v-else class="font-medium text-gray-900 truncate">{{ fullName(lead) }}</p>
                   <p class="text-xs text-gray-500 truncate">
                     {{ lead.insurance_type ? typeShort(lead.insurance_type) : '' }}
                     <span class="font-mono">· {{ lead.reference }}</span>
@@ -210,13 +276,14 @@ const GRID = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(150px,1fr)_minmax(150px
                 </span>
                 <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
               </span>
+              <span v-if="readOnly" role="cell" class="truncate text-gray-700">{{ lead.gestionnaire?.name ?? '—' }}</span>
               <span
                 role="cell"
                 :title="formatDateTime(lead.status_since)"
                 :class="['font-mono text-[12.5px]', hoursIn(lead) > 48 ? 'text-danger-text font-medium' : 'text-gray-700']"
               >{{ since(lead) }}</span>
               <span role="cell" :class="['text-[12.5px] truncate', TONES[nextStep(lead).tone]]">{{ nextStep(lead).text }}</span>
-              <span role="cell" class="flex justify-end" @click.stop>
+              <span v-if="!readOnly" role="cell" class="flex justify-end" @click.stop>
                 <CallButton v-if="lead.phone && auth.can('CALLS_MAKE')" :lead="lead" />
                 <a
                   v-else-if="lead.phone"
