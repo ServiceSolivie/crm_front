@@ -325,7 +325,9 @@
       "label": "Doublons",
       "no": "Sans les doublons",
       "yes": "Doublons uniquement"
-    }
+    },
+    "assignedAt": "Assigné le",
+    "receivedOn": "reçu le {d}"
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -1565,7 +1567,8 @@
       "conversion": "Conversion",
       "split": "Répartition",
       "total": "Total",
-      "toggleGroup": "Afficher / masquer les statuts du groupe"
+      "toggleGroup": "Afficher / masquer les statuts du groupe",
+      "inactive": "Agents désactivés"
     },
     "sources": {
       "title": "Par source"

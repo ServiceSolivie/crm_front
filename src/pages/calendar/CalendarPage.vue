@@ -249,7 +249,7 @@ const calendarOptions = computed(() => ({
 }))
 
 onMounted(async () => {
-  if (!isAgent.value) await usersStore.fetchList({ role: 'agent', per_page: 100 })
+  if (!isAgent.value) await usersStore.fetchList({ role: 'agent', is_active: 1, per_page: 100 })
 })
 </script>
 

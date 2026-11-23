@@ -7,7 +7,7 @@ import { callsApi } from '@/api/calls'
 import { leadsApi } from '@/api/leads'
 import { useLeadsStore } from '@/stores/leads.store'
 import { useToast } from '@/composables/useToast'
-import { LEAD_STATUS } from '@/utils/enums'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
 import AppModal from '@/components/base/AppModal.vue'
 import AppButton from '@/components/base/AppButton.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
@@ -24,6 +24,7 @@ const props = defineProps({
 const emit = defineEmits(['close'])
 
 const { t } = useI18n()
+const { selectableCodes, statusLabel } = useLeadStatuses()
 const router = useRouter()
 const toast = useToast()
 const leadsStore = useLeadsStore()
@@ -37,9 +38,10 @@ const saving = ref(false)
 
 const statusOptions = computed(() => [
   { value: '', label: t('calls.postCall.keepStatus') },
-  ...Object.keys(LEAD_STATUS)
+  // Every status a lead can be moved to, the ones added in the CRM included
+  ...selectableCodes.value
     .filter((s) => s !== currentStatus.value)
-    .map((s) => ({ value: s, label: t(`statuses.lead.${s}`) })),
+    .map((s) => ({ value: s, label: statusLabel(s) })),
 ])
 
 const needsRevenue = computed(() => status.value === 'VALIDE')

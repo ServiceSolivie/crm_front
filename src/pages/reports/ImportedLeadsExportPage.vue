@@ -148,6 +148,8 @@ const sortedAgents = computed(() => {
     key === 'name' ? (r.name ?? '').toLowerCase() : key.startsWith('status:') ? (r.statuses?.[key.slice(7)] ?? 0) : r[key]
   return rows.sort((a, b) => {
     if (!a.agent_id !== !b.agent_id) return a.agent_id ? -1 : 1
+    // « Agents désactivés » just above « Non assigné »
+    if (!a.agent_id && !b.agent_id) return a.inactive ? -1 : 1
     const [x, y] = [value(a), value(b)]
     return x < y ? -dir : x > y ? dir : 0
   })
@@ -371,11 +373,11 @@ const th = 'py-2 px-2 font-medium whitespace-nowrap select-none cursor-pointer h
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in [...sortedAgents, { ...totals, isTotal: true }]" :key="row.isTotal ? 'total' : (row.agent_id ?? 'none')" :class="row.isTotal ? 'font-medium text-gray-900' : 'border-b border-gray-100'">
+            <tr v-for="row in [...sortedAgents, { ...totals, isTotal: true }]" :key="row.isTotal ? 'total' : row.inactive ? 'inactive' : (row.agent_id ?? 'none')" :class="row.isTotal ? 'font-medium text-gray-900' : 'border-b border-gray-100'">
               <td class="py-2 px-2 max-w-[200px] sticky left-0 bg-white">
                 <template v-if="row.isTotal">{{ t('importedExport.agents.total') }}</template>
                 <template v-else>
-                  <p :class="['truncate', row.agent_id ? 'font-medium text-gray-900' : 'text-gray-500']">{{ row.name ?? t('common.unassigned') }}</p>
+                  <p :class="['truncate', row.agent_id ? 'font-medium text-gray-900' : 'text-gray-500']">{{ row.inactive ? t('importedExport.agents.inactive') : (row.name ?? t('common.unassigned')) }}</p>
                   <p v-if="row.team" class="text-[11.5px] text-gray-500 truncate">{{ row.team }}</p>
                 </template>
               </td>
@@ -392,7 +394,7 @@ const th = 'py-2 px-2 font-medium whitespace-nowrap select-none cursor-pointer h
                 </template>
               </template>
               <td class="py-2 px-2 text-right font-mono whitespace-nowrap">
-                {{ row.isTotal ? rate(row.received ? (row.validated / row.received) * 100 : 0) : row.agent_id ? rate(row.conversion) : '—' }}
+                {{ row.isTotal ? rate(row.received ? (row.validated / row.received) * 100 : 0) : row.agent_id || row.inactive ? rate(row.conversion) : '—' }}
               </td>
               <td class="py-2 px-2">
                 <span v-if="!row.isTotal" class="flex h-2 rounded overflow-hidden bg-gray-100">

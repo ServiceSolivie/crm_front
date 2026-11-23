@@ -325,7 +325,9 @@
       "label": "Duplicates",
       "no": "Hide duplicates",
       "yes": "Duplicates only"
-    }
+    },
+    "assignedAt": "Assigned on",
+    "receivedOn": "received {d}"
   },
   "appointments": {
     "title": "Appointments",
@@ -1565,7 +1567,8 @@
       "conversion": "Conversion",
       "split": "Split",
       "total": "Total",
-      "toggleGroup": "Show / hide the statuses of this group"
+      "toggleGroup": "Show / hide the statuses of this group",
+      "inactive": "Deactivated agents"
     },
     "sources": {
       "title": "By source"

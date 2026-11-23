@@ -60,7 +60,7 @@ const leadName = computed(() => {
 onMounted(async () => {
   try {
     const promises = [store.fetchOne(id)]
-    if (!isSelfScoped.value) promises.push(usersStore.fetchList({ role: 'agent', per_page: 100 }))
+    if (!isSelfScoped.value) promises.push(usersStore.fetchList({ role: 'agent', is_active: 1, per_page: 100 }))
     await Promise.all(promises)
     const apt = store.current
     if (apt) {

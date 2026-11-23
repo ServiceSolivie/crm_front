@@ -61,7 +61,7 @@ const agentOptions = computed(() => [
 
 async function loadAgents() {
   if (!canSeeOthers.value) return
-  const params = { role: 'agent', per_page: 100 }
+  const params = { role: 'agent', is_active: 1, per_page: 100 }
   if (!auth.can('CALLS_VIEW_ALL')) params.team_id = auth.user?.team_id
   try {
     const { data } = await usersApi.list(params)

@@ -30,7 +30,7 @@ const agentOptions = ref([])
 onMounted(async () => {
   try {
     await Promise.all([store.fetchOne(id), store.fetchMembers(id), store.fetchStats(id)])
-    await usersStore.fetchList({ per_page: 100 })
+    await usersStore.fetchList({ is_active: 1, per_page: 100 })
     agentOptions.value = usersStore.list.map((u) => ({ value: u.id, label: u.name }))
   } catch {
     router.replace({ name: 'teams' })

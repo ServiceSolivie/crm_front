@@ -33,7 +33,8 @@ export const useLeadsStore = defineStore('leads', () => {
     to: '',
     page: 1,
     per_page: 15,
-    sort_by: 'created_at',
+    // Latest dispatched first (assigned date, else received date)
+    sort_by: 'assigned_at',
     sort_dir: 'desc',
   })
 
@@ -58,13 +59,27 @@ export const useLeadsStore = defineStore('leads', () => {
       .filter((v) => (Array.isArray(v) ? v.length : Boolean(v))).length
   })
 
-  async function fetchList() {
+  // Leads that just appeared through a live refresh (highlighted a few seconds)
+  const freshIds = ref(new Set())
+  let _freshTimer = null
+
+  /** silent: reload in the background (live update), without the skeleton */
+  async function fetchList({ silent = false } = {}) {
     const gen = ++_listGen
-    loading.list = true
+    if (!silent) loading.list = true
     errors.value = null
     try {
       const { data, meta: m } = await leadsApi.list(_buildParams())
       if (gen !== _listGen) return  // a newer request already fired; discard this response
+      if (silent) {
+        const known = new Set(list.value.map((l) => l.id))
+        const fresh = data.filter((l) => !known.has(l.id)).map((l) => l.id)
+        if (fresh.length) {
+          freshIds.value = new Set(fresh)
+          clearTimeout(_freshTimer)
+          _freshTimer = setTimeout(() => { freshIds.value = new Set() }, 6000)
+        }
+      }
       list.value = data
       if (m) meta.value = m
     } catch (e) {
@@ -410,7 +425,7 @@ export const useLeadsStore = defineStore('leads', () => {
       from: '',
       to: '',
       page: 1,
-      sort_by: 'created_at',
+      sort_by: 'assigned_at',
       sort_dir: 'desc',
     })
   }
@@ -442,6 +457,7 @@ export const useLeadsStore = defineStore('leads', () => {
   return {
     enterSection,
     list,
+    freshIds,
     current,
     leadAppointments,
     payments,

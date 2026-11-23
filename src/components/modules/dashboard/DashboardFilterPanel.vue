@@ -54,7 +54,7 @@ async function loadAgents(teamId) {
   }
   loadingAgents.value = true
   try {
-    const { data } = await usersApi.list({ team_id: teamId, role: 'agent', per_page: 100 })
+    const { data } = await usersApi.list({ team_id: teamId, role: 'agent', is_active: 1, per_page: 100 })
     agents.value = data ?? []
   } finally {
     loadingAgents.value = false

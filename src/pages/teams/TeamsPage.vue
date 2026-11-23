@@ -38,7 +38,7 @@ const from = computed(() =>
 const to = computed(() => Math.min(store.meta.current_page * store.meta.per_page, store.meta.total))
 
 onMounted(async () => {
-  await Promise.all([store.fetchList(), usersStore.fetchList({ per_page: 100 })])
+  await Promise.all([store.fetchList(), usersStore.fetchList({ is_active: 1, per_page: 100 })])
   leaderOptions.value = [
     { value: '', label: t('teams.noLeader') },
     ...usersStore.list
