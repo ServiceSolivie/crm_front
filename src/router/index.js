@@ -169,7 +169,8 @@ const router = createRouter({
       path: '/gestion-dashboard',
       name: 'gestion.dashboard',
       component: () => import('@/pages/gestion/GestionDashboardPage.vue'),
-      meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', title: 'Gestion Dashboard' },
+      // supervisor: his team's leads, read-only
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', supervisor: true, title: 'Gestion Dashboard' },
     },
 
     /* Approved machines */

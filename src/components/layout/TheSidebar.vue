@@ -160,7 +160,13 @@ const navGroups = computed(() => [
     items: [
       { icon: UserCheck, label: t('nav.myAgents'), to: '/my-agents', role: 'team_leader' },
       { icon: ClipboardList, label: t('nav.followUps'), to: '/follow-ups', role: 'team_leader' },
-      { icon: ClipboardCheck, label: t('nav.gestionDashboard'), to: '/gestion-dashboard', role: 'gestion' },
+      {
+        icon: ClipboardCheck,
+        label: auth.hasRole('gestion') ? t('nav.gestionDashboard') : t('nav.gestionFollowUp'),
+        to: '/gestion-dashboard',
+        role: 'gestion',
+        supervisor: true,
+      },
       { key: 'reports', icon: BarChart2, label: t('nav.reports'), base: '/reports', children: reportChildren.value },
     ],
   },
@@ -210,7 +216,7 @@ const navGroups = computed(() => [
 function isVisible(item) {
   if (item.children) return item.children.some(isVisible)
   if (item.excludeRole && auth.hasRole(item.excludeRole)) return false
-  if (item.role) return auth.hasRole(item.role)
+  if (item.role) return auth.hasRole(item.role) || (!!item.supervisor && auth.isSupervisor())
   if (!item.permission) return true
   const perms = Array.isArray(item.permission) ? item.permission : [item.permission]
   return perms.some((p) =>

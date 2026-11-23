@@ -19,6 +19,11 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value?.roles?.includes(role) ?? false
   }
 
+  // « Superviseur »: an agent with the team-stats permission
+  function isSupervisor() {
+    return hasRole('agent') && can('DASHBOARD_VIEW_TEAM_STATS') && !can('GESTION_REVIEW')
+  }
+
   function canAny(prefix) {
     return user.value?.permissions?.some((p) => p.startsWith(prefix)) ?? false
   }
@@ -149,6 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     can,
     hasRole,
+    isSupervisor,
     canAny,
     login,
     logout,

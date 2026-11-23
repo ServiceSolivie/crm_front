@@ -47,7 +47,7 @@ export function registerGuards(router) {
     }
 
     /* Role guard */
-    if (to.meta.role && !auth.hasRole(to.meta.role)) {
+    if (to.meta.role && !auth.hasRole(to.meta.role) && !(to.meta.supervisor && auth.isSupervisor())) {
       return { name: 'forbidden' }
     }
 
