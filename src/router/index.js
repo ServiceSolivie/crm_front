@@ -186,6 +186,13 @@ const router = createRouter({
       component: () => import('@/pages/intake/IntakeRequestsPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'API Intake' },
     },
+    {
+      // Who did what in the CRM: super admin only
+      path: '/activity-log',
+      name: 'activity-log',
+      component: () => import('@/pages/activity-log/ActivityLogPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Activity log' },
+    },
 
     /* Lead Sources */
     {
