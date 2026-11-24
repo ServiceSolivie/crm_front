@@ -48,6 +48,14 @@ async function handleDelete() {
     toast.showSuccess(t('users.deleteSuccess'))
     router.replace({ name: 'users' })
   } catch (e) {
+    // A user with leads (or other data) is never deleted: offer to deactivate him
+    if (e?.status === 409 && store.current?.is_active) {
+      const off = await ui.confirm(t('users.cannotDeleteTitle'), `${e.message}
+
+${t('users.deactivateInstead')}`, { confirmLabel: t('users.deactivate') })
+      if (off) await toggleActive()
+      return
+    }
     toast.showError(e?.message ?? t('users.deleteFailed'))
   }
 }

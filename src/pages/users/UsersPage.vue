@@ -79,6 +79,14 @@ async function handleDelete(user) {
     await store.remove(user.id)
     toast.showSuccess(t('users.deleteSuccess'))
   } catch (e) {
+    // A user with leads (or other data) is never deleted: offer to deactivate him
+    if (e?.status === 409 && user.is_active) {
+      const off = await ui.confirm(t('users.cannotDeleteTitle'), `${e.message}
+
+${t('users.deactivateInstead')}`, { confirmLabel: t('users.deactivate') })
+      if (off) await toggleActive(user)
+      return
+    }
     toast.showError(e?.message ?? t('users.deleteFailed'))
   }
 }

@@ -327,7 +327,7 @@
       "yes": "Doublons uniquement"
     },
     "assignedAt": "Assigné le",
-    "receivedOn": "reçu le {d}"
+    "receivedOn": "reçu {d}"
   },
   "appointments": {
     "title": "Rendez-vous",
@@ -495,7 +495,10 @@
     "deleteNamed": "Supprimer « {name} » ? Cette action est irréversible.",
     "searchPlaceholder": "Nom, e-mail ou ID",
     "sources": "Sources",
-    "sourcesHint": "Aucune sélection = toutes les sources"
+    "sourcesHint": "Aucune sélection = toutes les sources",
+    "cannotDeleteTitle": "Suppression impossible",
+    "deactivateInstead": "Le compte sera désactivé : il ne pourra plus se connecter et disparaîtra des listes, mais ses leads et son historique sont conservés.",
+    "deactivate": "Désactiver"
   },
   "leadSources": {
     "title": "Sources de leads",
