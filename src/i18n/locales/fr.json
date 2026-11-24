@@ -48,7 +48,8 @@
     "ringover": "Ringover",
     "calls": "Appels",
     "insuranceTypes": "Types d'assurance",
-    "gestionFollowUp": "Suivi gestion"
+    "gestionFollowUp": "Suivi gestion",
+    "activityLog": "Journal d’activité"
   },
   "common": {
     "save": "Enregistrer",
@@ -1845,5 +1846,49 @@
     "validatedAgo": "validé il y a {n} j",
     "paidOfExpected": "Payé / attendu",
     "rankFirst": "1re de l’équipe"
+  },
+  "activityLog": {
+    "title": "Journal d’activité",
+    "subtitle": "Qui a fait quoi dans le CRM, quand et d’où. Conservé 12 mois.",
+    "export": "Export CSV",
+    "kpi": {
+      "logins": "Connexions aujourd’hui",
+      "failed": "Échecs de connexion",
+      "leadActions": "Actions sur les leads",
+      "sensitive": "Actions sensibles"
+    },
+    "cat": {
+      "all": "Tout",
+      "auth": "Connexions",
+      "lead": "Leads",
+      "payment": "Paiements",
+      "user": "Utilisateurs",
+      "export": "Exports",
+      "settings": "Paramètres",
+      "sensitive": "Sensibles"
+    },
+    "user": "Utilisateur",
+    "period": "Période",
+    "today": "Aujourd’hui",
+    "last7": "7 derniers jours",
+    "last30": "30 derniers jours",
+    "all": "Tout",
+    "search": "Lead, e-mail, IP…",
+    "col": {
+      "when": "Date",
+      "who": "Qui",
+      "action": "Action",
+      "subject": "Sur",
+      "detail": "Détail",
+      "ip": "IP"
+    },
+    "empty": "Aucune activité pour ces filtres.",
+    "loadError": "Impossible de charger le journal",
+    "before": "Avant",
+    "after": "Après",
+    "browser": "Navigateur",
+    "details": "Détails",
+    "noUser": "Inconnu",
+    "exported": "Export téléchargé"
   }
 }

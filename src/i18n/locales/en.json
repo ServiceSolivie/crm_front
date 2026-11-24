@@ -48,7 +48,8 @@
     "ringover": "Ringover",
     "calls": "Calls",
     "insuranceTypes": "Insurance types",
-    "gestionFollowUp": "Gestion follow-up"
+    "gestionFollowUp": "Gestion follow-up",
+    "activityLog": "Activity log"
   },
   "common": {
     "save": "Save",
@@ -1845,5 +1846,49 @@
     "validatedAgo": "validated {n} d ago",
     "paidOfExpected": "Paid / expected",
     "rankFirst": "#1 in the team"
+  },
+  "activityLog": {
+    "title": "Activity log",
+    "subtitle": "Who did what in the CRM, when and from where. Kept 12 months.",
+    "export": "Export CSV",
+    "kpi": {
+      "logins": "Logins today",
+      "failed": "Failed logins",
+      "leadActions": "Lead actions",
+      "sensitive": "Sensitive actions"
+    },
+    "cat": {
+      "all": "All",
+      "auth": "Logins",
+      "lead": "Leads",
+      "payment": "Payments",
+      "user": "Users",
+      "export": "Exports",
+      "settings": "Settings",
+      "sensitive": "Sensitive"
+    },
+    "user": "User",
+    "period": "Period",
+    "today": "Today",
+    "last7": "Last 7 days",
+    "last30": "Last 30 days",
+    "all": "All",
+    "search": "Lead, e-mail, IP…",
+    "col": {
+      "when": "Date",
+      "who": "Who",
+      "action": "Action",
+      "subject": "On",
+      "detail": "Detail",
+      "ip": "IP"
+    },
+    "empty": "No activity for these filters.",
+    "loadError": "Couldn’t load the log",
+    "before": "Before",
+    "after": "After",
+    "browser": "Browser",
+    "details": "Details",
+    "noUser": "Unknown",
+    "exported": "Export downloaded"
   }
 }

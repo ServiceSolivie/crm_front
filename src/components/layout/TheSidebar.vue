@@ -14,6 +14,7 @@ import {
   ListChecks,
   MonitorCheck,
   Webhook,
+  History,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -191,6 +192,7 @@ const navGroups = computed(() => [
         countTitle: t('devices.pendingCount', { n: devices.pendingCount }, devices.pendingCount),
       },
       { icon: Webhook, label: t('nav.intake'), to: '/api-intake', role: 'super_admin' },
+      { icon: History, label: t('nav.activityLog'), to: '/activity-log', role: 'super_admin' },
       {
         key: 'settings',
         icon: SlidersHorizontal,
