@@ -11,6 +11,7 @@ import AppFilterChip from '@/components/base/AppFilterChip.vue'
 import AppSkeleton from '@/components/base/AppSkeleton.vue'
 import { leadsApi } from '@/api/leads'
 import { formatCurrency } from '@/utils/formatters'
+import { useAuthStore } from '@/stores/auth.store'
 
 /**
  * One chronological feed for everything that happened on a lead: notes,
@@ -35,12 +36,22 @@ const failed = ref(false)
 const PER_PAGE = 30
 let requestId = 0
 
+// Agents (supervisors included) and gestion only get the notes and documents
+// (the API leaves the rest out for them); managers and team leaders see it all
+const auth = useAuthStore()
+const limited = computed(() =>
+  (auth.hasRole('agent') || auth.hasRole('gestion'))
+  && !auth.hasRole('super_admin') && !auth.hasRole('manager') && !auth.hasRole('team_leader'),
+)
+
 const filterOptions = computed(() => [
   { value: 'note', label: t('leadDetail.activity.notes') },
-  { value: 'call', label: t('leadDetail.activity.calls') },
-  { value: 'status', label: t('leadDetail.activity.statuses') },
-  { value: 'appointment', label: t('leadDetail.activity.appointments') },
-  ...(props.showPayments ? [{ value: 'payment', label: t('leadDetail.activity.payments') }] : []),
+  ...(limited.value ? [] : [
+    { value: 'call', label: t('leadDetail.activity.calls') },
+    { value: 'status', label: t('leadDetail.activity.statuses') },
+    { value: 'appointment', label: t('leadDetail.activity.appointments') },
+    ...(props.showPayments ? [{ value: 'payment', label: t('leadDetail.activity.payments') }] : []),
+  ]),
   { value: 'document', label: t('leadDetail.activity.documents') },
 ])
 
