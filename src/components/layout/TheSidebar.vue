@@ -15,6 +15,7 @@ import {
   MonitorCheck,
   Webhook,
   History,
+  ShieldBan,
   FileCog,
   BarChart2,
   TrendingUp,
@@ -193,6 +194,7 @@ const navGroups = computed(() => [
       },
       { icon: Webhook, label: t('nav.intake'), to: '/api-intake', role: 'super_admin' },
       { icon: History, label: t('nav.activityLog'), to: '/activity-log', role: 'super_admin' },
+      { icon: ShieldBan, label: t('nav.blockedIps'), to: '/blocked-ips', role: 'super_admin' },
       {
         key: 'settings',
         icon: SlidersHorizontal,

@@ -193,6 +193,13 @@ const router = createRouter({
       component: () => import('@/pages/activity-log/ActivityLogPage.vue'),
       meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Activity log' },
     },
+    {
+      // Addresses refused by the whole CRM: super admin only
+      path: '/blocked-ips',
+      name: 'blocked-ips',
+      component: () => import('@/pages/blocked-ips/BlockedIpsPage.vue'),
+      meta: { requiresAuth: true, layout: 'dashboard', role: 'super_admin', title: 'Blocked IPs' },
+    },
 
     /* Lead Sources */
     {
