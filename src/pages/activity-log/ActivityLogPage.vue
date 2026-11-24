@@ -46,6 +46,7 @@ const ACTION = {
   'appointment.created': 'RDV créé', 'payment.created': 'Paiement ajouté', 'contract.created': 'Contrat généré',
   'export.imported_leads': 'Export retours leads', 'contract.downloaded': 'Contrat téléchargé', 'document.downloaded': 'Document téléchargé',
   'import.completed': 'Import de fichier',
+  'auth.ip_refused': 'Accès refusé (IP bloquée)', 'auth.ip_blocked_added': 'IP bloquée', 'auth.ip_unblocked': 'IP débloquée',
 }
 const FIELD = {
   status: 'Statut', assigned_to: 'Agent', gestion_assigned_to: 'Gestionnaire', team_id: 'Équipe', first_name: 'Prénom', last_name: 'Nom',
@@ -269,7 +270,11 @@ onMounted(async () => {
                     <dt class="text-gray-500">Lead</dt>
                     <dd><RouterLink :to="{ name: 'leads.detail', params: { id: r.subject_id } }" class="text-primary hover:underline">{{ r.subject_label }}</RouterLink></dd>
                   </template>
-                  <dt class="text-gray-500">IP</dt><dd class="font-mono text-gray-900">{{ r.ip || '—' }}</dd>
+                  <dt class="text-gray-500">IP</dt>
+                  <dd class="font-mono text-gray-900">
+                    {{ r.ip || '—' }}
+                    <RouterLink v-if="r.ip && r.category === 'auth'" :to="{ name: 'blocked-ips', query: { ip: r.ip } }" class="ml-2 font-sans text-[12px] text-danger-text hover:underline">{{ t('blockedIps.blockThis') }}</RouterLink>
+                  </dd>
                   <dt class="text-gray-500">{{ t('activityLog.browser') }}</dt><dd class="text-gray-900" :title="r.user_agent">{{ browser(r.user_agent) }}</dd>
                 </dl>
               </div>

@@ -49,7 +49,8 @@
     "calls": "Appels",
     "insuranceTypes": "Types d'assurance",
     "gestionFollowUp": "Suivi gestion",
-    "activityLog": "Journal d’activité"
+    "activityLog": "Journal d’activité",
+    "blockedIps": "IP bloquées"
   },
   "common": {
     "save": "Enregistrer",
@@ -1890,5 +1891,27 @@
     "details": "Détails",
     "noUser": "Inconnu",
     "exported": "Export téléchargé"
+  },
+  "blockedIps": {
+    "title": "IP bloquées",
+    "subtitle": "Les adresses de cette liste ne peuvent plus rien faire dans le CRM, pas même essayer de se connecter. Le site solvaconseil.fr n’est pas concerné.",
+    "ip": "Adresse IP",
+    "note": "Remarque",
+    "notePlaceholder": "Tentative de connexion au compte super admin",
+    "block": "Bloquer",
+    "hint": "Une adresse (176.185.163.76) ou une plage entière (176.185.163.0/24). Chaque tentative refusée est comptée, notée dans le journal d’activité et signalée sur Slack.",
+    "yourIp": "Votre adresse actuelle :",
+    "addedBy": "Ajoutée par",
+    "attempts": "Tentatives bloquées",
+    "lastAttempt": "Dernière tentative",
+    "unblock": "Débloquer",
+    "unblockTitle": "Débloquer cette adresse ?",
+    "unblockConfirm": "{ip} pourra de nouveau accéder au CRM.",
+    "added": "{ip} est bloquée",
+    "removed": "{ip} est débloquée",
+    "empty": "Aucune adresse bloquée.",
+    "ipRequired": "Saisissez une adresse IP",
+    "loadError": "Impossible de charger les adresses bloquées",
+    "blockThis": "Bloquer cette IP"
   }
 }
