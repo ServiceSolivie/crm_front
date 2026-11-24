@@ -647,6 +647,8 @@ const infoFields = computed(() => {
     { label: t('leads.filterSource'), value: l.lead_source?.name ?? '—' },
     { label: t('leads.receivedAt'), value: formatDateTime(l.created_at), mono: true },
   ]
+  // Last dispatch to an agent (assigned / reassigned)
+  if (l.assigned_at) rows.push({ label: t('leads.assignedAt'), value: formatDateTime(l.assigned_at), mono: true })
   if (l.lead_submitted_at) rows.push({ label: t('leads.submittedAt'), value: formatDateTime(l.lead_submitted_at), mono: true })
   rows.push({ label: t('users.lastUpdated'), value: formatDateTime(l.updated_at), mono: true })
   if (l.city) rows.push({ label: t('leadDetail.info.city'), value: l.city })

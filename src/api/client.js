@@ -80,7 +80,8 @@ client.interceptors.response.use(
       })
     }
 
-    return Promise.reject({ type: 'server', message, errors: null })
+    // 409 and others: the status lets a page react (e.g. a user who can't be deleted)
+    return Promise.reject({ type: 'server', status, message, errors: data?.errors ?? null })
   },
 )
 

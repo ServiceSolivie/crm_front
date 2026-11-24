@@ -731,12 +731,15 @@ const gridCols = computed(() =>
               <span v-else class="text-gray-400">—</span>
             </div>
             <div role="cell" class="px-3 min-w-0" :title="dateTitle(row)">
-              <!-- Dispatched date (received date for a lead never assigned) -->
-              <p class="font-mono text-[12.5px] text-gray-900 whitespace-nowrap">{{ receivedDay(row.assigned_at ?? row.created_at) }}</p>
-              <p v-if="row.assigned_at && receivedDay(row.assigned_at) !== receivedDay(row.created_at)" class="text-[11.5px] text-gray-500 whitespace-nowrap">
-                {{ t('leads.receivedOn', { d: receivedDay(row.created_at) }) }}
-              </p>
-              <p v-else class="font-mono text-[11.5px] text-gray-500">{{ receivedTime(row.assigned_at ?? row.created_at) }}</p>
+                            <template v-if="row.assigned_at">
+                <!-- Assigned: when it was dispatched, then when it was received -->
+                <p class="font-mono text-[12.5px] text-gray-900 whitespace-nowrap">{{ receivedDay(row.assigned_at) }} <span class="text-gray-500">{{ receivedTime(row.assigned_at) }}</span></p>
+                <p class="text-[11.5px] text-gray-500 whitespace-nowrap truncate">{{ t('leads.receivedOn', { d: receivedDay(row.created_at) + ' ' + receivedTime(row.created_at) }) }}</p>
+              </template>
+              <template v-else>
+                <p class="font-mono text-[12.5px] text-gray-900 whitespace-nowrap">{{ receivedDay(row.created_at) }}</p>
+                <p class="font-mono text-[11.5px] text-gray-500">{{ receivedTime(row.created_at) }}</p>
+              </template>
             </div>
             <div role="cell" class="px-3 font-mono text-gray-600">{{ row.calls_count ?? 0 }}</div>
             <div role="cell" class="pr-3 flex items-center justify-end gap-0.5" @click.stop>

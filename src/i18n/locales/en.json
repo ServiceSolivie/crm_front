@@ -495,7 +495,10 @@
     "deleteNamed": "Delete “{name}”? This cannot be undone.",
     "searchPlaceholder": "Name, e-mail or ID",
     "sources": "Sources",
-    "sourcesHint": "No selection = all sources"
+    "sourcesHint": "No selection = all sources",
+    "cannotDeleteTitle": "Cannot delete",
+    "deactivateInstead": "The account will be deactivated: it can no longer log in and disappears from the lists, but its leads and history are kept.",
+    "deactivate": "Deactivate"
   },
   "leadSources": {
     "title": "Lead Sources",

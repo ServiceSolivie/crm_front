@@ -50,7 +50,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKey))
             </span>
             <div class="min-w-0">
               <h2 id="confirm-title" class="font-display text-lg font-semibold text-gray-900 leading-7">{{ state.title }}</h2>
-              <p id="confirm-message" class="text-[13px] leading-[19px] text-gray-600 mt-0.5">{{ state.message }}</p>
+              <p id="confirm-message" class="text-[13px] leading-[19px] text-gray-600 mt-0.5 whitespace-pre-line">{{ state.message }}</p>
             </div>
           </div>
 
