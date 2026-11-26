@@ -15,8 +15,10 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value?.permissions?.includes(permission) ?? false
   }
 
+  // One role, or any of several: hasRole(['gestion', 'super_admin'])
   function hasRole(role) {
-    return user.value?.roles?.includes(role) ?? false
+    const roles = Array.isArray(role) ? role : [role]
+    return roles.some((r) => user.value?.roles?.includes(r)) ?? false
   }
 
   // « Superviseur »: an agent with the team-stats permission

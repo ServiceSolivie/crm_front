@@ -172,7 +172,7 @@ const navGroups = computed(() => [
         icon: ClipboardCheck,
         label: auth.hasRole('gestion') ? t('nav.gestionDashboard') : t('nav.gestionFollowUp'),
         to: '/gestion-dashboard',
-        role: 'gestion',
+        role: ['gestion', 'super_admin'],
         supervisor: true,
       },
       { key: 'reports', icon: BarChart2, label: t('nav.reports'), base: '/reports', children: reportChildren.value },

@@ -1084,6 +1084,19 @@
       "waitingAgent": "Waiting on the agent",
       "subscribed": "Subscribed · not sent to gestion yet"
     },
+    "filters": {
+      "allAgents": "All agents",
+      "allTeams": "All teams",
+      "allStatuses": "All statuses",
+      "team": "Team",
+      "search": "Name, phone or reference",
+      "reset": "Reset",
+      "noMatch": "No lead matches these filters."
+    },
+    "overview": {
+      "title": "Gestion follow-up · all teams",
+      "subtitle": "Where every team's leads stand with gestion."
+    },
     "supervisor": {
       "title": "Gestion · {team}",
       "subtitle": "Where your team's leads stand with gestion.",

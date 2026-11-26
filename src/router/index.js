@@ -170,7 +170,7 @@ const router = createRouter({
       name: 'gestion.dashboard',
       component: () => import('@/pages/gestion/GestionDashboardPage.vue'),
       // supervisor: his team's leads, read-only
-      meta: { requiresAuth: true, layout: 'dashboard', role: 'gestion', supervisor: true, title: 'Gestion Dashboard' },
+      meta: { requiresAuth: true, layout: 'dashboard', role: ['gestion', 'super_admin'], supervisor: true, title: 'Gestion Dashboard' },
     },
 
     /* Approved machines */
