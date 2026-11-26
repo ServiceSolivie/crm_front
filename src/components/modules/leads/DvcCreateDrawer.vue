@@ -2,8 +2,9 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
-import { FilePenLine } from 'lucide-vue-next'
+import { FilePenLine, History } from 'lucide-vue-next'
 import { useContractsStore } from '@/stores/contracts.store'
+import { useUiStore } from '@/stores/ui.store'
 import { useToast } from '@/composables/useToast'
 import AppDrawer from '@/components/base/AppDrawer.vue'
 import AppSelect from '@/components/base/AppSelect.vue'
@@ -38,6 +39,60 @@ const { t } = useI18n()
 const { typeLabel } = useInsuranceTypes()
 const store = useContractsStore()
 const toast = useToast()
+const ui = useUiStore()
+
+/* ── Draft: what the agent typed, kept in this browser per lead and DVC type,
+      so closing the drawer by mistake (or reloading) loses nothing. Deleted
+      once the PDF is generated. ─────────────────────────────────────────── */
+const DRAFT_PREFIX = 'crm_dvc_draft:'
+const DRAFT_DAYS = 30
+const draftKey = (key) => `${DRAFT_PREFIX}${props.lead?.id ?? 'none'}:${key}`
+const lastTypeKey = () => `${DRAFT_PREFIX}${props.lead?.id ?? 'none'}:last`
+function readDraft(key) {
+  try {
+    const draft = JSON.parse(localStorage.getItem(draftKey(key)) ?? 'null')
+    return draft?.values ? draft : null
+  } catch {
+    return null
+  }
+}
+function writeDraft(key, values) {
+  try {
+    localStorage.setItem(draftKey(key), JSON.stringify({ values, saved_at: new Date().toISOString() }))
+    localStorage.setItem(lastTypeKey(), key)
+  } catch { /* storage full or blocked: the form still works */ }
+}
+function removeDraft(key) {
+  try {
+    localStorage.removeItem(draftKey(key))
+    if (localStorage.getItem(lastTypeKey()) === key) localStorage.removeItem(lastTypeKey())
+  } catch { /* ignore */ }
+}
+function lastDraftType() {
+  try {
+    return localStorage.getItem(lastTypeKey())
+  } catch {
+    return null
+  }
+}
+// Old drafts (any lead) are dropped after DRAFT_DAYS
+function pruneDrafts() {
+  try {
+    const limit = Date.now() - DRAFT_DAYS * 86400000
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i)
+      if (!k?.startsWith(DRAFT_PREFIX) || k.endsWith(':last')) continue
+      const savedAt = Date.parse(JSON.parse(localStorage.getItem(k) ?? '{}')?.saved_at ?? '')
+      if (!savedAt || savedAt < limit) localStorage.removeItem(k)
+    }
+  } catch { /* ignore */ }
+}
+
+// The form as prefilled (before the agent's input): a draft is only kept when the form differs from it
+const baseline = ref('')
+const restoredAt = ref(null)
+const snapshot = () => JSON.stringify(form)
+const dirty = computed(() => !!template.value && !loadingForm.value && baseline.value !== '' && snapshot() !== baseline.value)
 
 const templateKey = ref('')
 const form = reactive({})
@@ -94,23 +149,38 @@ watch(
     if (!open) return
     templateKey.value = ''
     errors.value = {}
+    pruneDrafts()
     try {
       await store.fetchTemplates({ force: true })
     } catch {
       toast.showError(t('contracts.loadFailed'))
       return
     }
-    // The lead's insurance type, else the type of its last DVC
-    const forLead = store.templates.find((tpl) => tpl.insurance_type === props.lead?.insurance_type)
+    // The type of a draft in progress, else the lead's insurance type, else the type of its last DVC
+    const drafted = lastDraftType()
+    const forLead = (drafted && readDraft(drafted) && store.templates.find((tpl) => tpl.key === drafted))
+      ?? store.templates.find((tpl) => tpl.insurance_type === props.lead?.insurance_type)
       ?? store.templates.find((tpl) => tpl.key === props.previousDvcs[0]?.template_key)
     if (forLead) await selectType(forLead.key)
   },
 )
 
-async function selectType(key) {
+// Save the draft as the agent types (and drop it if the form is back to its prefill)
+watch(
+  () => (props.open ? snapshot() : null),
+  () => {
+    if (!props.open || !template.value || loadingForm.value || baseline.value === '') return
+    if (dirty.value) writeDraft(templateKey.value, { ...form })
+    else removeDraft(templateKey.value)
+  },
+)
+
+async function selectType(key, { useDraft = true } = {}) {
   templateKey.value = key
   errors.value = {}
   sourceDvcs.value = []
+  baseline.value = ''
+  restoredAt.value = null
   Object.keys(form).forEach((k) => delete form[k])
   if (!template.value) return
 
@@ -153,6 +223,37 @@ async function selectType(key) {
     }
   }
   sourceDvcs.value = used
+
+  // What was typed before closing the drawer
+  baseline.value = snapshot()
+  const draft = useDraft ? readDraft(key) : null
+  if (draft) {
+    applyDvcValues(form, draft.values)
+    restoredAt.value = draft.saved_at
+  }
+}
+
+async function discardDraft() {
+  removeDraft(templateKey.value)
+  await selectType(templateKey.value, { useDraft: false })
+}
+
+// Closing by mistake (outside click, Escape, ×): ask first when something was typed
+let confirming = false
+async function requestClose() {
+  if (confirming) return
+  if (!dirty.value) return emit('close')
+  confirming = true
+  // Open it after the current key event: the confirm dialog also closes on Escape
+  await new Promise((resolve) => setTimeout(resolve, 0))
+  const ok = await ui.confirm(t('dvc.draft.closeTitle'), t('dvc.draft.closeMessage'), {
+    tone: 'primary',
+    confirmLabel: t('dvc.draft.closeConfirm'),
+    cancelLabel: t('dvc.draft.keepEditing'),
+  })
+  // The same Escape key press also reaches the drawer: ignore it
+  setTimeout(() => { confirming = false }, 0)
+  if (ok) emit('close')
 }
 
 async function generate() {
@@ -166,6 +267,8 @@ async function generate() {
       data: { ...form },
     })
     toast.showSuccess(t('contracts.generated'))
+    removeDraft(template.value.key)
+    baseline.value = ''
     emit('generated', contract)
   } catch (e) {
     errors.value = dvcFieldErrors(e?.errors)
@@ -182,7 +285,7 @@ async function generate() {
     :description="t('dvc.create.description')"
     :icon="FilePenLine"
     width="max-w-[640px]"
-    @close="emit('close')"
+    @close="requestClose"
   >
     <!-- Type picker stays in view while the form scrolls -->
     <template v-if="store.templates.length" #toolbar>
@@ -208,6 +311,16 @@ async function generate() {
       <template v-else>
         <p v-if="!store.templates.length" class="text-[13px] text-gray-600">{{ t('dvc.create.noTypes') }}</p>
         <template v-else>
+          <div
+            v-if="restoredAt && !loadingForm"
+            class="flex items-center gap-3 rounded-lg bg-warning-bg/70 border border-warning/30 px-3 py-2 text-[12.5px] leading-[18px] text-warning-text"
+          >
+            <History class="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span class="flex-1">{{ t('dvc.draft.restored', { date: formatDateTime(restoredAt) }) }}</span>
+            <button type="button" class="shrink-0 font-medium underline underline-offset-2 hover:no-underline" @click="discardDraft">
+              {{ t('dvc.draft.discard') }}
+            </button>
+          </div>
           <p
             v-if="sourceDvcs.length && !loadingForm"
             class="rounded-lg bg-info-bg/60 border border-info/30 px-3 py-2 text-[12.5px] leading-[18px] text-info-text"

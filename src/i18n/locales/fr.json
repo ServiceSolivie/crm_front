@@ -1475,6 +1475,14 @@
     "form": {
       "moneyHint": "Montant en euros"
     },
+    "draft": {
+      "restored": "Brouillon restauré (enregistré le {date}) : vos saisies sont revenues.",
+      "discard": "Effacer le brouillon",
+      "closeTitle": "Fermer sans générer ?",
+      "closeMessage": "Vos saisies restent enregistrées en brouillon sur ce navigateur : vous les retrouverez en rouvrant le DVC de ce lead.",
+      "closeConfirm": "Fermer",
+      "keepEditing": "Continuer la saisie"
+    },
     "create": {
       "title": "Créer un DVC",
       "description": "Choisissez le type de DVC : le formulaire reprend les DVC précédents de ce lead, sinon ses informations.",
