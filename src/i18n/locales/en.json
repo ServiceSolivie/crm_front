@@ -1091,6 +1091,7 @@
       "gestionnaire": "Gestion user",
       "validatedAt": "Validated on",
       "validatedSubtitle": "Your team's leads validated in the last 30 days.",
+      "queueSubtitle": "Latest first (last status change).",
       "validatedEmpty": "No lead validated in the last 30 days.",
       "validatedTitle": "Validated leads"
     }
