@@ -1052,6 +1052,7 @@
       "control": "Call2 · PDG",
       "blocked": "Blocked",
       "agent": "Waiting on agent",
+      "subscribed": "Subscribed",
       "validated": "Validated"
     },
     "kpi": {
@@ -1080,7 +1081,8 @@
       "dvcToValidate": "Signed DVC needed to validate",
       "call2Again": "Call the client again (Call2 KO)",
       "pdgKo": "PDG KO: review with the agent",
-      "waitingAgent": "Waiting on the agent"
+      "waitingAgent": "Waiting on the agent",
+      "subscribed": "Subscribed · not sent to gestion yet"
     },
     "supervisor": {
       "title": "Gestion · {team}",

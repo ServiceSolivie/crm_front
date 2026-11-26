@@ -40,11 +40,13 @@ const GROUPS = {
   control: ['CALL2_OK', 'PDG_OK'],
   blocked: ['CALL2_KO', 'PDG_KO'],
   agent: ['A_CORRIGER'],
+  // Supervisor only: his team's « Souscrit » leads, before they reach gestion
+  subscribed: ['SOUSCRIS'],
 }
 const activeGroup = ref('all')
 const tabs = computed(() => [
   { key: 'all', label: t('gestion.tabs.all'), count: queue.value.length },
-  ...Object.entries(GROUPS).map(([key, statuses]) => ({
+  ...Object.entries(GROUPS).filter(([key]) => key !== 'subscribed' || readOnly.value).map(([key, statuses]) => ({
     key,
     label: t('gestion.tabs.' + key),
     count: queue.value.filter((l) => statuses.includes(l.status)).length,
@@ -79,6 +81,7 @@ function nextStep(lead) {
     case 'CALL2_KO': return { text: t('gestion.next.call2Again'), tone: 'danger' }
     case 'PDG_KO': return { text: t('gestion.next.pdgKo'), tone: 'danger' }
     case 'A_CORRIGER': return { text: t('gestion.next.waitingAgent'), tone: 'muted' }
+    case 'SOUSCRIS': return { text: t('gestion.next.subscribed'), tone: 'muted' }
     default: return { text: '—', tone: 'muted' }
   }
 }

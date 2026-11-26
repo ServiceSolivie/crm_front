@@ -1052,6 +1052,7 @@
       "control": "Call2 · PDG",
       "blocked": "Bloqués",
       "agent": "Attente agent",
+      "subscribed": "Souscrits",
       "validated": "Validés"
     },
     "kpi": {
@@ -1080,7 +1081,8 @@
       "dvcToValidate": "DVC signé requis pour valider",
       "call2Again": "Rappeler le client (Call2 KO)",
       "pdgKo": "PDG KO : revoir avec l’agent",
-      "waitingAgent": "En attente de l’agent"
+      "waitingAgent": "En attente de l’agent",
+      "subscribed": "Souscrit · pas encore envoyé en gestion"
     },
     "supervisor": {
       "title": "Gestion · {team}",
