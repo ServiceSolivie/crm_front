@@ -1091,6 +1091,7 @@
       "gestionnaire": "Gestionnaire",
       "validatedAt": "Validé le",
       "validatedSubtitle": "Leads de votre équipe validés ces 30 derniers jours.",
+      "queueSubtitle": "Les plus récents d’abord (dernier changement de statut).",
       "validatedEmpty": "Aucun lead validé ces 30 derniers jours.",
       "validatedTitle": "Leads validés"
     }

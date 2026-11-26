@@ -161,7 +161,7 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
       <div class="px-5 pt-4 flex flex-wrap items-end justify-between gap-3 border-b border-gray-200">
         <div class="pb-3">
           <h2 class="font-display text-base font-semibold text-gray-900">{{ activeGroup === 'validated' ? t('gestion.supervisor.validatedTitle') : t('gestion.queueTitle') }}</h2>
-          <p class="text-[12.5px] text-gray-500 mt-0.5">{{ activeGroup === 'validated' ? t('gestion.supervisor.validatedSubtitle') : t('gestion.queueSubtitle') }}</p>
+          <p class="text-[12.5px] text-gray-500 mt-0.5">{{ activeGroup === 'validated' ? t('gestion.supervisor.validatedSubtitle') : readOnly ? t('gestion.supervisor.queueSubtitle') : t('gestion.queueSubtitle') }}</p>
         </div>
         <div role="tablist" class="flex items-end gap-5 overflow-x-auto whitespace-nowrap">
           <button
