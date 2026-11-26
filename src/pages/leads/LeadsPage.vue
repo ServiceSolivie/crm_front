@@ -647,9 +647,9 @@ const gridCols = computed(() =>
             @click="router.push({ name: 'leads.detail', params: { id: row.id } })"
           >
             <div role="cell" class="pl-4" @click.stop>
-              <!-- Super admin: how soon the lead wants to switch, as a stripe on the row's edge -->
+              <!-- How soon the lead wants to switch, as a stripe on the row's edge -->
               <span
-                v-if="seesDoublons && HEAT[row.qualification?.timing?.code]"
+                v-if="HEAT[row.qualification?.timing?.code]"
                 :class="['absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r', HEAT[row.qualification.timing.code]]"
                 aria-hidden="true"
               />
@@ -677,16 +677,12 @@ const gridCols = computed(() =>
                     :title="row.doublon_of ? t('leads.doublonOf', { ref: row.doublon_of.reference }) : ''"
                   >{{ t('leads.doublon') }}</span>
                 </div>
-                <!-- Super admin: the form answers (Détaillés, Décennale) to choose who gets the lead -->
+                <!-- The form answers (Détaillés, Décennale), for every role -->
                 <LeadQualification
-                  v-if="seesDoublons"
                   :qualification="row.qualification"
                   :fallback="row.lead_source?.name || row.reference || '—'"
                   :source-name="row.lead_source?.name || ''"
                 />
-                <p v-else class="text-xs text-gray-500 truncate">
-                  {{ row.lead_source?.name || row.reference || '—' }}
-                </p>
               </div>
             </div>
             <div role="cell" class="px-3 flex items-center min-w-0">

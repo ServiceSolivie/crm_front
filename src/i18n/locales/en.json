@@ -1475,6 +1475,14 @@
     "form": {
       "moneyHint": "Amount in euros"
     },
+    "draft": {
+      "restored": "Draft restored (saved {date}): your input is back.",
+      "discard": "Discard draft",
+      "closeTitle": "Close without generating?",
+      "closeMessage": "Your input stays saved as a draft in this browser: you'll find it when you reopen this lead's DVC.",
+      "closeConfirm": "Close",
+      "keepEditing": "Keep editing"
+    },
     "create": {
       "title": "Create a DVC",
       "description": "Pick the DVC type: the form reuses this lead's previous DVCs, otherwise its details.",
