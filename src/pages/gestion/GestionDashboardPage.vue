@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useInsuranceTypes } from '@/composables/useInsuranceTypes'
@@ -16,6 +16,10 @@ import { formatDateTime } from '@/utils/formatters'
 import CallButton from '@/components/modules/calls/CallButton.vue'
 import { dialNumber } from '@/utils/phone'
 import { useReportAccess } from '@/composables/useReportAccess'
+import { useLeadStatuses } from '@/composables/useLeadStatuses'
+import AppSelect from '@/components/base/AppSelect.vue'
+import AppSearchInput from '@/components/base/AppSearchInput.vue'
+import AppPagination from '@/components/base/AppPagination.vue'
 
 /**
  * Gestion's workspace: headline figures, then every lead currently with
@@ -26,6 +30,7 @@ const { typeShort } = useInsuranceTypes()
 const router = useRouter()
 const auth = useAuthStore()
 const store = useGestionDashboardStore()
+const { statusLabel } = useLeadStatuses()
 
 onMounted(() => store.fetchDashboard())
 
@@ -44,18 +49,65 @@ const GROUPS = {
   subscribed: ['SOUSCRIS'],
 }
 const activeGroup = ref('all')
+
+/* ── Filters (agent, team, status, search) + pagination ────── */
+const filters = reactive({ agent: '', team: '', status: '', q: '' })
+const hasFilters = computed(() => !!(filters.agent || filters.team || filters.status || filters.q))
+function resetFilters() {
+  Object.assign(filters, { agent: '', team: '', status: '', q: '' })
+}
+const fold = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+function matches(lead) {
+  if (filters.agent && String(lead.agent?.id ?? 'none') !== filters.agent) return false
+  if (filters.team && String(lead.team?.id ?? 'none') !== filters.team) return false
+  if (filters.status && lead.status !== filters.status) return false
+  const q = fold(filters.q).trim()
+  if (!q) return true
+  const digits = q.replace(/\D/g, '')
+  return fold(`${lead.first_name ?? ''} ${lead.last_name ?? ''} ${lead.last_name ?? ''} ${lead.first_name ?? ''} ${lead.reference ?? ''}`).includes(q)
+    || (digits.length >= 4 && String(lead.phone ?? '').replace(/\D/g, '').includes(digits))
+}
+const filteredQueue = computed(() => queue.value.filter(matches))
+const filteredValidated = computed(() => validated.value.filter(matches))
+
+const byLabel = (a, b) => a.label.localeCompare(b.label, 'fr')
+function uniqueOptions(key) {
+  const seen = new Map()
+  for (const l of [...queue.value, ...validated.value]) {
+    const v = l[key]
+    seen.set(String(v?.id ?? 'none'), v?.name ?? t('common.unassigned'))
+  }
+  return [...seen].map(([value, label]) => ({ value, label })).sort(byLabel)
+}
+const agentOptions = computed(() => [{ value: '', label: t('gestion.filters.allAgents') }, ...uniqueOptions('agent')])
+const teamOptions = computed(() => [{ value: '', label: t('gestion.filters.allTeams') }, ...uniqueOptions('team')])
+const statusOptions = computed(() => {
+  const codes = new Set([...queue.value, ...validated.value].map((l) => l.status))
+  return [{ value: '', label: t('gestion.filters.allStatuses') }, ...[...codes].map((c) => ({ value: c, label: statusLabel(c) })).sort(byLabel)]
+})
+
 const tabs = computed(() => [
-  { key: 'all', label: t('gestion.tabs.all'), count: queue.value.length },
+  { key: 'all', label: t('gestion.tabs.all'), count: filteredQueue.value.length },
   ...Object.entries(GROUPS).filter(([key]) => key !== 'subscribed' || readOnly.value).map(([key, statuses]) => ({
     key,
     label: t('gestion.tabs.' + key),
-    count: queue.value.filter((l) => statuses.includes(l.status)).length,
+    count: filteredQueue.value.filter((l) => statuses.includes(l.status)).length,
   })),
-  ...(readOnly.value ? [{ key: 'validated', label: t('gestion.tabs.validated'), count: validated.value.length }] : []),
+  ...(readOnly.value ? [{ key: 'validated', label: t('gestion.tabs.validated'), count: filteredValidated.value.length }] : []),
 ])
-const rows = computed(() =>
-  activeGroup.value === 'all' ? queue.value : queue.value.filter((l) => GROUPS[activeGroup.value]?.includes(l.status)),
-)
+const rows = computed(() => {
+  if (activeGroup.value === 'validated') return filteredValidated.value
+  return activeGroup.value === 'all'
+    ? filteredQueue.value
+    : filteredQueue.value.filter((l) => GROUPS[activeGroup.value]?.includes(l.status))
+})
+
+const page = ref(1)
+const perPage = ref(20)
+const lastPage = computed(() => Math.max(1, Math.ceil(rows.value.length / perPage.value)))
+const pagedRows = computed(() => rows.value.slice((page.value - 1) * perPage.value, page.value * perPage.value))
+watch([activeGroup, perPage, () => ({ ...filters })], () => { page.value = 1 })
+watch(lastPage, (n) => { if (page.value > n) page.value = n })
 
 /* ── Supervisor: his team's leads, read-only ───────────────── */
 const readOnly = computed(() => !!stats.value?.read_only)
@@ -65,11 +117,14 @@ const opensLead = (lead) => !readOnly.value || canOpenLead(lead.agent?.id)
 function openLead(lead) {
   if (opensLead(lead)) router.push({ name: 'leads.detail', params: { id: lead.id } })
 }
-const pageTitle = computed(() =>
-  readOnly.value
+// Super admin: every team's leads, read-only
+const overview = computed(() => !!stats.value?.overview)
+const pageTitle = computed(() => {
+  if (overview.value) return t('gestion.overview.title')
+  return readOnly.value
     ? t('gestion.supervisor.title', { team: stats.value?.team?.name ?? '—' })
-    : t('gestion.dashboardTitle'),
-)
+    : t('gestion.dashboardTitle')
+})
 
 /* ── What gestion has to do next on each lead ──────────────── */
 function nextStep(lead) {
@@ -116,7 +171,7 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
 
 <template>
   <div class="flex flex-col gap-5 max-w-[1440px] mx-auto">
-    <AppPageHeader :title="pageTitle" :subtitle="readOnly ? t('gestion.supervisor.subtitle') : t('gestion.dashboardSubtitle')">
+    <AppPageHeader :title="pageTitle" :subtitle="overview ? t('gestion.overview.subtitle') : readOnly ? t('gestion.supervisor.subtitle') : t('gestion.dashboardSubtitle')">
       <template #actions>
         <span v-if="readOnly" class="h-9 inline-flex items-center gap-1.5 px-3 rounded-lg bg-gray-100 text-[13px] text-gray-700">
           <Eye class="w-4 h-4 text-gray-500" />{{ t('gestion.supervisor.readOnly') }}
@@ -181,6 +236,20 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
         </div>
       </div>
 
+      <!-- Filters -->
+      <div class="px-5 py-3 flex flex-wrap items-center gap-2.5 border-b border-gray-200">
+        <AppSelect v-model="filters.agent" :options="agentOptions" class="w-48" :aria-label="t('leads.filterAgent')" />
+        <AppSelect v-if="overview" v-model="filters.team" :options="teamOptions" class="w-44" :aria-label="t('gestion.filters.team')" />
+        <AppSelect v-model="filters.status" :options="statusOptions" class="w-48" :aria-label="t('leads.status')" />
+        <AppSearchInput v-model="filters.q" :placeholder="t('gestion.filters.search')" class="flex-1 min-w-[220px]" />
+        <button
+          v-if="hasFilters"
+          type="button"
+          class="h-10 px-3 rounded-lg text-[13px] text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+          @click="resetFilters"
+        >{{ t('gestion.filters.reset') }}</button>
+      </div>
+
       <!-- Supervisor: his team's leads validated lately -->
       <div v-if="activeGroup === 'validated'" class="overflow-x-auto">
         <div class="min-w-[880px] text-[13px]" role="table" :aria-label="t('gestion.tabs.validated')">
@@ -191,12 +260,12 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
             <span role="columnheader">{{ t('gestion.supervisor.validatedAt') }}</span>
             <span role="columnheader">{{ t('leads.status') }}</span>
           </div>
-          <div v-if="!validated.length" class="flex flex-col items-center gap-2 py-14 text-center">
+          <div v-if="!rows.length" class="flex flex-col items-center gap-2 py-14 text-center">
             <span class="w-12 h-12 rounded-full bg-primary-light text-primary flex items-center justify-center"><Inbox class="w-5 h-5" /></span>
-            <p class="text-[13px] text-gray-600">{{ t('gestion.supervisor.validatedEmpty') }}</p>
+            <p class="text-[13px] text-gray-600">{{ hasFilters ? t('gestion.filters.noMatch') : t('gestion.supervisor.validatedEmpty') }}</p>
           </div>
           <div
-            v-for="lead in validated"
+            v-for="lead in pagedRows"
             v-else
             :key="lead.id"
             role="row"
@@ -213,7 +282,10 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
                 </p>
               </div>
             </div>
-            <span role="cell" class="truncate">{{ lead.agent?.name ?? t('common.unassigned') }}</span>
+            <span role="cell" class="min-w-0">
+              <span class="block truncate">{{ lead.agent?.name ?? t('common.unassigned') }}</span>
+              <span v-if="overview && lead.team" class="block text-xs text-gray-500 truncate">{{ lead.team.name }}</span>
+            </span>
             <span role="cell" class="truncate text-gray-700">{{ lead.gestionnaire?.name ?? '—' }}</span>
             <span role="cell" class="font-mono text-[12.5px] text-gray-700">{{ formatDateTime(lead.validated_at) }}</span>
             <span role="cell"><LeadStatusBadge :status="lead.status" /></span>
@@ -243,12 +315,12 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
 
           <div v-else-if="!rows.length" class="flex flex-col items-center gap-2 py-14 text-center">
             <span class="w-12 h-12 rounded-full bg-primary-light text-primary flex items-center justify-center"><Inbox class="w-5 h-5" /></span>
-            <p class="text-[13px] text-gray-600">{{ activeGroup === 'all' ? t('gestion.queueEmpty') : t('gestion.queueEmptyTab') }}</p>
+            <p class="text-[13px] text-gray-600">{{ hasFilters ? t('gestion.filters.noMatch') : activeGroup === 'all' ? t('gestion.queueEmpty') : t('gestion.queueEmptyTab') }}</p>
           </div>
 
           <template v-else>
             <div
-              v-for="lead in rows"
+              v-for="lead in pagedRows"
               :key="lead.id"
               role="row"
               :class="[GRID, 'min-h-[56px] py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50', opensLead(lead) ? 'cursor-pointer' : '']"
@@ -275,7 +347,10 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
               <span role="cell" class="min-w-0">
                 <span v-if="lead.agent" class="flex items-center gap-2 min-w-0">
                   <AppAvatar :name="lead.agent.name" size="xs" />
-                  <span class="truncate">{{ lead.agent.name }}</span>
+                  <span class="min-w-0">
+                    <span class="block truncate">{{ lead.agent.name }}</span>
+                    <span v-if="overview && lead.team" class="block text-xs text-gray-500 truncate">{{ lead.team.name }}</span>
+                  </span>
                 </span>
                 <span v-else class="text-gray-500">{{ t('common.unassigned') }}</span>
               </span>
@@ -298,6 +373,20 @@ const GRID_VALIDATED = 'grid grid-cols-[minmax(220px,1.6fr)_minmax(140px,1fr)_mi
             </div>
           </template>
         </div>
+      </div>
+
+      <div v-if="rows.length > 0" class="px-4 border-t border-gray-200">
+        <AppPagination
+          :current-page="page"
+          :last-page="lastPage"
+          :total="rows.length"
+          :from="(page - 1) * perPage + 1"
+          :to="Math.min(page * perPage, rows.length)"
+          :per-page="perPage"
+          :per-page-options="[20, 50, 100]"
+          @page-change="page = $event"
+          @per-page-change="perPage = $event"
+        />
       </div>
     </section>
   </div>

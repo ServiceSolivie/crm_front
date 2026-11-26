@@ -1084,6 +1084,19 @@
       "waitingAgent": "En attente de l’agent",
       "subscribed": "Souscrit · pas encore envoyé en gestion"
     },
+    "filters": {
+      "allAgents": "Tous les agents",
+      "allTeams": "Toutes les équipes",
+      "allStatuses": "Tous les statuts",
+      "team": "Équipe",
+      "search": "Nom, téléphone ou référence",
+      "reset": "Réinitialiser",
+      "noMatch": "Aucun lead ne correspond à ces filtres."
+    },
+    "overview": {
+      "title": "Suivi gestion · toutes les équipes",
+      "subtitle": "Où en sont les leads de toutes les équipes chez la gestion."
+    },
     "supervisor": {
       "title": "Gestion · {team}",
       "subtitle": "Où en sont les leads de votre équipe chez la gestion.",
