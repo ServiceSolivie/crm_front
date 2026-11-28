@@ -133,6 +133,8 @@ const sheetExtraFields = computed(() => {
 
 // The contract total is set with the first payment (or by gestion when validating)
 const hasRevenue = computed(() => leadsStore.current?.expected_revenue != null)
+// The contract total stays editable while the lead has no payment (none yet, or all deleted)
+const totalEditable = computed(() => !hasRevenue.value || (!leadsStore.loading.payments && leadsStore.payments.length === 0))
 // Payments can be recorded before or after the DVC signature — not on lost leads
 // (any status of the « Perdu » stage, the ones added in the CRM included)
 const { statusStage } = useLeadStatuses()
@@ -1253,7 +1255,8 @@ const companyFields = computed(() => {
       ref="paymentFormRef"
       :open="showPaymentForm"
       :remaining-amount="leadsStore.current?.remaining_amount ?? 0"
-      :needs-total="!hasRevenue"
+      :needs-total="totalEditable"
+      :current-total="leadsStore.current?.expected_revenue ?? ''"
       :loading="leadsStore.loading.payments"
       @close="showPaymentForm = false"
       @submit="onPaymentSubmit"

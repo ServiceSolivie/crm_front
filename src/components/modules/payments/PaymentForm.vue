@@ -18,6 +18,8 @@ const props = defineProps({
   remainingAmount: { type: [String, Number], default: 0 },
   // First payment: the contract total is not known yet and is asked here
   needsTotal: { type: Boolean, default: false },
+  // Total already saved (e.g. its payments were deleted): prefilled, still editable
+  currentTotal: { type: [String, Number], default: '' },
   loading: { type: Boolean, default: false },
 })
 
@@ -47,7 +49,7 @@ const showCustomMethod = computed(() => form.payment_method === 'AUTRE')
 watch(() => props.open, (val) => {
   if (val) {
     Object.assign(form, {
-      expected_revenue: '',
+      expected_revenue: props.currentTotal != null && props.currentTotal !== '' ? String(Number(props.currentTotal)) : '',
       status: 'REUSSI',
       amount: '',
       payment_date: new Date().toISOString().slice(0, 10),
